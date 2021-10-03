@@ -10,6 +10,7 @@ Introduction		|pum-introduction|
 Install			|pum-install|
 Interface		|pum-interface|
   Variables		  |pum-variables|
+  Options		  |pum-options|
   Functions		  |pum-functions|
   Key mappings		  |pum-key-mappings|
 Examples		|pum-examples|
@@ -21,6 +22,8 @@ Compatibility		|pum-compatibility|
 INTRODUCTION						*pum-introduction*
 
 *pum* is the framework library to implement original popup menu completion.
+
+It works both insert mode and command line mode.
 
 
 ==============================================================================
@@ -36,9 +39,54 @@ INTERFACE						*pum-interface*
 ------------------------------------------------------------------------------
 VARIABLES	 					*pum-variables*
 
+						*g:pum#skip_next_complete*
+g:pum#skip_next_complete
+		If it is set, auto completion plugin must be skipped auto
+		completion.
+
+		Default: v:false
+
+------------------------------------------------------------------------------
+OPTIONS	 						*pum-options*
+
+Options can be toggled through the use of |pum#set_option()|.
+
+					*pum-options-highlight_selected*
+highlight_selected
+		The selected highlight of candidates.
+
+		Default: "PmenulSel"
 
 ------------------------------------------------------------------------------
 FUNCTIONS 						*pum-functions*
+
+							*pum#close()*
+pum#close()
+		Close current popup menu.
+
+							*pum#complete_info()*
+pum#complete_info()
+		Returns |Dictionary| like |complete_info()|.
+
+							*pum#open()*
+pum#open({startcol}, {items})
+		Open popup menu like |complete()|.
+		{startcol} is the byte offset in the line where the completed
+		text start.
+		{items} must be a |List|.  See |complete-items| for the kind
+		of items.
+
+							*pum#set_option()*
+pum#set_option({option-name}, {value})
+pum#set_option({dict})
+		Set {option-name} option to {value}.
+		If {dict} is available, the key is {option-name} and the value
+		is {value}. See |pum-options| for available {option-name}.
+
+							*pum#visible()*
+pum#visible()
+		Returns |v:true| if the popup menu is visible like
+		|pumvisible()|.
 
 
 ------------------------------------------------------------------------------

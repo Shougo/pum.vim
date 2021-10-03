@@ -17,6 +17,9 @@ Please read [help](doc/pum.txt) for details.
 
 ## Introduction
 
+pum.vim is the framework library to implement original popup menu completion.
+
+It works both insert mode and command line mode.
 
 ## Install
 

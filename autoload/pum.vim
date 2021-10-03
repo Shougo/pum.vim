@@ -3,9 +3,6 @@ if has('nvim')
 endif
 let g:pum#skip_next_complete = v:false
 
-if !exists('g:pum#highlight_select')
-  let g:pum#highlight_select = 'PmenuSel'
-endif
 
 function! pum#_get() abort
   if !exists('s:pum')
@@ -31,6 +28,19 @@ function! pum#_init() abort
         \ 'startcol': -1,
         \ 'width': -1,
         \}
+endfunction
+function! pum#_options() abort
+  if !exists('s:options')
+    let s:options = {
+          \ 'highlight_selected': 'PmenuSel',
+          \ }
+  endif
+  return s:options
+endfunction
+
+function! pum#set_option(key_or_dict, ...) abort
+  let dict = s:normalize_key_or_dict(a:key_or_dict, get(a:000, 0, ''))
+  call extend(pum#_options(), dict)
 endfunction
 
 function! pum#open(startcol, items) abort
@@ -127,7 +137,7 @@ function! pum#open(startcol, items) abort
       " Add prop types
       call prop_type_delete('pum_cursor')
       call prop_type_add('pum_cursor', {
-            \ 'highlight': g:pum#highlight_select,
+            \ 'highlight': pum#_options().highlight_selected,
             \ })
     endif
   endif
@@ -191,4 +201,15 @@ function! s:print_error(string) abort
   echomsg printf('[pum] %s', type(a:string) ==# v:t_string ?
         \ a:string : string(a:string))
   echohl None
+endfunction
+
+function! s:normalize_key_or_dict(key_or_dict, value) abort
+  if type(a:key_or_dict) == v:t_dict
+    return a:key_or_dict
+  elseif type(a:key_or_dict) == v:t_string
+    let base = {}
+    let base[a:key_or_dict] = a:value
+    return base
+  endif
+  return {}
 endfunction

@@ -34,7 +34,7 @@ function! pum#map#select_relative(delta) abort
     call nvim_buf_add_highlight(
           \ pum.buf,
           \ s:namespace,
-          \ g:pum#highlight_select,
+          \ pum#_options().highlight_selected,
           \ pum.cursor - 1,
           \ 0, -1
           \ )

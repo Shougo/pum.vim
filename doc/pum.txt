@@ -43,6 +43,8 @@ VARIABLES	 					*pum-variables*
 g:pum#skip_next_complete
 		If it is set, auto completion plugin must be skipped auto
 		completion.
+		The plugin must reset the variable after the completion is
+		skipped.
 
 		Default: v:false
 

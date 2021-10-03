@@ -155,6 +155,10 @@ function! pum#open(startcol, items) abort
   let pum.startcol = a:startcol
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col()]
 
+  if &completeopt =~# 'noinsert'
+    call pum#map#select_relative(+1)
+  endif
+
   return pum.id
 endfunction
 

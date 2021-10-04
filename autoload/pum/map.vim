@@ -23,7 +23,9 @@ function! pum#map#select_relative(delta) abort
     " Reset
     let pum.cursor = 0
 
-    call s:redraw()
+    " Move real cursor
+    call win_execute(pum.id,
+          \ 'call cursor(pum#_get().cursor + 1, 0) | redraw')
 
     return ''
   elseif pum.cursor < 0
@@ -50,7 +52,8 @@ function! pum#map#select_relative(delta) abort
   silent doautocmd <nomodeline> User PumCompleteChanged
 
   " Move real cursor
-  call win_execute(pum.id, 'call cursor(pum#_get().cursor + 1, 0) | redraw')
+  call win_execute(pum.id,
+        \ 'call cursor(pum#_get().cursor + 1, 0) | redraw')
 
   return ''
 endfunction
@@ -157,13 +160,6 @@ function! s:insert_current_word(prev_word) abort
         \ pum.items[pum.cursor - 1].word :
         \ pum.orig_input
   call s:insert(word, a:prev_word)
-endfunction
-
-function! s:redraw() abort
-  " Note: :redraw is needed for command line completion in neovim or Vim
-  if mode() ==# 'c' || !has('nvim')
-    redraw
-  endif
 endfunction
 
 function! s:cursor(col) abort

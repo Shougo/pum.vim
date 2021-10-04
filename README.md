@@ -49,8 +49,8 @@ call dein#end()
 ## Configuration
 
 ```vim
-inoremap <Tab>   <Cmd>call pum#map#select_relative(+1)<CR>
-inoremap <S-Tab> <Cmd>call pum#map#select_relative(-1)<CR>
+inoremap <Tab>   <Cmd>call pum#map#insert_relative(+1)<CR>
+inoremap <S-Tab> <Cmd>call pum#map#insert_relative(-1)<CR>
 inoremap <C-n>   <Cmd>call pum#map#insert_relative(+1)<CR>
 inoremap <C-p>   <Cmd>call pum#map#insert_relative(-1)<CR>
 inoremap <C-y>   <Cmd>call pum#map#confirm()<CR>

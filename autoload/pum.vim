@@ -32,6 +32,7 @@ endfunction
 function! pum#_options() abort
   if !exists('s:options')
     let s:options = {
+          \ 'border': 'none',
           \ 'highlight_selected': 'PmenuSel',
           \ }
   endif
@@ -106,6 +107,7 @@ function! pum#open(startcol, items) abort
 
       " Create new window
       let opts = {
+            \ 'border': pum#_options().border,
             \ 'relative': 'editor',
             \ 'width': width,
             \ 'height': height,

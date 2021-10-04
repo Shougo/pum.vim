@@ -53,6 +53,14 @@ OPTIONS	 						*pum-options*
 
 Options can be toggled through the use of |pum#set_option()|.
 
+					*pum-options-border*
+border
+		The completion window border.  You can specify border
+		|nvim_open_win()| border option.
+		Note: It is neovim only.
+
+		Default: "none"
+
 					*pum-options-highlight_selected*
 highlight_selected
 		The selected highlight of candidates.

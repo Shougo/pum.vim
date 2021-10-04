@@ -59,15 +59,17 @@ function! pum#open(startcol, items) abort
   let max_menu = max(map(copy(a:items), { _, val ->
         \ strwidth(get(val, 'menu', ''))
         \ }))
-  let format = printf('%%-%ds%%-%ds%%-%ds',
-        \ max_abbr + (max_kind != 0 ? 1: 0),
-        \ max_kind + (max_menu != 0 ? 1: 0),
-        \ max_menu)
+  let format = printf('%%s%s%%s%s%%s',
+        \ (max_kind != 0 ? ' ' : ''),
+        \ (max_menu != 0 ? ' ' : ''))
   let lines = map(copy(a:items), { _, val -> printf(format,
-        \ get(val, 'abbr', val.word),
-        \ get(val, 'kind', ''),
-        \ get(val, 'menu', ''))
-        \ })
+        \ get(val, 'abbr', val.word) . repeat(' ' ,
+        \     max_abbr - strwidth(get(val, 'abbr', val.word))),
+        \ get(val, 'kind', '') . repeat(' ' ,
+        \     max_kind - strwidth(get(val, 'kind', ''))),
+        \ get(val, 'menu', '') . repeat(' ' ,
+        \     max_menu - strwidth(get(val, 'menu', '')))
+        \ )})
 
   let pum = pum#_get()
 

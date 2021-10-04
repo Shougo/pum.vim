@@ -49,7 +49,8 @@ function! pum#map#select_relative(delta) abort
 
   silent doautocmd <nomodeline> User PumCompleteChanged
 
-  call s:redraw()
+  " Move real cursor
+  call win_execute(pum.id, 'call cursor(pum#_get().cursor + 1, 0) | redraw')
 
   return ''
 endfunction

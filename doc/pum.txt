@@ -45,15 +45,6 @@ g:pum#completed_item
 		It is inserted item like |v:completed_item|.
 		It is used in |PumCompleteDone| event.
 
-						*g:pum#skip_next_complete*
-g:pum#skip_next_complete
-		If it is set, auto completion plugin must be skipped auto
-		completion.
-		The plugin must reset the variable after the completion is
-		skipped.
-
-		Default: v:false
-
 ------------------------------------------------------------------------------
 OPTIONS	 						*pum-options*
 
@@ -107,6 +98,11 @@ pum#set_option({dict})
 		Set {option-name} option to {value}.
 		If {dict} is available, the key is {option-name} and the value
 		is {value}. See |pum-options| for available {option-name}.
+
+							*pum#skip_complete()*
+pum#skip_complete()
+		If it is |v:true|, auto completion plugin must be skipped auto
+		completion.
 
 							*pum#visible()*
 pum#visible()

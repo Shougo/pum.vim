@@ -1,7 +1,6 @@
 if has('nvim')
   let s:namespace = nvim_create_namespace('pum')
 endif
-let g:pum#skip_next_complete = v:false
 let g:pum#completed_item = {}
 
 
@@ -26,6 +25,7 @@ function! pum#_init() abort
         \ 'len': 0,
         \ 'orig_input': '',
         \ 'pos': [],
+        \ 'skip_complete': v:false,
         \ 'startcol': -1,
         \ 'width': -1,
         \}
@@ -214,6 +214,10 @@ function! pum#complete_info() abort
         \ 'selected': pum.cursor - 1,
         \ 'inserted': pum.current_word,
         \ }
+endfunction
+
+function! pum#skip_complete() abort
+  return pum#_get().skip_complete
 endfunction
 
 function! pum#_getline() abort

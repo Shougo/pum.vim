@@ -110,6 +110,7 @@ function! s:complete_done() abort
   endif
 
   let g:pum#completed_item = pum.items[pum.cursor - 1]
+  let pum.skip_complete = v:false
   silent doautocmd <nomodeline> User PumCompleteDone
 endfunction
 
@@ -151,7 +152,7 @@ function! s:insert(word, prev_word) abort
   let pum.current_word = a:word
 
   " Note: The text changes fires TextChanged events.  It must be ignored.
-  let g:pum#skip_next_complete = v:true
+  let pum.skip_complete = v:true
 endfunction
 function! s:insert_current_word(prev_word) abort
   let pum = pum#_get()

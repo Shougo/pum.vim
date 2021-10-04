@@ -146,11 +146,6 @@ function! pum#open(startcol, items) abort
     endif
   endif
 
-  " Note: :redraw is needed for command line completion in neovim
-  if mode() ==# 'c' && has('nvim')
-    redraw
-  endif
-
   let pum.cursor = 0
   let pum.height = height
   let pum.width = width
@@ -161,6 +156,9 @@ function! pum#open(startcol, items) abort
 
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)
+  elseif mode() ==# 'c' && has('nvim')
+    " Note: :redraw is needed for command line completion in neovim
+    redraw
   endif
 
   return pum.id

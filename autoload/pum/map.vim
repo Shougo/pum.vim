@@ -48,6 +48,20 @@ function! pum#map#select_relative(delta) abort
 
   call s:redraw()
 
+  " Close the popup if user input
+  augroup pum-temp
+    autocmd!
+  augroup END
+
+  if mode() ==# 'c'
+    let s:skip_count = 1
+    autocmd pum-temp CmdlineChanged *
+          \ call s:check_skip_count()
+  else
+    autocmd pum-temp InsertCharPre * ++once
+          \ call timer_start(0, { -> pum#close() })
+  endif
+
   return ''
 endfunction
 
@@ -64,19 +78,6 @@ function! pum#map#insert_relative(delta) abort
   endif
 
   call s:insert_current_word(prev_word)
-
-  " Close the popup if user input
-  augroup pum-temp
-    autocmd!
-  augroup END
-
-  if mode() ==# 'c'
-    autocmd pum-temp CmdlineChanged *
-          \ call s:check_skip_count()
-  else
-    autocmd pum-temp InsertCharPre * ++once
-          \ call timer_start(0, { -> pum#close() })
-  endif
 
   return ''
 endfunction

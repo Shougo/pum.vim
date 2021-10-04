@@ -2,6 +2,7 @@ if has('nvim')
   let s:namespace = nvim_create_namespace('pum')
 endif
 let g:pum#skip_next_complete = v:false
+let g:pum#completed_item = {}
 
 
 function! pum#_get() abort
@@ -185,6 +186,8 @@ function! pum#close() abort
 
   let pum.current_word = ''
   let pum.id = -1
+
+  let g:pum#completed_item = {}
 endfunction
 
 function! pum#visible() abort

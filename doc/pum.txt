@@ -13,6 +13,7 @@ Interface		|pum-interface|
   Options		  |pum-options|
   Functions		  |pum-functions|
   Key mappings		  |pum-key-mappings|
+  Autocmds		  |pum-autocmds|
 Examples		|pum-examples|
 FAQ			|pum-faq|
 Compatibility		|pum-compatibility|
@@ -38,6 +39,11 @@ INTERFACE						*pum-interface*
 
 ------------------------------------------------------------------------------
 VARIABLES	 					*pum-variables*
+
+						*g:pum#completed_item*
+g:pum#completed_item
+		It is inserted item like |v:completed_item|.
+		It is used in |PumCompleteDone| event.
 
 						*g:pum#skip_next_complete*
 g:pum#skip_next_complete
@@ -129,6 +135,15 @@ pum#map#insert_relative({number})
 pum#map#select_relative()
 		Move forward or backward {number} and select the candidate.
 		Note: It must not be called in |:map-<expr>|.
+
+
+------------------------------------------------------------------------------
+AUTOCMDS	 					*pum-autocmds*
+
+							*PumCompleteDone*
+PumCompleteDone
+		It is called after completion is done like |CompleteDone|.
+		|g:pum#completed_item| gives the completed item.
 
 
 ==============================================================================

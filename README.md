@@ -61,3 +61,5 @@ inoremap <C-e>   <Cmd>call pum#map#cancel()<CR>
 
 ## Plans
 
+- [x] PumCompleteDone autocmd
+- [ ] PumCompleteChanged autocmd

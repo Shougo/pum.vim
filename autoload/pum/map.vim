@@ -65,7 +65,45 @@ function! pum#map#insert_relative(delta) abort
 
   call s:insert_current_word(prev_word)
 
+  " Call CompleteDone if user input
+  augroup pum-temp
+    autocmd!
+  augroup END
+
+  if mode() ==# 'c'
+    autocmd pum-temp CmdlineChanged *
+          \ call s:check_skip_count()
+  else
+    autocmd pum-temp InsertCharPre * ++once
+          \ call s:complete_done()
+  endif
+
   return ''
+endfunction
+function! s:check_skip_count() abort
+  let s:skip_count -= 1
+
+  if s:skip_count > 0
+    return
+  endif
+
+  " It should be user input
+
+  augroup pum-temp
+    autocmd!
+  augroup END
+
+  call s:complete_done()
+endfunction
+function! s:complete_done() abort
+  let pum = pum#_get()
+
+  if pum.cursor <= 0
+    return
+  endif
+
+  let g:pum#completed_item = pum.items[pum.cursor - 1]
+  doautocmd <nomodeline> User PumCompleteDone
 endfunction
 
 function! pum#map#confirm() abort
@@ -74,7 +112,11 @@ function! pum#map#confirm() abort
   if pum.cursor > 0 && pum.current_word ==# ''
     call s:insert_current_word(pum.orig_input)
   endif
+
   call pum#close()
+
+  call s:complete_done()
+
   return ''
 endfunction
 
@@ -133,6 +175,9 @@ function! s:setline(text) abort
     " Note: for control chars
     let chars .= join(map(split(a:text, '\zs'),
           \ { _, val -> val <# ' ' ? "\<C-q>" . val : val }), '')
+
+    " Note: skip_count is needed to skip feedkeys() in s:setline()
+    let s:skip_count = strchars(chars)
 
     call feedkeys(chars, 'n')
   else

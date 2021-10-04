@@ -119,6 +119,9 @@ function! pum#open(startcol, items) abort
             \ }
       let id = nvim_open_win(pum.buf, v:false, opts)
 
+      " Disable 'hlsearch' highlight
+      call nvim_win_set_option(id, 'winhighlight', 'Search:None')
+
       let pum.id = id
       let pum.pos = pos
     endif

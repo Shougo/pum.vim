@@ -86,13 +86,20 @@ function! pum#open(startcol, items) abort
     let width += 1
   endif
 
+  let spos = screenpos('.', line('.'), a:startcol)
+
   let height = len(a:items)
   if &pumheight > 0
     let height = min([height, &pumheight])
+  else
+    let height = min([height, &lines - 1])
+  endif
+  if mode() !=# 'c'
+    " Adjust to screen row
+    let height = min([height, &lines - spos.row - 3])
   endif
   let height = max([height, 1])
 
-  let spos = screenpos('.', line('.'), a:startcol)
   let pos = mode() ==# 'c' ?
         \ [&lines - height - 1, a:startcol] : [spos.row, spos.col - 1]
 
@@ -140,6 +147,7 @@ function! pum#open(startcol, items) abort
     if options.border !=# 'none'
       " Set border
       let winopts.border = []
+      let winopts.maxheight -= 2
     endif
 
     if pum.id > 0

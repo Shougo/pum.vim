@@ -152,7 +152,7 @@ function! pum#open(startcol, items) abort
   let pum.len = len(a:items)
   let pum.items = copy(a:items)
   let pum.startcol = a:startcol
-  let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col()]
+  let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
 
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)

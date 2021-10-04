@@ -62,7 +62,7 @@ inoremap <C-e>   <Cmd>call pum#map#cancel()<CR>
 ## Plans
 
 - [x] PumCompleteDone autocmd
-- [ ] PumCompleteChanged autocmd
+- [x] PumCompleteChanged autocmd
 - [ ] highlightAbbr, highlightKind, highlightMenu options
 - [ ] Scroll support
 - [ ] Scroll bar support

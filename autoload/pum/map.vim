@@ -47,6 +47,8 @@ function! pum#map#select_relative(delta) abort
           \ })
   endif
 
+  silent doautocmd <nomodeline> User PumCompleteChanged
+
   call s:redraw()
 
   return ''

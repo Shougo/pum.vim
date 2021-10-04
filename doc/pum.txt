@@ -140,6 +140,11 @@ pum#map#select_relative()
 ------------------------------------------------------------------------------
 AUTOCMDS	 					*pum-autocmds*
 
+							*PumCompleteChanged*
+PumCompleteChanged
+		After each time completion menu changed like |CompleteChanged|.
+		|complete_info()| gives the information.
+
 							*PumCompleteDone*
 PumCompleteDone
 		It is called after completion is done like |CompleteDone|.

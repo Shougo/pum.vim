@@ -137,6 +137,10 @@ function! pum#open(startcol, items) abort
           \ 'maxwidth': width,
           \ 'maxheight': height,
           \ }
+    if options.border !=# 'none'
+      " Set border
+      let winopts.border = []
+    endif
 
     if pum.id > 0
       call popup_move(pum.id, winopts)

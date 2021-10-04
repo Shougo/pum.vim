@@ -109,7 +109,7 @@ function! pum#open(startcol, items) abort
       call pum#close()
 
       " Create new window
-      let opts = {
+      let winopts = {
             \ 'border': options.border,
             \ 'relative': 'editor',
             \ 'width': width,
@@ -120,7 +120,7 @@ function! pum#open(startcol, items) abort
             \ 'style': 'minimal',
             \ 'noautocmd': v:true,
             \ }
-      let id = nvim_open_win(pum.buf, v:false, opts)
+      let id = nvim_open_win(pum.buf, v:false, winopts)
 
       " Disable 'hlsearch' highlight
       call nvim_win_set_option(id, 'winhighlight', 'Search:None')
@@ -130,7 +130,7 @@ function! pum#open(startcol, items) abort
       let pum.pos = pos
     endif
   else
-    let options = {
+    let winopts = {
           \ 'pos': 'topleft',
           \ 'line': pos[0] + 1,
           \ 'col': pos[1] + 1,
@@ -139,10 +139,10 @@ function! pum#open(startcol, items) abort
           \ }
 
     if pum.id > 0
-      call popup_move(pum.id, options)
+      call popup_move(pum.id, winopts)
       call popup_settext(pum.id, lines)
     else
-      let pum.id = popup_create(lines, options)
+      let pum.id = popup_create(lines, winopts)
       let pum.buf = winbufnr(pum.id)
 
       " Add prop types

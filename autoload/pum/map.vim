@@ -13,8 +13,9 @@ function! pum#map#select_relative(delta) abort
     call nvim_buf_clear_namespace(pum.buf, s:namespace, 0, -1)
   else
     call prop_remove({
-          \ 'type': 'pum_cursor', 'bufnr': pum.buf
-          \ })
+        \ 'type': 'pum_cursor',
+        \ 'bufnr': pum.buf,
+        \ })
   endif
 
   let pum.cursor += a:delta
@@ -103,7 +104,7 @@ function! s:complete_done() abort
   endif
 
   let g:pum#completed_item = pum.items[pum.cursor - 1]
-  doautocmd <nomodeline> User PumCompleteDone
+  silent doautocmd <nomodeline> User PumCompleteDone
 endfunction
 
 function! pum#map#confirm() abort

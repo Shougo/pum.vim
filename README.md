@@ -63,3 +63,7 @@ inoremap <C-e>   <Cmd>call pum#map#cancel()<CR>
 
 - [x] PumCompleteDone autocmd
 - [ ] PumCompleteChanged autocmd
+- [ ] highlightAbbr, highlightKind, highlightMenu options
+- [ ] Scroll support
+- [ ] Scroll bar support
+- [ ] Match the input

@@ -34,6 +34,7 @@ function! pum#_options() abort
     let s:options = {
           \ 'border': 'none',
           \ 'highlight_selected': 'PmenuSel',
+          \ 'winblend': exists('&winblend') ? &winblend : 0,
           \ }
   endif
   return s:options
@@ -73,6 +74,7 @@ function! pum#open(startcol, items) abort
         \ )})
 
   let pum = pum#_get()
+  let options = pum#_options()
 
   let width = max_abbr + max_kind + max_menu
   " Padding
@@ -107,7 +109,7 @@ function! pum#open(startcol, items) abort
 
       " Create new window
       let opts = {
-            \ 'border': pum#_options().border,
+            \ 'border': options.border,
             \ 'relative': 'editor',
             \ 'width': width,
             \ 'height': height,
@@ -121,6 +123,7 @@ function! pum#open(startcol, items) abort
 
       " Disable 'hlsearch' highlight
       call nvim_win_set_option(id, 'winhighlight', 'Search:None')
+      call nvim_win_set_option(id, 'winblend', options.winblend)
 
       let pum.id = id
       let pum.pos = pos
@@ -144,7 +147,7 @@ function! pum#open(startcol, items) abort
       " Add prop types
       call prop_type_delete('pum_cursor')
       call prop_type_add('pum_cursor', {
-            \ 'highlight': pum#_options().highlight_selected,
+            \ 'highlight': options.highlight_selected,
             \ })
     endif
   endif

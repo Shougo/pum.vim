@@ -67,6 +67,13 @@ highlight_selected
 
 		Default: "PmenulSel"
 
+					*pum-options-winblend*
+winblend
+		The 'winblend' config for popup menu.
+		Note: It is neovim only.
+
+		Default: same with 'winblend'
+
 ------------------------------------------------------------------------------
 FUNCTIONS 						*pum-functions*
 

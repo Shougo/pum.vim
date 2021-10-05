@@ -25,6 +25,7 @@ function! pum#_init() abort
         \ 'pos': [],
         \ 'skip_complete': v:false,
         \ 'startcol': -1,
+        \ 'startrow': -1,
         \ 'width': -1,
         \}
 endfunction
@@ -189,6 +190,7 @@ function! pum#open(startcol, items) abort
   let pum.len = len(a:items)
   let pum.items = copy(a:items)
   let pum.startcol = a:startcol
+  let pum.startrow = line('.')
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
 
   " Highlight

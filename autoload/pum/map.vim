@@ -73,6 +73,8 @@ function! pum#map#insert_relative(delta) abort
   else
     autocmd pum-temp InsertCharPre * ++once
           \ call s:complete_done()
+    autocmd pum-temp TextChangedI *
+          \ if line('.') != pum#_get().startrow | call pum#close() | endif
   endif
 
   return ''

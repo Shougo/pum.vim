@@ -54,6 +54,11 @@ function! pum#open(startcol, items) abort
     return -1
   endif
 
+  if mode() !~# '[ic]'
+    " Invalid mode
+    return
+  endif
+
   let max_abbr = max(map(copy(a:items), { _, val ->
         \ strwidth(get(val, 'abbr', val.word))
         \ }))

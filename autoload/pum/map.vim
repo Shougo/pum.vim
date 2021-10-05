@@ -10,7 +10,8 @@ function! pum#map#select_relative(delta) abort
 
   " Clear current highlight
   if has('nvim')
-    call nvim_buf_clear_namespace(pum.buf, s:namespace, 0, -1)
+    call nvim_buf_clear_namespace(
+          \ pum.buf, nvim_create_namespace('pum_cursor'), 0, -1)
   else
     call prop_remove({
         \ 'type': 'pum_cursor',
@@ -33,21 +34,10 @@ function! pum#map#select_relative(delta) abort
     let pum.cursor = pum.len
   endif
 
-  if has('nvim')
-    call nvim_buf_add_highlight(
-          \ pum.buf,
-          \ s:namespace,
-          \ pum#_options().highlight_selected,
-          \ pum.cursor - 1,
-          \ 0, -1
-          \ )
-  else
-    call prop_add(pum.cursor, 1, {
-          \ 'length': pum.width,
-          \ 'type': 'pum_cursor',
-          \ 'bufnr': pum.buf,
-          \ })
-  endif
+  call pum#_highlight(
+        \ has('nvim') ? pum#_options().highlight_selected : 'pum_cursor',
+        \ has('nvim') ? nvim_create_namespace('pum_cursor') : 100,
+        \ pum.cursor, 1, pum.width)
 
   silent doautocmd <nomodeline> User PumCompleteChanged
 

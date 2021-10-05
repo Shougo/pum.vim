@@ -1,6 +1,4 @@
-if has('nvim')
-  let s:namespace = nvim_create_namespace('pum')
-endif
+let s:namespace = has('nvim') ? nvim_create_namespace('pum') : 0
 let g:pum#completed_item = {}
 
 
@@ -34,6 +32,9 @@ function! pum#_options() abort
   if !exists('s:options')
     let s:options = {
           \ 'border': 'none',
+          \ 'highlight_abbr': 'Statement',
+          \ 'highlight_kind': 'Type',
+          \ 'highlight_menu': 'Special',
           \ 'highlight_selected': 'PmenuSel',
           \ 'winblend': exists('&winblend') ? &winblend : 0,
           \ }
@@ -162,6 +163,18 @@ function! pum#open(startcol, items) abort
       call prop_type_add('pum_cursor', {
             \ 'highlight': options.highlight_selected,
             \ })
+      call prop_type_delete('pum_abbr')
+      call prop_type_add('pum_abbr', {
+            \ 'highlight': options.highlight_abbr,
+            \ })
+      call prop_type_delete('pum_kind')
+      call prop_type_add('pum_kind', {
+            \ 'highlight': options.highlight_kind,
+            \ })
+      call prop_type_delete('pum_menu')
+      call prop_type_add('pum_menu', {
+            \ 'highlight': options.highlight_menu,
+            \ })
     endif
   endif
 
@@ -172,6 +185,27 @@ function! pum#open(startcol, items) abort
   let pum.items = copy(a:items)
   let pum.startcol = a:startcol
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
+
+  " Highlight
+  "for row in range(1, len(a:items))
+  "  if options.highlight_abbr !=# ''
+  "    call pum#_highlight(
+  "          \ has('nvim') ? options.highlight_abbr : 'pum_abbr',
+  "          \ -1, row, 1, max_abbr + 1)
+  "  endif
+
+  "  if options.highlight_kind !=# ''
+  "    call pum#_highlight(
+  "          \ has('nvim') ? options.highlight_kind : 'pum_kind',
+  "          \ -2, row, max_abbr + 2, max_kind + 1)
+  "  endif
+
+  "  if options.highlight_menu !=# ''
+  "    call pum#_highlight(
+  "          \ has('nvim') ? options.highlight_menu : 'pum_menu',
+  "          \ -3, row, max_abbr + max_kind + 3, max_menu)
+  "  endif
+  "endfor
 
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)
@@ -190,10 +224,11 @@ function! pum#close() abort
     return
   endif
 
+  " Note: popup may be already closed
   if has('nvim')
-    call nvim_win_close(pum.id, v:true)
+    silent! call nvim_win_close(pum.id, v:true)
   else
-    call popup_close(pum.id)
+    silent! call popup_close(pum.id)
   endif
 
   let pum.current_word = ''
@@ -225,6 +260,28 @@ function! pum#_getline() abort
 endfunction
 function! s:col() abort
   return mode() ==# 'c' ? getcmdpos() : col('.')
+endfunction
+
+function! pum#_highlight(highlight_or_prop_type, id, row, col, length) abort
+  let pum = pum#_get()
+
+  if has('nvim')
+    call nvim_buf_add_highlight(
+          \ pum.buf,
+          \ a:id,
+          \ a:highlight_or_prop_type,
+          \ a:row - 1,
+          \ a:col - 1,
+          \ a:col - 1 + a:length
+          \ )
+  else
+    call prop_add(a:row, a:col, {
+          \ 'length': a:length,
+          \ 'type': a:highlight_or_prop_type,
+          \ 'bufnr': pum.buf,
+          \ 'id': a:id,
+          \ })
+  endif
 endfunction
 
 function! s:print_error(string) abort

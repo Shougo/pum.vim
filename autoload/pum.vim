@@ -86,7 +86,7 @@ function! pum#open(startcol, items) abort
     let width += 1
   endif
 
-  let spos = screenpos('.', line('.'), a:startcol)
+  let spos = screenpos(0, line('.'), a:startcol)
 
   let height = len(a:items)
   if &pumheight > 0

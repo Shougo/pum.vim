@@ -25,8 +25,7 @@ function! pum#map#select_relative(delta) abort
     let pum.cursor = 0
 
     " Move real cursor
-    call win_execute(pum.id,
-          \ 'call cursor(pum#_get().cursor + 1, 0) | redraw')
+    call win_execute(pum.id, 'call cursor(1, 0) | redraw')
 
     return ''
   elseif pum.cursor < 0
@@ -42,8 +41,14 @@ function! pum#map#select_relative(delta) abort
   silent doautocmd <nomodeline> User PumCompleteChanged
 
   " Move real cursor
-  call win_execute(pum.id,
-        \ 'call cursor(pum#_get().cursor + 1, 0) | redraw')
+  " Note: If up scroll, cursor must adjust...
+  if a:delta < 0
+    call win_execute(pum.id,
+          \ 'call cursor(pum#_get().cursor, 0) | redraw')
+  else
+    call win_execute(pum.id,
+          \ 'call cursor(pum#_get().cursor + 1, 0) | redraw')
+  endif
 
   return ''
 endfunction

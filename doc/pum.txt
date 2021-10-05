@@ -168,6 +168,9 @@ plugins.  You can donate money to help me!
 
    https://github.com/sponsors/Shougo
 
+Q: Popup menu does not close immediately in Vim.
+
+A: It is the known issue of Vim.  |popup_close()| does not work immediately.
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*

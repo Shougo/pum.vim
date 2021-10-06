@@ -70,6 +70,12 @@ highlight_kind
 
 		Default: ""
 
+					*pum-options-highlight_matches*
+highlight_matches
+		The input matches highlight of candidates.
+
+		Default: ""
+
 					*pum-options-highlight_menu*
 highlight_menu
 		The menu highlight of candidates.

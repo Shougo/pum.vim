@@ -1,6 +1,4 @@
-if has('nvim')
-  let s:namespace = nvim_create_namespace('pum')
-endif
+let s:pum_cursor_id = 50
 
 function! pum#map#select_relative(delta) abort
   let pum = pum#_get()
@@ -9,7 +7,7 @@ function! pum#map#select_relative(delta) abort
   endif
 
   " Clear current highlight
-  call clearmatches(pum.id)
+  silent! call matchdelete(s:pum_cursor_id, pum.id)
 
   let pum.cursor += a:delta
   if pum.cursor > pum.len || pum.cursor == 0
@@ -32,15 +30,17 @@ function! pum#map#select_relative(delta) abort
   " Note: Use matchaddpos() instead of nvim_buf_add_highlight() or prop_add()
   " Because the highlight conflicts with other highlights
   if a:delta < 0
-    call win_execute(pum.id,
-          \ 'call cursor(pum#_get().cursor, 0) | ' .
-          \ 'call matchaddpos(pum#_options().highlight_selected,
-          \                   [pum#_get().cursor]) | redraw')
+    call win_execute(pum.id, '
+          \ call cursor(pum#_get().cursor, 0) |
+          \ call matchaddpos(pum#_options().highlight_selected,
+          \                   [pum#_get().cursor], 0, s:pum_cursor_id) |
+          \ redraw')
   else
-    call win_execute(pum.id,
-          \ 'call cursor(pum#_get().cursor + 1, 0) | ' .
-          \ 'call matchaddpos(pum#_options().highlight_selected,
-          \                   [pum#_get().cursor]) | redraw')
+    call win_execute(pum.id, '
+          \ call cursor(pum#_get().cursor + 1, 0) |
+          \ call matchaddpos(pum#_options().highlight_selected,
+          \                   [pum#_get().cursor], 0, s:pum_cursor_id) |
+          \ redraw')
   endif
 
   return ''

@@ -1,5 +1,6 @@
 let s:namespace = has('nvim') ? nvim_create_namespace('pum') : 0
 let g:pum#completed_item = {}
+let s:pum_matched_id = 70
 
 
 function! pum#_get() abort
@@ -33,9 +34,10 @@ function! pum#_options() abort
   if !exists('s:options')
     let s:options = {
           \ 'border': 'none',
-          \ 'highlight_abbr': 'Statement',
-          \ 'highlight_kind': 'Type',
-          \ 'highlight_menu': 'Special',
+          \ 'highlight_abbr': '',
+          \ 'highlight_kind': '',
+          \ 'highlight_matches': '',
+          \ 'highlight_menu': '',
           \ 'highlight_selected': 'PmenuSel',
           \ 'winblend': exists('&winblend') ? &winblend : 0,
           \ }
@@ -209,6 +211,16 @@ function! pum#open(startcol, items) abort
             \ s:namespace, row, max_abbr + max_kind + 2, max_menu + 1)
     endif
   endfor
+
+  " Highlight matches
+  silent! call matchdelete(s:pum_matched_id, pum.id)
+  if options.highlight_matches !=# ''
+    let pattern = substitute(escape(pum.orig_input, '~"*\.^$[]'),
+          \ '\w\ze.', '\0[^\0]\\{-}', 'g')
+    call matchadd(
+          \ options.highlight_matches, pattern, 0, s:pum_matched_id,
+          \ { 'window': pum.id })
+  endif
 
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)

@@ -255,15 +255,33 @@ endfunction
 function! pum#visible() abort
   return pum#_get().id > 0
 endfunction
-function! pum#complete_info() abort
+function! pum#complete_info(...) abort
   let pum = pum#_get()
-  return {
+  let info =  {
         \ 'mode': '',
         \ 'pumvisible': pum#visible(),
         \ 'items': pum.items,
         \ 'selected': pum.cursor - 1,
         \ 'inserted': pum.current_word,
         \ }
+
+  if a:0 == 0
+    return info
+  endif
+
+  if type(a:1) != v:t_list
+    return info
+  endif
+
+  let ret = {}
+
+  for what in a:1
+    if has_key(info, what)
+      let ret[what] = info[what]
+    endif
+  endfor
+
+  return ret
 endfunction
 
 function! pum#skip_complete() abort

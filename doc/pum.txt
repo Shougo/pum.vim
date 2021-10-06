@@ -103,7 +103,7 @@ pum#close()
 		Close current popup menu.
 
 							*pum#complete_info()*
-pum#complete_info()
+pum#complete_info([{what}])
 		Returns |Dictionary| like |complete_info()|.
 
 							*pum#open()*

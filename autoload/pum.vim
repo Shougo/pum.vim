@@ -169,17 +169,23 @@ function! pum#open(startcol, items, ...) abort
     else
       let pum.id = popup_create(lines, winopts)
       let pum.buf = winbufnr(pum.id)
+    endif
 
-      " Add prop types
-      call prop_type_delete('pum_abbr')
+    " Add prop types
+    call prop_type_delete('pum_abbr')
+    if options.highlight_abbr !=# ''
       call prop_type_add('pum_abbr', {
             \ 'highlight': options.highlight_abbr,
             \ })
-      call prop_type_delete('pum_kind')
+    endif
+    call prop_type_delete('pum_kind')
+    if options.highlight_kind !=# ''
       call prop_type_add('pum_kind', {
             \ 'highlight': options.highlight_kind,
             \ })
-      call prop_type_delete('pum_menu')
+    endif
+    call prop_type_delete('pum_menu')
+    if options.highlight_menu !=# ''
       call prop_type_add('pum_menu', {
             \ 'highlight': options.highlight_menu,
             \ })
@@ -197,7 +203,7 @@ function! pum#open(startcol, items, ...) abort
 
   " Highlight
   for row in range(1, len(items))
-    if options.highlight_abbr !=# ''
+    if options.highlight_abbr !=# '' && max_abbr != 0
       call pum#_highlight(
             \ has('nvim') ? options.highlight_abbr : 'pum_abbr',
             \ s:namespace, row, 1, max_abbr + 1)

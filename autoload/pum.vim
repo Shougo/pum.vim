@@ -266,20 +266,13 @@ function! pum#complete_info(...) abort
         \ 'inserted': pum.current_word,
         \ }
 
-  if a:0 == 0
-    return info
-  endif
-
-  if type(a:1) != v:t_list
+  if a:0 == 0 || type(a:1) != v:t_list
     return info
   endif
 
   let ret = {}
-
-  for what in a:1
-    if has_key(info, what)
-      let ret[what] = info[what]
-    endif
+  for what in filter(copy(a:1), { _, val -> has_key(info, val) })
+    let ret[what] = info[what]
   endfor
 
   return ret

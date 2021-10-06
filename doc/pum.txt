@@ -105,6 +105,8 @@ pum#close()
 							*pum#complete_info()*
 pum#complete_info([{what}])
 		Returns |Dictionary| like |complete_info()|.
+		If {what} is supplied, then only the items listed in {what}
+		are returned.
 
 							*pum#open()*
 pum#open({startcol}, {items})

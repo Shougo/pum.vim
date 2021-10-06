@@ -194,6 +194,10 @@ function! s:setline(text) abort
     call feedkeys(chars, 'n')
   else
     " Note: ":undojoin" is needed to prevent undo breakage
-    undojoin | call setline('.', a:text)
+    let tree = undotree()
+    if tree.seq_cur == tree.seq_last
+      undojoin
+    endif
+    call setline('.', a:text)
   endif
 endfunction

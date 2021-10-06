@@ -4,20 +4,12 @@ endif
 
 function! pum#map#select_relative(delta) abort
   let pum = pum#_get()
-  if pum.buf <= 0
+  if pum.buf <= 0 || pum.id <= 0
     return ''
   endif
 
   " Clear current highlight
-  if has('nvim')
-    call nvim_buf_clear_namespace(
-          \ pum.buf, nvim_create_namespace('pum_cursor'), 0, -1)
-  else
-    call prop_remove({
-        \ 'type': 'pum_cursor',
-        \ 'bufnr': pum.buf,
-        \ })
-  endif
+  call clearmatches(pum.id)
 
   let pum.cursor += a:delta
   if pum.cursor > pum.len || pum.cursor == 0
@@ -33,21 +25,22 @@ function! pum#map#select_relative(delta) abort
     let pum.cursor = pum.len
   endif
 
-  call pum#_highlight(
-        \ has('nvim') ? pum#_options().highlight_selected : 'pum_cursor',
-        \ has('nvim') ? nvim_create_namespace('pum_cursor') : 100,
-        \ pum.cursor, 1, pum.width)
-
   silent doautocmd <nomodeline> User PumCompleteChanged
 
   " Move real cursor
   " Note: If up scroll, cursor must adjust...
+  " Note: Use matchaddpos() instead of nvim_buf_add_highlight() or prop_add()
+  " Because the highlight conflicts with other highlights
   if a:delta < 0
     call win_execute(pum.id,
-          \ 'call cursor(pum#_get().cursor, 0) | redraw')
+          \ 'call cursor(pum#_get().cursor, 0) | ' .
+          \ 'call matchaddpos(pum#_options().highlight_selected,
+          \                   [pum#_get().cursor]) | redraw')
   else
     call win_execute(pum.id,
-          \ 'call cursor(pum#_get().cursor + 1, 0) | redraw')
+          \ 'call cursor(pum#_get().cursor + 1, 0) | ' .
+          \ 'call matchaddpos(pum#_options().highlight_selected,
+          \                   [pum#_get().cursor]) | redraw')
   endif
 
   return ''

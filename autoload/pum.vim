@@ -165,10 +165,6 @@ function! pum#open(startcol, items) abort
       let pum.buf = winbufnr(pum.id)
 
       " Add prop types
-      call prop_type_delete('pum_cursor')
-      call prop_type_add('pum_cursor', {
-            \ 'highlight': options.highlight_selected,
-            \ })
       call prop_type_delete('pum_abbr')
       call prop_type_add('pum_abbr', {
             \ 'highlight': options.highlight_abbr,

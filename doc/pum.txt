@@ -58,6 +58,24 @@ border
 
 		Default: "none"
 
+					*pum-options-highlight_abbr*
+highlight_abbr
+		The abbr highlight of candidates.
+
+		Default: ""
+
+					*pum-options-highlight_kind*
+highlight_kind
+		The kind highlight of candidates.
+
+		Default: ""
+
+					*pum-options-highlight_menu*
+highlight_menu
+		The menu highlight of candidates.
+
+		Default: ""
+
 					*pum-options-highlight_selected*
 highlight_selected
 		The selected highlight of candidates.

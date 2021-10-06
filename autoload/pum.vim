@@ -190,25 +190,25 @@ function! pum#open(startcol, items) abort
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
 
   " Highlight
-  "for row in range(1, len(a:items))
-  "  if options.highlight_abbr !=# ''
-  "    call pum#_highlight(
-  "          \ has('nvim') ? options.highlight_abbr : 'pum_abbr',
-  "          \ -1, row, 1, max_abbr + 1)
-  "  endif
+  for row in range(1, len(a:items))
+    if options.highlight_abbr !=# ''
+      call pum#_highlight(
+            \ has('nvim') ? options.highlight_abbr : 'pum_abbr',
+            \ s:namespace, row, 1, max_abbr + 1)
+    endif
 
-  "  if options.highlight_kind !=# ''
-  "    call pum#_highlight(
-  "          \ has('nvim') ? options.highlight_kind : 'pum_kind',
-  "          \ -2, row, max_abbr + 2, max_kind + 1)
-  "  endif
+    if options.highlight_kind !=# '' && max_kind != 0
+      call pum#_highlight(
+            \ has('nvim') ? options.highlight_kind : 'pum_kind',
+            \ s:namespace, row, max_abbr + 2, max_kind + 1)
+    endif
 
-  "  if options.highlight_menu !=# ''
-  "    call pum#_highlight(
-  "          \ has('nvim') ? options.highlight_menu : 'pum_menu',
-  "          \ -3, row, max_abbr + max_kind + 3, max_menu)
-  "  endif
-  "endfor
+    if options.highlight_menu !=# '' && max_menu != 0
+      call pum#_highlight(
+            \ has('nvim') ? options.highlight_menu : 'pum_menu',
+            \ s:namespace, row, max_abbr + max_kind + 2, max_menu + 1)
+    endif
+  endfor
 
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)

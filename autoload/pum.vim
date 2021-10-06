@@ -63,19 +63,22 @@ function! pum#open(startcol, items, ...) abort
     return -1
   endif
 
-  let max_abbr = max(map(copy(a:items), { _, val ->
+  " Remove dup
+  let items = s:uniq_by_word_or_dup(a:items)
+
+  let max_abbr = max(map(copy(items), { _, val ->
         \ strwidth(get(val, 'abbr', val.word))
         \ }))
-  let max_kind = max(map(copy(a:items), { _, val ->
+  let max_kind = max(map(copy(items), { _, val ->
         \ strwidth(get(val, 'kind', ''))
         \ }))
-  let max_menu = max(map(copy(a:items), { _, val ->
+  let max_menu = max(map(copy(items), { _, val ->
         \ strwidth(get(val, 'menu', ''))
         \ }))
   let format = printf('%%s%s%%s%s%%s',
         \ (max_kind != 0 ? ' ' : ''),
         \ (max_menu != 0 ? ' ' : ''))
-  let lines = map(copy(a:items), { _, val -> printf(format,
+  let lines = map(copy(items), { _, val -> printf(format,
         \ get(val, 'abbr', val.word) . repeat(' ' ,
         \     max_abbr - strwidth(get(val, 'abbr', val.word))),
         \ get(val, 'kind', '') . repeat(' ' ,
@@ -98,7 +101,7 @@ function! pum#open(startcol, items, ...) abort
 
   let spos = screenpos(0, line('.'), a:startcol)
 
-  let height = len(a:items)
+  let height = len(items)
   if &pumheight > 0
     let height = min([height, &pumheight])
   else
@@ -186,14 +189,14 @@ function! pum#open(startcol, items, ...) abort
   let pum.cursor = 0
   let pum.height = height
   let pum.width = width
-  let pum.len = len(a:items)
-  let pum.items = copy(a:items)
+  let pum.len = len(items)
+  let pum.items = copy(items)
   let pum.startcol = a:startcol
   let pum.startrow = line('.')
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
 
   " Highlight
-  for row in range(1, len(a:items))
+  for row in range(1, len(items))
     if options.highlight_abbr !=# ''
       call pum#_highlight(
             \ has('nvim') ? options.highlight_abbr : 'pum_abbr',
@@ -328,3 +331,17 @@ function! s:normalize_key_or_dict(key_or_dict, value) abort
   endif
   return {}
 endfunction
+
+function! s:uniq_by_word_or_dup(items) abort
+  let ret = []
+  let seen = {}
+  for item in a:items
+    let key = item.word
+    if !has_key(seen, key) || get(item, 'dup', 0)
+      let seen[key] = v:true
+      call add(ret, item)
+    endif
+  endfor
+  return ret
+endfunction
+

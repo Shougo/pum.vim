@@ -50,16 +50,17 @@ function! pum#set_option(key_or_dict, ...) abort
   call extend(pum#_options(), dict)
 endfunction
 
-function! pum#open(startcol, items) abort
+function! pum#open(startcol, items, ...) abort
   if !has('patch-8.2.1978') && !has('nvim-0.6')
     call s:print_error(
           \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.6.0+.')
     return -1
   endif
 
-  if mode() !~# '[ic]'
+  let mode = get(a:000, 0, mode())
+  if mode !~# '[ic]'
     " Invalid mode
-    return
+    return -1
   endif
 
   let max_abbr = max(map(copy(a:items), { _, val ->
@@ -103,13 +104,13 @@ function! pum#open(startcol, items) abort
   else
     let height = min([height, &lines - 1])
   endif
-  if mode() !=# 'c'
+  if mode !=# 'c'
     " Adjust to screen row
     let height = min([height, &lines - spos.row - 3])
   endif
   let height = max([height, 1])
 
-  let pos = mode() ==# 'c' ?
+  let pos = mode ==# 'c' ?
         \ [&lines - height - 1, a:startcol] : [spos.row, spos.col - 1]
 
   if has('nvim')
@@ -224,7 +225,7 @@ function! pum#open(startcol, items) abort
 
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)
-  elseif mode() ==# 'c' && has('nvim')
+  elseif mode ==# 'c' && has('nvim')
     " Note: :redraw is needed for command line completion in neovim
     redraw
   endif

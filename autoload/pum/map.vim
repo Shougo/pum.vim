@@ -61,23 +61,32 @@ function! pum#map#insert_relative(delta) abort
   call s:insert_current_word(prev_word)
 
   " Call CompleteDone if user input
+  call s:check_user_input({ -> s:complete_done() })
+
+  return ''
+endfunction
+function! s:check_user_input(callback) abort
   augroup pum-temp
     autocmd!
   augroup END
 
+  let g:PumCallback = function(a:callback)
+
   if mode() ==# 'c'
     autocmd pum-temp CmdlineChanged *
-          \ call s:check_skip_count()
+          \ call s:check_skip_count(g:PumCallback)
+    autocmd pum-temp CmdlineLeave *
+          \ call s:reset_skip_complete()
   else
     autocmd pum-temp InsertCharPre * ++once
-          \ call s:complete_done()
+          \ call g:PumCallback()
     autocmd pum-temp TextChangedI *
           \ if line('.') != pum#_get().startrow | call pum#close() | endif
+    autocmd pum-temp InsertLeave *
+          \ call s:reset_skip_complete()
   endif
-
-  return ''
 endfunction
-function! s:check_skip_count() abort
+function! s:check_skip_count(callback) abort
   let s:skip_count -= 1
 
   if s:skip_count > 0
@@ -90,7 +99,7 @@ function! s:check_skip_count() abort
     autocmd!
   augroup END
 
-  call s:complete_done()
+  call call(a:callback, [])
 endfunction
 function! s:complete_done() abort
   let pum = pum#_get()
@@ -99,9 +108,14 @@ function! s:complete_done() abort
     return
   endif
 
+  call s:reset_skip_complete()
+
   let g:pum#completed_item = pum.items[pum.cursor - 1]
-  let pum.skip_complete = v:false
   silent doautocmd <nomodeline> User PumCompleteDone
+endfunction
+function! s:reset_skip_complete() abort
+  let pum = pum#_get()
+  let pum.skip_complete = v:false
 endfunction
 
 function! pum#map#confirm() abort
@@ -115,6 +129,9 @@ function! pum#map#confirm() abort
 
   call s:complete_done()
 
+  let pum.skip_complete = v:true
+  call s:check_user_input({ -> s:reset_skip_complete() })
+
   return ''
 endfunction
 
@@ -125,6 +142,10 @@ function! pum#map#cancel() abort
     call s:insert(pum.orig_input, pum.current_word)
   endif
   call pum#close()
+
+  let pum.skip_complete = v:true
+  call s:check_user_input({ -> s:reset_skip_complete() })
+
   return ''
 endfunction
 

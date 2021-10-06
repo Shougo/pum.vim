@@ -108,6 +108,17 @@ pum#complete_info([{what}])
 		If {what} is supplied, then only the items listed in {what}
 		are returned.
 
+							*pum#get_pos()*
+pum#get_pos()
+		Returns like |pum_getpos()| result.
+
+			height		window height
+			width		window width
+			row		screen position row (0 origin)
+			col		screen position col (0 origin)
+			size		total number of items
+			scrollbar	v:false
+
 							*pum#open()*
 pum#open({startcol}, {items})
 		Open popup menu like |complete()|.

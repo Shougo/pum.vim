@@ -259,6 +259,7 @@ endfunction
 function! pum#visible() abort
   return pum#_get().id > 0
 endfunction
+
 function! pum#complete_info(...) abort
   let pum = pum#_get()
   let info =  {
@@ -279,6 +280,22 @@ function! pum#complete_info(...) abort
   endfor
 
   return ret
+endfunction
+
+function! pum#get_pos() abort
+  if !pum#visible()
+    return {}
+  endif
+
+  let pum = pum#_get()
+  return {
+        \ 'height': pum.height,
+        \ 'width': pum.width,
+        \ 'row': pum.pos[0],
+        \ 'col': pum.pos[1],
+        \ 'size': pum.len,
+        \ 'scrollbar': v:false,
+        \ }
 endfunction
 
 function! pum#skip_complete() abort

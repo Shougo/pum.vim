@@ -78,8 +78,8 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp CmdlineLeave *
           \ call s:reset_skip_complete()
   else
-    autocmd pum-temp InsertCharPre * ++once
-          \ call g:PumCallback()
+    autocmd pum-temp InsertCharPre *
+          \ call s:check_skip_count(g:PumCallback)
     autocmd pum-temp TextChangedI *
           \ if line('.') != pum#_get().startrow | call pum#close() | endif
     autocmd pum-temp InsertLeave *
@@ -89,6 +89,8 @@ endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1
 
+  echomsg s:skip_count
+  echomsg v:char
   if s:skip_count > 0
     return
   endif
@@ -157,10 +159,15 @@ function! s:insert(word, prev_word) abort
   let prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
   let next_input = pum#_getline()[startcol :][len(a:prev_word):]
 
-  call s:setline(prev_input . a:word . next_input)
-  call s:cursor(pum.startcol + len(a:word))
+  if mode() ==# 'c'
+    call s:setline(prev_input . a:word . next_input)
+    call s:cursor(pum.startcol + len(a:word))
+  else
+    call s:insertline(pum.orig_input, a:word)
+  endif
 
   let pum.current_word = a:word
+  let pum.orig_input = a:word
 
   " Note: The text changes fires TextChanged events.  It must be ignored.
   let pum.skip_complete = v:true
@@ -198,6 +205,16 @@ function! s:setline(text) abort
     if tree.seq_cur == tree.seq_last
       undojoin
     endif
-    call setline('.', a:text)
+    call feedkeys(a:text, 'n')
   endif
+endfunction
+function! s:insertline(orig_input, text) abort
+  " Note: ":undojoin" is needed to prevent undo breakage
+  let tree = undotree()
+  if tree.seq_cur == tree.seq_last
+    undojoin
+  endif
+  let chars = repeat("\<C-h>", strchars(a:orig_input)) . a:text
+  let s:skip_count = strchars(a:text) + 1
+  call feedkeys(chars, 'n')
 endfunction

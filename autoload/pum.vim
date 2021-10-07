@@ -98,6 +98,9 @@ function! pum#open(startcol, items, ...) abort
   if max_menu != 0
     let width += 1
   endif
+  if &pumwidth > 0
+    let width = max([width, &pumwidth])
+  endif
 
   let spos = screenpos(0, line('.'), a:startcol)
 

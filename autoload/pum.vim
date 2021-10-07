@@ -51,9 +51,9 @@ function! pum#set_option(key_or_dict, ...) abort
 endfunction
 
 function! pum#open(startcol, items, ...) abort
-  if !has('patch-8.2.1978') && !has('nvim-0.6')
+  if !has('patch-8.2.1978') && !has('nvim-0.5')
     call s:print_error(
-          \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.6.0+.')
+          \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.5.0+.')
     return -1
   endif
 

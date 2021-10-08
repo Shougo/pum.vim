@@ -1,4 +1,5 @@
 let s:pum_cursor_id = 50
+let s:skip_count = -1
 
 function! pum#map#select_relative(delta) abort
   let pum = pum#_get()
@@ -55,6 +56,7 @@ function! pum#map#insert_relative(delta) abort
 
   call pum#map#select_relative(a:delta)
   if pum.cursor < 0 || pum.id <= 0
+    let pum.current_word = ''
     return ''
   endif
 
@@ -131,7 +133,6 @@ function! pum#map#confirm() abort
 
   " Skip completion until next input
   let pum.skip_complete = v:true
-  let s:skip_count = 1
   call s:check_user_input({ -> s:reset_skip_complete() })
 
   return ''
@@ -147,7 +148,6 @@ function! pum#map#cancel() abort
 
   " Skip completion until next input
   let pum.skip_complete = v:true
-  let s:skip_count = 1
   call s:check_user_input({ -> s:reset_skip_complete() })
 
   return ''
@@ -165,11 +165,12 @@ function! s:insert(word, prev_word) abort
     call s:setline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
   else
-    call s:insertline(pum.orig_input, a:word)
+    let current_word = (pum.current_word == '') ?
+          \ pum.orig_input : pum.current_word
+    call s:insertline(current_word, a:word)
   endif
 
   let pum.current_word = a:word
-  let pum.orig_input = a:word
 
   " Note: The text changes fires TextChanged events.  It must be ignored.
   let pum.skip_complete = v:true
@@ -210,13 +211,13 @@ function! s:setline(text) abort
     call feedkeys(a:text, 'n')
   endif
 endfunction
-function! s:insertline(orig_input, text) abort
+function! s:insertline(current_word, text) abort
   " Note: ":undojoin" is needed to prevent undo breakage
   let tree = undotree()
   if tree.seq_cur == tree.seq_last
     undojoin
   endif
-  let chars = repeat("\<C-h>", strchars(a:orig_input)) . a:text
+  let chars = repeat("\<C-h>", strchars(a:current_word)) . a:text
   let s:skip_count = strchars(a:text) + 1
   call feedkeys(chars, 'n')
 endfunction

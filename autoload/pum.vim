@@ -269,6 +269,14 @@ function! s:open(startcol, items, mode) abort
 endfunction
 
 function! pum#close() abort
+  try
+    return s:close()
+  catch /E523:/
+    " Ignore "Not allowed here"
+    return -1
+  endtry
+endfunction
+function! s:close() abort
   let pum = pum#_get()
 
   if pum.id <= 0
@@ -277,9 +285,9 @@ function! pum#close() abort
 
   " Note: popup may be already closed
   if has('nvim')
-    silent! call nvim_win_close(pum.id, v:true)
+    call nvim_win_close(pum.id, v:true)
   else
-    silent! call popup_close(pum.id)
+    call popup_close(pum.id)
   endif
 
   let pum.current_word = ''

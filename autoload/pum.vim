@@ -119,7 +119,15 @@ function! s:open(startcol, items, mode) abort
   endif
   if a:mode !=# 'c'
     " Adjust to screen row
-    let height = min([height, &lines - spos.row - 3])
+    let padding = options.border !=# 'none' ? 3 : 1
+    let minheight = min([height, &lines - spos.row - padding])
+    if minheight >= height
+      " Use below window
+      let height = minheight
+    else
+      " Use above window
+      let spos.row = spos.row - height - padding
+    endif
   endif
   let height = max([height, 1])
 

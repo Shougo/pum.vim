@@ -89,8 +89,6 @@ endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1
 
-  echomsg s:skip_count
-  echomsg v:char
   if s:skip_count > 0
     return
   endif
@@ -131,7 +129,9 @@ function! pum#map#confirm() abort
 
   call s:complete_done()
 
+  " Skip completion until next input
   let pum.skip_complete = v:true
+  let s:skip_count = 1
   call s:check_user_input({ -> s:reset_skip_complete() })
 
   return ''
@@ -145,7 +145,9 @@ function! pum#map#cancel() abort
   endif
   call pum#close()
 
+  " Skip completion until next input
   let pum.skip_complete = v:true
+  let s:skip_count = 1
   call s:check_user_input({ -> s:reset_skip_complete() })
 
   return ''

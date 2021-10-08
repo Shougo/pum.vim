@@ -49,6 +49,7 @@ g:pum#completed_item
 OPTIONS	 						*pum-options*
 
 Options can be toggled through the use of |pum#set_option()|.
+Note: The options must be set before call of |pum#open()|.
 
 					*pum-options-border*
 border

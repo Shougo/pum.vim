@@ -57,8 +57,15 @@ function! pum#open(startcol, items, ...) abort
     return -1
   endif
 
-  let mode = get(a:000, 0, mode())
-  if mode !~# '[ic]'
+  try
+    return s:open(a:startcol, a:items, get(a:000, 0, mode()))
+  catch /E523:/
+    " Ignore "Not allowed here"
+    return -1
+  endtry
+endfunction
+function! s:open(startcol, items, mode) abort
+  if a:mode !~# '[ic]'
     " Invalid mode
     return -1
   endif
@@ -110,13 +117,13 @@ function! pum#open(startcol, items, ...) abort
   else
     let height = min([height, &lines - 1])
   endif
-  if mode !=# 'c'
+  if a:mode !=# 'c'
     " Adjust to screen row
     let height = min([height, &lines - spos.row - 3])
   endif
   let height = max([height, 1])
 
-  let pos = mode ==# 'c' ?
+  let pos = a:mode ==# 'c' ?
         \ [&lines - height - 1, a:startcol] : [spos.row, spos.col - 1]
 
   if has('nvim')
@@ -124,34 +131,43 @@ function! pum#open(startcol, items, ...) abort
       let pum.buf = nvim_create_buf(v:false, v:true)
     endif
     call nvim_buf_set_lines(pum.buf, 0, -1, v:true, lines)
-    if pos == pum.pos && pum.id > 0
-      " Resize window
-      call nvim_win_set_width(pum.id, width)
-      call nvim_win_set_height(pum.id, height)
+
+    let winopts = {
+          \ 'border': options.border,
+          \ 'relative': 'editor',
+          \ 'width': width,
+          \ 'height': height,
+          \ 'col': pos[1],
+          \ 'row': pos[0],
+          \ 'anchor': 'NW',
+          \ 'style': 'minimal',
+          \ }
+
+    if pum.id > 0
+      if pos == pum.pos
+        " Resize window
+        call nvim_win_set_width(pum.id, width)
+        call nvim_win_set_height(pum.id, height)
+      else
+        " Reuse window
+        call nvim_win_set_config(pum.id, winopts)
+      endif
     else
       call pum#close()
 
+      " Note: It cannot set in nvim_win_set_config()
+      let winopts.noautocmd = v:true
+
       " Create new window
-      let winopts = {
-            \ 'border': options.border,
-            \ 'relative': 'editor',
-            \ 'width': width,
-            \ 'height': height,
-            \ 'col': pos[1],
-            \ 'row': pos[0],
-            \ 'anchor': 'NW',
-            \ 'style': 'minimal',
-            \ 'noautocmd': v:true,
-            \ }
       let id = nvim_open_win(pum.buf, v:false, winopts)
 
       " Disable 'hlsearch' highlight
       call nvim_win_set_option(id, 'winhighlight', 'Search:None')
       call nvim_win_set_option(id, 'winblend', options.winblend)
-
       let pum.id = id
-      let pum.pos = pos
     endif
+
+    let pum.pos = pos
   else
     let winopts = {
           \ 'pos': 'topleft',
@@ -237,9 +253,16 @@ function! pum#open(startcol, items, ...) abort
 
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)
-  elseif mode ==# 'c' && has('nvim')
+  elseif a:mode ==# 'c' && has('nvim')
     " Note: :redraw is needed for command line completion in neovim
     redraw
+  endif
+
+  " Close popup automatically
+  if a:mode ==# 'i'
+    autocmd InsertLeave * ++once call pum#close()
+  elseif a:mode ==# 'c'
+    autocmd CmdlineLeave * ++once call pum#close()
   endif
 
   return pum.id

@@ -6,6 +6,10 @@ let s:pum_matched_id = 70
 function! pum#_get() abort
   if !exists('s:pum')
     call pum#_init()
+
+    augroup pum
+      autocmd!
+    augroup END
   endif
   return s:pum
 endfunction
@@ -231,25 +235,7 @@ function! s:open(startcol, items, mode) abort
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
 
   " Highlight
-  for row in range(1, len(items))
-    if options.highlight_abbr !=# '' && max_abbr != 0
-      call pum#_highlight(
-            \ has('nvim') ? options.highlight_abbr : 'pum_abbr',
-            \ s:namespace, row, 1, max_abbr + 1)
-    endif
-
-    if options.highlight_kind !=# '' && max_kind != 0
-      call pum#_highlight(
-            \ has('nvim') ? options.highlight_kind : 'pum_kind',
-            \ s:namespace, row, max_abbr + 2, max_kind + 1)
-    endif
-
-    if options.highlight_menu !=# '' && max_menu != 0
-      call pum#_highlight(
-            \ has('nvim') ? options.highlight_menu : 'pum_menu',
-            \ s:namespace, row, max_abbr + max_kind + 2, max_menu + 1)
-    endif
-  endfor
+  call s:highlight_items(items, max_abbr, max_kind, max_menu)
 
   " Highlight matches
   silent! call matchdelete(s:pum_matched_id, pum.id)
@@ -270,9 +256,9 @@ function! s:open(startcol, items, mode) abort
 
   " Close popup automatically
   if a:mode ==# 'i'
-    autocmd InsertLeave * ++once call pum#close()
+    autocmd pum InsertLeave * ++once call pum#close()
   elseif a:mode ==# 'c'
-    autocmd WinEnter,CmdlineLeave * ++once call pum#close()
+    autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()
   endif
 
   return pum.id
@@ -381,6 +367,40 @@ function! pum#_highlight(highlight_or_prop_type, id, row, col, length) abort
   endif
 endfunction
 
+function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
+  let pum = pum#_get()
+  let options = pum#_options()
+
+  let start_abbr = 1
+  let end_abbr = a:max_abbr + 1
+  let start_kind = start_abbr + end_abbr
+  let end_kind = a:max_kind + 1
+  let start_menu = (a:max_kind != 0) ?
+        \ start_kind + end_kind : start_abbr + end_abbr
+  let end_menu = a:max_menu + 1
+  for row in range(1, len(a:items))
+    let item = a:items[row - 1]
+
+    if options.highlight_abbr !=# '' && a:max_abbr != 0
+      call pum#_highlight(
+            \ has('nvim') ? options.highlight_abbr : 'pum_abbr',
+            \ s:namespace, row, start_abbr, end_abbr)
+    endif
+
+    if options.highlight_kind !=# '' && a:max_kind != 0
+      call pum#_highlight(
+            \ has('nvim') ? options.highlight_kind : 'pum_kind',
+            \ s:namespace, row, start_kind, end_kind)
+    endif
+
+    if options.highlight_menu !=# '' && a:max_menu != 0
+      call pum#_highlight(
+            \ has('nvim') ? options.highlight_menu : 'pum_menu',
+            \ s:namespace, row, start_menu, end_menu)
+    endif
+  endfor
+endfunction
+
 function! s:print_error(string) abort
   echohl Error
   echomsg printf('[pum] %s', type(a:string) ==# v:t_string ?
@@ -411,4 +431,3 @@ function! s:uniq_by_word_or_dup(items) abort
   endfor
   return ret
 endfunction
-

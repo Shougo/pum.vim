@@ -165,7 +165,7 @@ function! s:insert(word, prev_word) abort
     call s:setline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
   else
-    let current_word = (pum.current_word == '') ?
+    let current_word = (pum.current_word ==# '') ?
           \ pum.orig_input : pum.current_word
     call s:insertline(current_word, a:word)
   endif

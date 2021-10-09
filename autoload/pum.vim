@@ -65,7 +65,7 @@ function! pum#open(startcol, items, ...) abort
   endtry
 endfunction
 function! s:open(startcol, items, mode) abort
-  if a:mode !~# '[ic]'
+  if a:mode !~# '[ic]' || bufname('%') ==# '[Command Line]'
     " Invalid mode
     return -1
   endif

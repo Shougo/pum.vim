@@ -367,6 +367,11 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
   let start_menu = (a:max_kind != 0) ?
         \ start_kind + end_kind : start_abbr + end_abbr
   let end_menu = a:max_menu + 1
+
+  let highlight_abbr = options.highlight_abbr !=# '' && a:max_abbr != 0
+  let highlight_kind = options.highlight_kind !=# '' && a:max_kind != 0
+  let highlight_menu = options.highlight_menu !=# '' && a:max_menu != 0
+
   for row in range(1, len(a:items))
     let item = a:items[row - 1]
 
@@ -382,19 +387,19 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
     endif
 
     " Default highlights
-    if options.highlight_abbr !=# '' && a:max_abbr != 0
+    if highlight_abbr
       call pum#_highlight(
             \ options.highlight_abbr, 'pum_abbr',
             \ s:namespace, row, start_abbr, end_abbr)
     endif
 
-    if options.highlight_kind !=# '' && a:max_kind != 0
+    if highlight_kind
       call pum#_highlight(
             \ options.highlight_kind, 'pum_kind',
             \ s:namespace, row, start_kind, end_kind)
     endif
 
-    if options.highlight_menu !=# '' && a:max_menu != 0
+    if highlight_menu
       call pum#_highlight(
             \ options.highlight_menu, 'pum_menu',
             \ s:namespace, row, start_menu, end_menu)

@@ -123,7 +123,7 @@ function! s:open(startcol, items, mode) abort
   endif
   if a:mode !=# 'c'
     " Adjust to screen row
-    let padding = options.border !=# 'none' ? 3 : 1
+    let padding = options.border !=# 'none' && has('nvim') ? 3 : 1
     let minheight_below = min([height, &lines - spos.row - padding])
     let minheight_above = min([height, spos.row - padding])
     if minheight_below >= minheight_above
@@ -190,11 +190,6 @@ function! s:open(startcol, items, mode) abort
           \ 'maxwidth': width,
           \ 'maxheight': height,
           \ }
-    if options.border !=# 'none'
-      " Set border
-      let winopts.border = []
-      let winopts.maxheight -= 2
-    endif
 
     if pum.id > 0
       call popup_move(pum.id, winopts)
@@ -260,9 +255,13 @@ function! s:close() abort
   endif
 
   " Note: popup may be already closed
+  " Close popup and clear highlights
   if has('nvim')
     call nvim_win_close(pum.id, v:true)
+    call nvim_buf_clear_namespace(pum.buf, s:namespace, 1, -1)
   else
+    " Note: prop_remove() is not needed.
+    " popup_close() removes the buffer.
     call popup_close(pum.id)
   endif
 
@@ -325,7 +324,7 @@ function! s:col() abort
   return mode() ==# 'c' ? getcmdpos() : col('.')
 endfunction
 
-function! pum#_highlight(highlight, prop_type, id, row, col, length) abort
+function! pum#_highlight(highlight, prop_type, priority, id, row, col, length) abort
   let pum = pum#_get()
 
   if !has('nvim')
@@ -333,6 +332,7 @@ function! pum#_highlight(highlight, prop_type, id, row, col, length) abort
     if empty(prop_type_get(a:prop_type))
       call prop_type_add(a:prop_type, {
             \ 'highlight': a:highlight,
+            \ 'priority': a:priority,
             \ })
     endif
   endif
@@ -376,19 +376,19 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
     " Default highlights
     if highlight_abbr
       call pum#_highlight(
-            \ options.highlight_abbr, 'pum_abbr',
+            \ options.highlight_abbr, 'pum_abbr', 0,
             \ s:namespace, row, start_abbr, end_abbr)
     endif
 
     if highlight_kind
       call pum#_highlight(
-            \ options.highlight_kind, 'pum_kind',
+            \ options.highlight_kind, 'pum_kind', 0,
             \ s:namespace, row, start_kind, end_kind)
     endif
 
     if highlight_menu
       call pum#_highlight(
-            \ options.highlight_menu, 'pum_menu',
+            \ options.highlight_menu, 'pum_menu', 0,
             \ s:namespace, row, start_menu, end_menu)
     endif
 
@@ -399,7 +399,7 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
         let start = hl.type ==# 'abbr' ? start_abbr :
               \ hl.type ==# 'kind' ? start_kind : start_menu
         call pum#_highlight(
-              \ hl.hl_group, hl.name,
+              \ hl.hl_group, hl.name, 1,
               \ s:namespace, row, start + hl.col, hl.width)
       endfor
     endif

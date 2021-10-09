@@ -55,7 +55,8 @@ Note: The options must be set before call of |pum#open()|.
 border
 		The completion window border.  You can specify border
 		|nvim_open_win()| border option.
-		If it is not "none" in Vim, the default border is used.
+		Note: neovim only feature.  Vim's border feature is not
+		stable.
 
 		Default: "none"
 

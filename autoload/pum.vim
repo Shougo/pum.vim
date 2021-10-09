@@ -217,7 +217,7 @@ function! s:open(startcol, items, mode) abort
   " Highlight
   call s:highlight_items(items, max_abbr, max_kind, max_menu)
 
-  " Highlight matches
+  " Simple highlight matches
   silent! call matchdelete(s:pum_matched_id, pum.id)
   if options.highlight_matches !=# ''
     let pattern = substitute(escape(pum.orig_input, '~"*\.^$[]'),
@@ -373,9 +373,11 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
     if !empty(get(item, 'highlights', []))
       " Use custom highlights instead
       for hl in item.highlights
+        let start = hl.type ==# 'abbr' ? start_abbr :
+              \ hl.type ==# 'kind' ? start_kind : start_menu
         call pum#_highlight(
-              \ has('nvim') ? hl.hl_group : hl.name,
-              \ s:namespace, row, hl.col, hl.end_col)
+              \ hl.hl_group, hl.name,
+              \ s:namespace, row, start + hl.col, hl.width)
       endfor
     else
       " Use default highlights

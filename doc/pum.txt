@@ -127,6 +127,17 @@ pum#open({startcol}, {items})
 		text start.
 		{items} must be a |List|.  See |complete-items| for the kind
 		of items.
+
+			highlights:  Custom highlights.
+				type: "abbr" or "kind" or "menu"
+				name : highlight name.  It is used for
+					|prop_type_add()| in Vim.
+				hl_group: highlight group
+				col : start column (0 origin)
+				width : end column width
+			Note: It disables pum.vim default highlights.
+			Note: It is experimental feature.
+
 		Note: If 'completeopt' contains "noinsert", the first item is
 		selected automatically, but it increases screen flicker.
 

@@ -375,7 +375,7 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
   for row in range(1, len(a:items))
     let item = a:items[row - 1]
 
-    if empty(get(item, 'highlights', []))
+    if !empty(get(item, 'highlights', []))
       " Use custom highlights
       for hl in item.highlights
         let start = hl.type ==# 'abbr' ? start_abbr :

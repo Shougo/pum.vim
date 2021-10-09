@@ -370,8 +370,8 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
   for row in range(1, len(a:items))
     let item = a:items[row - 1]
 
-    if !empty(get(item, 'highlights', []))
-      " Use custom highlights instead
+    if empty(get(item, 'highlights', []))
+      " Use custom highlights
       for hl in item.highlights
         let start = hl.type ==# 'abbr' ? start_abbr :
               \ hl.type ==# 'kind' ? start_kind : start_menu
@@ -379,25 +379,25 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
               \ hl.hl_group, hl.name,
               \ s:namespace, row, start + hl.col, hl.width)
       endfor
-    else
-      " Use default highlights
-      if options.highlight_abbr !=# '' && a:max_abbr != 0
-        call pum#_highlight(
-              \ options.highlight_abbr, 'pum_abbr',
-              \ s:namespace, row, start_abbr, end_abbr)
-      endif
+    endif
 
-      if options.highlight_kind !=# '' && a:max_kind != 0
-        call pum#_highlight(
-              \ options.highlight_kind, 'pum_kind',
-              \ s:namespace, row, start_kind, end_kind)
-      endif
+    " Default highlights
+    if options.highlight_abbr !=# '' && a:max_abbr != 0
+      call pum#_highlight(
+            \ options.highlight_abbr, 'pum_abbr',
+            \ s:namespace, row, start_abbr, end_abbr)
+    endif
 
-      if options.highlight_menu !=# '' && a:max_menu != 0
-        call pum#_highlight(
-              \ options.highlight_menu, 'pum_menu',
-              \ s:namespace, row, start_menu, end_menu)
-      endif
+    if options.highlight_kind !=# '' && a:max_kind != 0
+      call pum#_highlight(
+            \ options.highlight_kind, 'pum_kind',
+            \ s:namespace, row, start_kind, end_kind)
+    endif
+
+    if options.highlight_menu !=# '' && a:max_menu != 0
+      call pum#_highlight(
+            \ options.highlight_menu, 'pum_menu',
+            \ s:namespace, row, start_menu, end_menu)
     endif
   endfor
 endfunction

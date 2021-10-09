@@ -272,7 +272,7 @@ function! s:open(startcol, items, mode) abort
   if a:mode ==# 'i'
     autocmd InsertLeave * ++once call pum#close()
   elseif a:mode ==# 'c'
-    autocmd CmdlineLeave * ++once call pum#close()
+    autocmd WinEnter,CmdlineLeave * ++once call pum#close()
   endif
 
   return pum.id
@@ -281,7 +281,7 @@ endfunction
 function! pum#close() abort
   try
     return s:close()
-  catch /E523:/
+  catch /E523:\|E5555:/
     " Ignore "Not allowed here"
     return -1
   endtry

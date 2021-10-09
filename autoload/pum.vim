@@ -203,26 +203,6 @@ function! s:open(startcol, items, mode) abort
       let pum.id = popup_create(lines, winopts)
       let pum.buf = winbufnr(pum.id)
     endif
-
-    " Add prop types
-    call prop_type_delete('pum_abbr')
-    if options.highlight_abbr !=# ''
-      call prop_type_add('pum_abbr', {
-            \ 'highlight': options.highlight_abbr,
-            \ })
-    endif
-    call prop_type_delete('pum_kind')
-    if options.highlight_kind !=# ''
-      call prop_type_add('pum_kind', {
-            \ 'highlight': options.highlight_kind,
-            \ })
-    endif
-    call prop_type_delete('pum_menu')
-    if options.highlight_menu !=# ''
-      call prop_type_add('pum_menu', {
-            \ 'highlight': options.highlight_menu,
-            \ })
-    endif
   endif
 
   let pum.cursor = 0
@@ -345,14 +325,23 @@ function! s:col() abort
   return mode() ==# 'c' ? getcmdpos() : col('.')
 endfunction
 
-function! pum#_highlight(highlight_or_prop_type, id, row, col, length) abort
+function! pum#_highlight(highlight, prop_type, id, row, col, length) abort
   let pum = pum#_get()
+
+  if !has('nvim')
+    " Add prop_type
+    if empty(prop_type_get(a:prop_type))
+      call prop_type_add(a:prop_type, {
+            \ 'highlight': a:highlight,
+            \ })
+    endif
+  endif
 
   if has('nvim')
     call nvim_buf_add_highlight(
           \ pum.buf,
           \ a:id,
-          \ a:highlight_or_prop_type,
+          \ a:highlight,
           \ a:row - 1,
           \ a:col - 1,
           \ a:col - 1 + a:length
@@ -360,7 +349,7 @@ function! pum#_highlight(highlight_or_prop_type, id, row, col, length) abort
   else
     call prop_add(a:row, a:col, {
           \ 'length': a:length,
-          \ 'type': a:highlight_or_prop_type,
+          \ 'type': a:prop_type,
           \ 'bufnr': pum.buf,
           \ 'id': a:id,
           \ })
@@ -381,22 +370,32 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
   for row in range(1, len(a:items))
     let item = a:items[row - 1]
 
-    if options.highlight_abbr !=# '' && a:max_abbr != 0
-      call pum#_highlight(
-            \ has('nvim') ? options.highlight_abbr : 'pum_abbr',
-            \ s:namespace, row, start_abbr, end_abbr)
-    endif
+    if !empty(get(item, 'highlights', []))
+      " Use custom highlights instead
+      for hl in item.highlights
+        call pum#_highlight(
+              \ has('nvim') ? hl.hl_group : hl.name,
+              \ s:namespace, row, hl.col, hl.end_col)
+      endfor
+    else
+      " Use default highlights
+      if options.highlight_abbr !=# '' && a:max_abbr != 0
+        call pum#_highlight(
+              \ options.highlight_abbr, 'pum_abbr',
+              \ s:namespace, row, start_abbr, end_abbr)
+      endif
 
-    if options.highlight_kind !=# '' && a:max_kind != 0
-      call pum#_highlight(
-            \ has('nvim') ? options.highlight_kind : 'pum_kind',
-            \ s:namespace, row, start_kind, end_kind)
-    endif
+      if options.highlight_kind !=# '' && a:max_kind != 0
+        call pum#_highlight(
+              \ options.highlight_kind, 'pum_kind',
+              \ s:namespace, row, start_kind, end_kind)
+      endif
 
-    if options.highlight_menu !=# '' && a:max_menu != 0
-      call pum#_highlight(
-            \ has('nvim') ? options.highlight_menu : 'pum_menu',
-            \ s:namespace, row, start_menu, end_menu)
+      if options.highlight_menu !=# '' && a:max_menu != 0
+        call pum#_highlight(
+              \ options.highlight_menu, 'pum_menu',
+              \ s:namespace, row, start_menu, end_menu)
+      endif
     endif
   endfor
 endfunction

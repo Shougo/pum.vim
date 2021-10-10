@@ -207,7 +207,7 @@ function! s:open(startcol, items, mode) abort
   let pum.len = len(items)
   let pum.items = copy(items)
   let pum.startcol = a:startcol
-  let pum.startrow = line('.')
+  let pum.startrow = spos.row
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
 
   " Highlight

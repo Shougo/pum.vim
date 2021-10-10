@@ -60,6 +60,11 @@ function! pum#open(startcol, items, ...) abort
     return -1
   endif
 
+  if empty(a:items)
+    call pum#close()
+    return
+  endif
+
   try
     return s:open(a:startcol, a:items, get(a:000, 0, mode()))
   catch /E523:/

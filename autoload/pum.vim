@@ -331,7 +331,7 @@ function! s:col() abort
   let col = mode() ==# 't' && !has('nvim') ?
         \ term_getcursor(bufnr('%'))[1] :
         \ mode() ==# 'c' ? getcmdpos() :
-        \ mode() ==# 't' ? col('.') + 1 : col('.')
+        \ mode() ==# 't' ? col('.') : col('.')
   return col
 endfunction
 

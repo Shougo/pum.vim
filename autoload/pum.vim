@@ -68,7 +68,7 @@ function! pum#open(startcol, items, ...) abort
   endtry
 endfunction
 function! s:open(startcol, items, mode) abort
-  if a:mode !~# '[ic]' || bufname('%') ==# '[Command Line]'
+  if a:mode !~# '[ict]' || bufname('%') ==# '[Command Line]'
     " Invalid mode
     return -1
   endif
@@ -221,7 +221,9 @@ function! s:open(startcol, items, mode) abort
   endif
 
   " Close popup automatically
-  if a:mode ==# 'i'
+  if exists('##ModeChanged')
+    autocmd pum ModeChanged * ++once call pum#close()
+  elseif a:mode ==# 'i'
     autocmd pum InsertLeave * ++once call pum#close()
   elseif a:mode ==# 'c'
     autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()

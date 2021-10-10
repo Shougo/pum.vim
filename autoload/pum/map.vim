@@ -222,6 +222,10 @@ function! s:setline(text) abort
   endif
 endfunction
 function! s:insertline(current_word, text) abort
+  if a:current_word ==# a:text
+    return
+  endif
+
   " Note: ":undojoin" is needed to prevent undo breakage
   let tree = undotree()
   if tree.seq_cur == tree.seq_last

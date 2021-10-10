@@ -110,6 +110,10 @@ function! pum#map#insert_relative_page(delta) abort
   return ''
 endfunction
 
+function! pum#map#_skip_count() abort
+  return s:skip_count
+endfunction
+
 function! s:insert(word, prev_word) abort
   let pum = pum#_get()
 
@@ -153,6 +157,9 @@ function! s:check_user_input(callback) abort
           \ call s:check_skip_count(g:PumCallback)
     autocmd pum-temp CmdlineLeave *
           \ call s:reset_skip_complete()
+  elseif mode() ==# 't'
+    autocmd pum-temp User PumTextChanged
+          \ call s:check_skip_count(g:PumCallback)
   else
     autocmd pum-temp InsertCharPre *
           \ call s:check_skip_count(g:PumCallback)

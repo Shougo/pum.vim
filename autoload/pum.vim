@@ -88,14 +88,9 @@ function! s:open(startcol, items, mode) abort
   let format = printf('%%s%s%%s%s%%s',
         \ (max_kind != 0 ? ' ' : ''),
         \ (max_menu != 0 ? ' ' : ''))
-  let lines = map(copy(items), { _, val -> printf(format,
-        \ get(val, 'abbr', val.word) . repeat(' ' ,
-        \     max_abbr - strwidth(get(val, 'abbr', val.word))),
-        \ get(val, 'kind', '') . repeat(' ' ,
-        \     max_kind - strwidth(get(val, 'kind', ''))),
-        \ get(val, 'menu', '') . repeat(' ' ,
-        \     max_menu - strwidth(get(val, 'menu', '')))
-        \ )})
+  let lines = map(copy(items), { _, val ->
+        \ s:format_item(format, val, max_abbr, max_kind, max_menu)
+        \ })
 
   let pum = pum#_get()
   let options = pum#_options()
@@ -400,6 +395,17 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
       endfor
     endif
   endfor
+endfunction
+
+function! s:format_item(format, item, max_abbr, max_kind, max_menu) abort
+  let abbr = substitute(get(a:item, 'abbr', a:item.word),
+        \ '[[:cntrl:]]', '?', 'g')
+  let abbr .= repeat(' ' , a:max_abbr - strwidth(abbr))
+  let kind = get(a:item, 'kind', '')
+  let kind .= repeat(' ' , a:max_kind - strwidth(kind))
+  let menu = get(a:item, 'menu', '')
+  let menu .= repeat(' ' , a:max_menu - strwidth(menu))
+  return printf(a:format, abbr, kind, menu)
 endfunction
 
 function! s:print_error(string) abort

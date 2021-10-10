@@ -171,9 +171,21 @@ pum#map#insert_relative({number})
 		Move forward or backward {number} and insert the candidate.
 		Note: It must not be called in |:map-<expr>|.
 
+					*pum#map#insert_relative_page()*
+pum#map#insert_relative_page({number})
+		Move forward or backward "{number} * page height" and insert
+		the candidate.
+		Note: It must not be called in |:map-<expr>|.
+
 						*pum#map#select_relative()*
 pum#map#select_relative()
 		Move forward or backward {number} and select the candidate.
+		Note: It must not be called in |:map-<expr>|.
+
+					*pum#map#select_relative_page()*
+pum#map#select_relative_page()
+		Move forward or backward "{number} * page height" and select
+		the candidate.
 		Note: It must not be called in |:map-<expr>|.
 
 
@@ -200,6 +212,8 @@ EXAMPLES						*pum-examples*
 	inoremap <C-p>   <Cmd>call pum#map#insert_relative(-1)<CR>
 	inoremap <C-y>   <Cmd>call pum#map#confirm()<CR>
 	inoremap <C-e>   <Cmd>call pum#map#cancel()<CR>
+	inoremap <PageDown> <Cmd>call pum#map#insert_relative_page(+1)<CR>
+	inoremap <PageUp>   <Cmd>call pum#map#insert_relative_page(-1)<CR>
 <
 
 ==============================================================================

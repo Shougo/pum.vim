@@ -67,6 +67,80 @@ function! pum#map#insert_relative(delta) abort
 
   return ''
 endfunction
+
+function! pum#map#confirm() abort
+  let pum = pum#_get()
+
+  if pum.cursor > 0 && pum.current_word ==# ''
+    call s:insert_current_word(pum.orig_input)
+  endif
+
+  call pum#close()
+
+  call s:complete_done()
+
+  " Skip completion until next input
+  let pum.skip_complete = v:true
+  call s:check_user_input({ -> s:reset_skip_complete() })
+
+  return ''
+endfunction
+
+function! pum#map#cancel() abort
+  let pum = pum#_get()
+
+  if pum.cursor > 0 && pum.current_word !=# ''
+    call s:insert(pum.orig_input, pum.current_word)
+  endif
+  call pum#close()
+
+  " Skip completion until next input
+  let pum.skip_complete = v:true
+  call s:check_user_input({ -> s:reset_skip_complete() })
+
+  return ''
+endfunction
+
+function! pum#map#select_relative_page(delta) abort
+  call pum#map#select_relative(a:delta * pum#_get().height)
+  return ''
+endfunction
+function! pum#map#insert_relative_page(delta) abort
+  call pum#map#insert_relative(a:delta * pum#_get().height)
+  return ''
+endfunction
+
+function! s:insert(word, prev_word) abort
+  let pum = pum#_get()
+
+  " Convert to 0 origin
+  let startcol = pum.startcol - 1
+  let prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
+  let next_input = pum#_getline()[startcol :][len(a:prev_word):]
+
+  if mode() ==# 'c'
+    call s:setline(prev_input . a:word . next_input)
+    call s:cursor(pum.startcol + len(a:word))
+  else
+    let current_word = (pum.current_word ==# '') ?
+          \ pum.orig_input : pum.current_word
+    call s:insertline(current_word, a:word)
+  endif
+
+  let pum.current_word = a:word
+
+  " Note: The text changes fires TextChanged events.  It must be ignored.
+  let pum.skip_complete = v:true
+endfunction
+function! s:insert_current_word(prev_word) abort
+  let pum = pum#_get()
+
+  let word = pum.cursor > 0 ?
+        \ pum.items[pum.cursor - 1].word :
+        \ pum.orig_input
+  call s:insert(word, a:prev_word)
+endfunction
+
 function! s:check_user_input(callback) abort
   augroup pum-temp
     autocmd!
@@ -118,70 +192,6 @@ endfunction
 function! s:reset_skip_complete() abort
   let pum = pum#_get()
   let pum.skip_complete = v:false
-endfunction
-
-function! pum#map#confirm() abort
-  let pum = pum#_get()
-
-  if pum.cursor > 0 && pum.current_word ==# ''
-    call s:insert_current_word(pum.orig_input)
-  endif
-
-  call pum#close()
-
-  call s:complete_done()
-
-  " Skip completion until next input
-  let pum.skip_complete = v:true
-  call s:check_user_input({ -> s:reset_skip_complete() })
-
-  return ''
-endfunction
-
-function! pum#map#cancel() abort
-  let pum = pum#_get()
-
-  if pum.cursor > 0 && pum.current_word !=# ''
-    call s:insert(pum.orig_input, pum.current_word)
-  endif
-  call pum#close()
-
-  " Skip completion until next input
-  let pum.skip_complete = v:true
-  call s:check_user_input({ -> s:reset_skip_complete() })
-
-  return ''
-endfunction
-
-function! s:insert(word, prev_word) abort
-  let pum = pum#_get()
-
-  " Convert to 0 origin
-  let startcol = pum.startcol - 1
-  let prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
-  let next_input = pum#_getline()[startcol :][len(a:prev_word):]
-
-  if mode() ==# 'c'
-    call s:setline(prev_input . a:word . next_input)
-    call s:cursor(pum.startcol + len(a:word))
-  else
-    let current_word = (pum.current_word ==# '') ?
-          \ pum.orig_input : pum.current_word
-    call s:insertline(current_word, a:word)
-  endif
-
-  let pum.current_word = a:word
-
-  " Note: The text changes fires TextChanged events.  It must be ignored.
-  let pum.skip_complete = v:true
-endfunction
-function! s:insert_current_word(prev_word) abort
-  let pum = pum#_get()
-
-  let word = pum.cursor > 0 ?
-        \ pum.items[pum.cursor - 1].word :
-        \ pum.orig_input
-  call s:insert(word, a:prev_word)
 endfunction
 
 function! s:cursor(col) abort

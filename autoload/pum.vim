@@ -43,7 +43,6 @@ function! pum#_options() abort
           \ 'highlight_matches': '',
           \ 'highlight_menu': '',
           \ 'highlight_selected': 'PmenuSel',
-          \ 'winblend': exists('&winblend') ? &winblend : 0,
           \ }
   endif
   return s:options
@@ -174,7 +173,7 @@ function! s:open(startcol, items, mode) abort
 
       " Disable 'hlsearch' highlight
       call nvim_win_set_option(id, 'winhighlight', 'Search:None')
-      call nvim_win_set_option(id, 'winblend', options.winblend)
+      call nvim_win_set_option(id, 'winblend', &winblend)
       let pum.id = id
     endif
 

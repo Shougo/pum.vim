@@ -90,13 +90,6 @@ highlight_selected
 
 		Default: "PmenulSel"
 
-					*pum-options-winblend*
-winblend
-		The 'winblend' config for popup menu.
-		Note: It is neovim only.
-
-		Default: same with 'winblend'
-
 ------------------------------------------------------------------------------
 FUNCTIONS 						*pum-functions*
 
@@ -127,16 +120,17 @@ pum#open({startcol}, {items})
 		{startcol} is the byte offset in the line where the completed
 		text start.
 		{items} must be a |List|.  See |complete-items| for the kind
-		of items.
+		of items.  You can use following special key.
 
 			highlights:  Custom highlights.
-				type: "abbr" or "kind" or "menu"
-				name : highlight name.  It is used for
+				type	 "abbr" or "kind" or "menu"
+				name	highlight name.  It is used for
 					|prop_type_add()| in Vim.
-				hl_group: highlight group
-				col : start column (0 origin)
-				width : end column width
-			Note: It disables pum.vim default highlights.
+					Note: It must be unique.
+				hl_group	highlight group
+				(|highlight-groups|)
+				col	highlight start column (0 origin)
+				width	highlight end column width
 			Note: It is experimental feature.
 
 		Note: If 'completeopt' contains "noinsert", the first item is

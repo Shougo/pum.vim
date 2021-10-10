@@ -227,6 +227,8 @@ function! s:open(startcol, items, mode) abort
     autocmd pum InsertLeave * ++once call pum#close()
   elseif a:mode ==# 'c'
     autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()
+  elseif a:mode ==# 't' && exists('##TermEnter')
+    autocmd pum TermEnter,TermLeave * ++once call pum#close()
   endif
 
   return pum.id

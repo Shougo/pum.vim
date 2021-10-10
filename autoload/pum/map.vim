@@ -102,11 +102,11 @@ function! pum#map#cancel() abort
 endfunction
 
 function! pum#map#select_relative_page(delta) abort
-  call pum#map#select_relative(a:delta * pum#_get().height)
+  call pum#map#select_relative(float2nr(a:delta * pum#_get().height))
   return ''
 endfunction
 function! pum#map#insert_relative_page(delta) abort
-  call pum#map#insert_relative(a:delta * pum#_get().height)
+  call pum#map#insert_relative(float2nr(a:delta * pum#_get().height))
   return ''
 endfunction
 

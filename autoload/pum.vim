@@ -112,6 +112,9 @@ function! s:open(startcol, items, mode) abort
   if (!has('nvim') && a:mode ==# 't')
     let cursor = term_getcursor(bufnr('%'))
     let spos = { 'row': cursor[0], 'col': cursor[1] }
+    if &filetype ==# 'deol'
+      let spos.col -= strwidth(deol#get_prompt())
+    endif
   else
     let spos = screenpos(0, line('.'), a:startcol)
   endif

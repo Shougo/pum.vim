@@ -109,7 +109,12 @@ function! s:open(startcol, items, mode) abort
     let width += 1
   endif
 
-  let spos = screenpos(0, line('.'), a:startcol)
+  if (!has('nvim') && a:mode ==# 't')
+    let cursor = term_getcursor(bufnr('%'))
+    let spos = { 'row': cursor[0], 'col': cursor[1] }
+  else
+    let spos = screenpos(0, line('.'), a:startcol)
+  endif
 
   let height = len(items)
   if &pumheight > 0
@@ -318,10 +323,15 @@ function! pum#skip_complete() abort
 endfunction
 
 function! pum#_getline() abort
-  return mode() ==# 'c' ? getcmdline() : getline('.')
+  return mode() ==# 'c' ? getcmdline() :
+        \ mode() ==# 't' && !has('nvim') ? term_getline('', '.') :
+        \ getline('.')
 endfunction
 function! s:col() abort
-  return mode() ==# 'c' ? getcmdpos() : col('.')
+  let col = mode() ==# 't' && !has('nvim') ?
+        \ term_getcursor(bufnr('%'))[1] :
+        \ mode() ==# 'c' ? getcmdpos() : col('.')
+  return col
 endfunction
 
 function! pum#_highlight(highlight, prop_type, priority, id, row, col, length) abort

@@ -232,7 +232,8 @@ function! s:setline(text) abort
 
     if pum#_options().setline_insert && mode() ==# 'i'
       call setline('.', a:text)
-    elseif mode() ==# 't' && &filetype ==# 'deol'
+    elseif mode() ==# 't' && &filetype ==# 'deol' && has('nvim')
+      " Note: For Vim, jobsend() does not work well...
       call t:deol.jobsend(a:text)
     else
       call feedkeys(a:text, 'n')
@@ -251,7 +252,9 @@ function! s:insertline(current_word, text) abort
   endif
   let chars = repeat("\<C-h>", strchars(a:current_word)) . a:text
   let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1
-  if mode() ==# 't' && &filetype ==# 'deol'
+
+  if mode() ==# 't' && &filetype ==# 'deol' && has('nvim')
+    " Note: For Vim, jobsend() does not work well...
     call t:deol.jobsend(chars)
   else
     call feedkeys(chars, 'n')

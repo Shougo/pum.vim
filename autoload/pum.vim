@@ -43,6 +43,7 @@ function! pum#_options() abort
           \ 'highlight_matches': '',
           \ 'highlight_menu': '',
           \ 'highlight_selected': 'PmenuSel',
+          \ 'setline_insert': v:false,
           \ }
   endif
   return s:options
@@ -207,7 +208,7 @@ function! s:open(startcol, items, mode) abort
   let pum.len = len(items)
   let pum.items = copy(items)
   let pum.startcol = a:startcol
-  let pum.startrow = spos.row
+  let pum.startrow = s:row()
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
 
   " Highlight
@@ -326,6 +327,12 @@ function! pum#_getline() abort
   return mode() ==# 'c' ? getcmdline() :
         \ mode() ==# 't' && !has('nvim') ? term_getline('', '.') :
         \ getline('.')
+endfunction
+function! s:row() abort
+  let row = mode() ==# 't' && !has('nvim') ?
+        \ term_getcursor(bufnr('%'))[0] :
+        \ line('.')
+  return row
 endfunction
 function! s:col() abort
   let col = mode() ==# 't' && !has('nvim') ?

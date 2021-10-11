@@ -90,6 +90,15 @@ highlight_selected
 
 		Default: "PmenuSel"
 
+					*pum-options-setline_insert*
+setline_insert
+		Use |setline()| instead of |feedkeys()|.
+		Note: It is more stable but dot repeat
+		operator(|single-repeat|) does not work for insert completion.
+
+		Default: v:false
+
+
 ------------------------------------------------------------------------------
 FUNCTIONS 						*pum-functions*
 

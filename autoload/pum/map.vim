@@ -122,7 +122,7 @@ function! s:insert(word, prev_word) abort
   let prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
   let next_input = pum#_getline()[startcol :][len(a:prev_word):]
 
-  if mode() ==# 'c'
+  if mode() ==# 'c' || (pum#_options().setline_insert && mode() ==# 'i')
     call s:setline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
   else
@@ -152,6 +152,10 @@ function! s:check_user_input(callback) abort
 
   let g:PumCallback = function(a:callback)
 
+  if mode() ==# 'i' && pum#_options().setline_insert
+    let s:skip_count = 1
+  endif
+
   if mode() ==# 'c'
     autocmd pum-temp CmdlineChanged *
           \ call s:check_skip_count(g:PumCallback)
@@ -163,10 +167,10 @@ function! s:check_user_input(callback) abort
   else
     autocmd pum-temp InsertCharPre *
           \ call s:check_skip_count(g:PumCallback)
-    autocmd pum-temp TextChangedI *
-          \ if line('.') != pum#_get().startrow | call pum#close() | endif
     autocmd pum-temp InsertLeave *
           \ call s:reset_skip_complete()
+    autocmd pum-temp TextChangedI *
+          \ if line('.') != pum#_get().startrow | call pum#close() | endif
   endif
 endfunction
 function! s:check_skip_count(callback) abort
@@ -225,7 +229,12 @@ function! s:setline(text) abort
     if tree.seq_cur == tree.seq_last
       undojoin
     endif
-    call feedkeys(a:text, 'n')
+
+    if pum#_options().setline_insert && mode() ==# 'i'
+      call setline('.', a:text)
+    else
+      call feedkeys(a:text, 'n')
+    endif
   endif
 endfunction
 function! s:insertline(current_word, text) abort

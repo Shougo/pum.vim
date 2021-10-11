@@ -250,7 +250,7 @@ function! s:insertline(current_word, text) abort
     undojoin
   endif
   let chars = repeat("\<C-h>", strchars(a:current_word)) . a:text
-  let s:skip_count = strchars(a:text) + 1
+  let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1
   if mode() ==# 't' && &filetype ==# 'deol'
     call t:deol.jobsend(chars)
   else

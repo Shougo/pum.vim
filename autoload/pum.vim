@@ -140,7 +140,8 @@ function! s:open(startcol, items, mode) abort
   let height = max([height, 1])
 
   let pos = a:mode ==# 'c' ?
-        \ [&lines - height - 1, a:startcol] : [spos.row, spos.col - 1]
+        \ [&lines - height - &cmdheight, a:startcol] :
+        \ [spos.row, spos.col - 1]
 
   if has('nvim')
     if pum.buf < 0

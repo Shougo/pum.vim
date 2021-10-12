@@ -250,7 +250,11 @@ function! s:insertline(current_word, text) abort
   if tree.seq_cur == tree.seq_last
     undojoin
   endif
-  let chars = repeat("\<C-h>", strchars(a:current_word)) . a:text
+  let chars = ''
+  " Note: Change backspace option to work <BS> correctly
+  let chars .= "\<Cmd>set backspace=\<CR>"
+  let chars .= repeat("\<BS>", strchars(a:current_word)) . a:text
+  let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
   let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1
 
   if mode() ==# 't' && &filetype ==# 'deol' && has('nvim')

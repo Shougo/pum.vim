@@ -228,10 +228,7 @@ function! s:setline(text) abort
       undojoin
     endif
 
-    if mode() ==# 't' && &filetype ==# 'deol' && has('nvim')
-      " Note: For Vim, jobsend() does not work well...
-      call t:deol.jobsend(a:text)
-    elseif pum#_options().setline_insert
+    if pum#_options().setline_insert
       call setline('.', split(a:text, '\n'))
     else
       call feedkeys(a:text, 'n')
@@ -239,8 +236,7 @@ function! s:setline(text) abort
   endif
 endfunction
 function! s:insertline(text) abort
-  let pum = pum#_get()
-  let current_word = pum#_getline()[pum.startcol - 1 : pum#_col() - 2]
+  let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
   if current_word ==# a:text
     return
   endif
@@ -262,10 +258,5 @@ function! s:insertline(text) abort
   endif
   let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1
 
-  if mode() ==# 't' && &filetype ==# 'deol' && has('nvim')
-    " Note: For Vim, jobsend() does not work well...
-    call t:deol.jobsend(chars)
-  else
-    call feedkeys(chars, 'n')
-  endif
+  call feedkeys(chars, 'n')
 endfunction

@@ -1,4 +1,3 @@
-let s:pum_cursor_id = 50
 let s:skip_count = -1
 
 function! pum#map#select_relative(delta) abort
@@ -8,7 +7,7 @@ function! pum#map#select_relative(delta) abort
   endif
 
   " Clear current highlight
-  silent! call matchdelete(s:pum_cursor_id, pum.id)
+  silent! call matchdelete(pum#_cursor_id(), pum.id)
 
   let pum.cursor += a:delta
   if pum.cursor > pum.len || pum.cursor == 0
@@ -34,13 +33,13 @@ function! pum#map#select_relative(delta) abort
     call win_execute(pum.id, '
           \ call cursor(pum#_get().cursor, 0) |
           \ call matchaddpos(pum#_options().highlight_selected,
-          \                   [pum#_get().cursor], 0, s:pum_cursor_id) |
+          \                   [pum#_get().cursor], 0, pum#_cursor_id()) |
           \ redraw')
   else
     call win_execute(pum.id, '
           \ call cursor(pum#_get().cursor + 1, 0) |
           \ call matchaddpos(pum#_options().highlight_selected,
-          \                   [pum#_get().cursor], 0, s:pum_cursor_id) |
+          \                   [pum#_get().cursor], 0, pum#_cursor_id()) |
           \ redraw')
   endif
 
@@ -203,6 +202,7 @@ endfunction
 function! s:reset_skip_complete() abort
   let pum = pum#_get()
   let pum.skip_complete = v:false
+  let pum.current_word = ''
 endfunction
 
 function! s:cursor(col) abort

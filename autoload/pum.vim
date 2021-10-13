@@ -1,6 +1,7 @@
 let s:namespace = has('nvim') ? nvim_create_namespace('pum') : 0
 let g:pum#completed_item = {}
 let s:pum_matched_id = 70
+let s:pum_cursor_id = 50
 
 
 function! pum#_get() abort
@@ -212,6 +213,9 @@ function! s:open(startcol, items, mode) abort
   let pum.startrow = s:row()
   let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
 
+  " Clear current highlight
+  silent! call matchdelete(pum#_cursor_id(), pum.id)
+
   " Highlight
   call s:highlight_items(items, max_abbr, max_kind, max_menu)
 
@@ -373,6 +377,10 @@ function! pum#_highlight(highlight, prop_type, priority, id, row, col, length) a
           \ 'id': a:id,
           \ })
   endif
+endfunction
+
+function! pum#_cursor_id() abort
+  return s:pum_cursor_id
 endfunction
 
 function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort

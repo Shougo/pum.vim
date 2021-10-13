@@ -7,10 +7,6 @@ let s:pum_cursor_id = 50
 function! pum#_get() abort
   if !exists('s:pum')
     call pum#_init()
-
-    augroup pum
-      autocmd!
-    augroup END
   endif
   return s:pum
 endfunction
@@ -211,7 +207,9 @@ function! s:open(startcol, items, mode) abort
   let pum.items = copy(items)
   let pum.startcol = a:startcol
   let pum.startrow = s:row()
-  let pum.orig_input = pum#_getline()[a:startcol - 1 : s:col() - 2]
+  let pum.current_line = getline('.')
+  let pum.col = pum#_col()
+  let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
 
   " Clear current highlight
   silent! call matchdelete(pum#_cursor_id(), pum.id)
@@ -236,11 +234,18 @@ function! s:open(startcol, items, mode) abort
     redraw
   endif
 
+  augroup pum
+    autocmd!
+  augroup END
+
   " Close popup automatically
   if exists('##ModeChanged')
     autocmd pum ModeChanged * ++once call pum#close()
   elseif a:mode ==# 'i'
     autocmd pum InsertLeave * ++once call pum#close()
+    autocmd pum CursorMovedI *
+          \ if pum#_get().current_line ==# getline('.')
+          \    && pum#_get().col !=# pum#_col() | call pum#close() | endif
   elseif a:mode ==# 'c'
     autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()
   elseif a:mode ==# 't' && exists('##TermEnter')
@@ -275,6 +280,10 @@ function! s:close() abort
     " popup_close() removes the buffer.
     call popup_close(pum.id)
   endif
+
+  augroup pum
+    autocmd!
+  augroup END
 
   let pum.current_word = ''
   let pum.id = -1
@@ -339,7 +348,7 @@ function! s:row() abort
         \ line('.')
   return row
 endfunction
-function! s:col() abort
+function! pum#_col() abort
   let col = mode() ==# 't' && !has('nvim') ?
         \ term_getcursor(bufnr('%'))[1] :
         \ mode() ==# 'c' ? getcmdpos() :

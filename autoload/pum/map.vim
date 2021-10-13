@@ -125,9 +125,7 @@ function! s:insert(word, prev_word) abort
     call s:setline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
   else
-    let current_word = (pum.current_word ==# '') ?
-          \ pum.orig_input : pum.current_word
-    call s:insertline(current_word, a:word)
+    call s:insertline(a:word)
   endif
 
   let pum.current_word = a:word
@@ -240,8 +238,10 @@ function! s:setline(text) abort
     endif
   endif
 endfunction
-function! s:insertline(current_word, text) abort
-  if a:current_word ==# a:text
+function! s:insertline(text) abort
+  let pum = pum#_get()
+  let current_word = pum#_getline()[pum.startcol - 1 : pum#_col() - 2]
+  if current_word ==# a:text
     return
   endif
 
@@ -250,10 +250,11 @@ function! s:insertline(current_word, text) abort
   if tree.seq_cur == tree.seq_last
     undojoin
   endif
+
   let chars = ''
   " Note: Change backspace option to work <BS> correctly
-  let chars .= "\<Cmd>set backspace=\<CR>"
-  let chars .= repeat("\<BS>", strchars(a:current_word)) . a:text
+  let chars .= "\<Cmd>set backspace=start\<CR>"
+  let chars .= repeat("\<BS>", strchars(current_word)) . a:text
   let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
   let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1
 

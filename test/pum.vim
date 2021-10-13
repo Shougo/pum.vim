@@ -1,11 +1,13 @@
+set verbose=1
 let s:suite = themis#suite('pum')
 let s:assert = themis#helper('assert')
 
 function! s:suite.before_each() abort
+  call pum#_init()
+  normal! ggVGd
 endfunction
 
 function! s:suite.after_each() abort
-  call pum#_init()
 endfunction
 
 function! s:suite.open() abort
@@ -62,4 +64,15 @@ function! s:suite.insert_relative() abort
   call pum#map#select_relative(-1)
 
   call s:assert.equals(pum#_get().cursor, 0)
+endfunction
+
+function! s:suite.multi_lines() abort
+  call pum#set_option('setline_insert', v:true)
+  call pum#open(1, [{'word': "foo\nbar"}, {'word': 'bar'}], 'i')
+
+  call pum#map#insert_relative(1)
+  call feedkeys('', 'xt')
+
+  call s:assert.equals(pum#_get().cursor, 1)
+  call s:assert.equals(getline(1, 2), ['foo', 'bar'])
 endfunction

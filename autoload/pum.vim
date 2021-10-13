@@ -30,6 +30,7 @@ function! pum#_init() abort
         \ 'startrow': -1,
         \ 'width': -1,
         \}
+  unlet! s:options
 endfunction
 function! pum#_options() abort
   if !exists('s:options')

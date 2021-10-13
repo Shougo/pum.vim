@@ -121,7 +121,7 @@ function! s:insert(word, prev_word) abort
   let prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
   let next_input = pum#_getline()[startcol :][len(a:prev_word):]
 
-  if mode() ==# 'c' || (pum#_options().setline_insert && mode() ==# 'i')
+  if mode() ==# 'c' || pum#_options().setline_insert
     call s:setline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
   else
@@ -228,11 +228,11 @@ function! s:setline(text) abort
       undojoin
     endif
 
-    if pum#_options().setline_insert && mode() ==# 'i'
-      call setline('.', a:text)
-    elseif mode() ==# 't' && &filetype ==# 'deol' && has('nvim')
+    if mode() ==# 't' && &filetype ==# 'deol' && has('nvim')
       " Note: For Vim, jobsend() does not work well...
       call t:deol.jobsend(a:text)
+    elseif pum#_options().setline_insert
+      call setline('.', split(a:text, '\n'))
     else
       call feedkeys(a:text, 'n')
     endif

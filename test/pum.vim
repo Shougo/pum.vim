@@ -71,7 +71,6 @@ function! s:suite.multi_lines() abort
   call pum#open(1, [{'word': "foo\nbar"}, {'word': 'bar'}], 'i')
 
   call pum#map#insert_relative(1)
-  call feedkeys('', 'xt')
 
   call s:assert.equals(pum#_get().cursor, 1)
   call s:assert.equals(getline(1, 2), ['foo', 'bar'])

@@ -195,7 +195,9 @@ function! s:complete_done() abort
   call s:reset_skip_complete()
 
   let g:pum#completed_item = pum.items[pum.cursor - 1]
-  silent doautocmd <nomodeline> User PumCompleteDone
+  if exists('#User#PumCompleteDone')
+    doautocmd <nomodeline> User PumCompleteDone
+  endif
 endfunction
 function! s:reset_skip_complete() abort
   let pum = pum#_get()

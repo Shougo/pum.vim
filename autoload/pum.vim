@@ -176,6 +176,7 @@ function! s:open(startcol, items, mode) abort
       " Create new window
       let id = nvim_open_win(pum.buf, v:false, winopts)
 
+      " Note: nvim_win_set_option() causes title flicker...
       " Disable 'hlsearch' highlight
       call nvim_win_set_option(id, 'winhighlight', 'Search:None')
       call nvim_win_set_option(id, 'winblend', &l:winblend)

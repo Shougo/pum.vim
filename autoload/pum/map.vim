@@ -24,7 +24,7 @@ function! pum#map#select_relative(delta) abort
   endif
 
   if exists('#User#PumCompleteChanged')
-    silent doautocmd <nomodeline> User PumCompleteChanged
+    doautocmd <nomodeline> User PumCompleteChanged
   endif
 
   " Move real cursor

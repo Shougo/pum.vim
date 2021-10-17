@@ -23,7 +23,9 @@ function! pum#map#select_relative(delta) abort
     let pum.cursor = pum.len
   endif
 
-  silent doautocmd <nomodeline> User PumCompleteChanged
+  if exists('#User#PumCompleteChanged')
+    silent doautocmd <nomodeline> User PumCompleteChanged
+  endif
 
   " Move real cursor
   " Note: If up scroll, cursor must adjust...

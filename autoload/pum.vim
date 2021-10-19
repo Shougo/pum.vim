@@ -253,6 +253,7 @@ function! s:open(startcol, items, mode) abort
   elseif a:mode ==# 't' && exists('##TermEnter')
     autocmd pum TermEnter,TermLeave * ++once call pum#close()
   endif
+  autocmd pum CursorHold * ++once call pum#close()
 
   return pum.id
 endfunction

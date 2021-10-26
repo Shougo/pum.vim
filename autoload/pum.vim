@@ -441,12 +441,11 @@ function! pum#_redraw_horizontal_menu() abort
     let items = items[: max_items - 1]
   endif
 
-  let word = printf('{ %s%s }',
+  let word = printf('{ %s%s%s}',
         \ pum.cursor == 0 ? '' : '> ',
-        \ join(map(items, { _, val -> get(val, 'abbr', val.word) })))
-  if len(pum.items) > max_items
-    let word .= '...'
-  endif
+        \ join(map(items, { _, val -> get(val, 'abbr', val.word) })),
+        \ len(pum.items) <= max_items ? '' : ' ... ',
+        \ )
 
   call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
 

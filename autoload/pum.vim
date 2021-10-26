@@ -37,6 +37,7 @@ function! pum#_options() abort
     let s:options = {
           \ 'border': 'none',
           \ 'highlight_abbr': '',
+          \ 'highlight_horizontal_menu': '',
           \ 'highlight_kind': '',
           \ 'highlight_matches': '',
           \ 'highlight_menu': '',
@@ -451,7 +452,7 @@ function! pum#_redraw_horizontal_menu() abort
 
   call nvim_buf_set_extmark(
         \ 0, g:pum#_namespace, line('.') - 1, 0, {
-        \ 'virt_text': [[word, pum#_options().highlight_abbr]],
+        \ 'virt_text': [[word, pum#_options().highlight_horizontal_menu]],
         \ 'hl_mode': 'combine',
         \ 'priority': 0,
         \ })

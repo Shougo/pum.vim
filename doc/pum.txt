@@ -66,6 +66,13 @@ highlight_abbr
 
 		Default: ""
 
+					*pum-options-highlight_horizontal_menu*
+highlight_horizontal_menu
+		The highlight of horizontal menu.
+		|pum-options-horizontal_menu|
+
+		Default: ""
+
 					*pum-options-highlight_kind*
 highlight_kind
 		The kind highlight of candidates.

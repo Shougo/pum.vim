@@ -1,4 +1,4 @@
-let s:namespace = has('nvim') ? nvim_create_namespace('pum') : 0
+let g:pum#_namespace = has('nvim') ? nvim_create_namespace('pum') : 0
 let g:pum#completed_item = {}
 let s:pum_matched_id = 70
 let s:pum_cursor_id = 50
@@ -21,6 +21,7 @@ function! pum#_init() abort
         \ 'cursor': -1,
         \ 'current_word': '',
         \ 'height': -1,
+        \ 'horizontal_menu': v:false,
         \ 'id': -1,
         \ 'len': 0,
         \ 'orig_input': '',
@@ -40,6 +41,7 @@ function! pum#_options() abort
           \ 'highlight_matches': '',
           \ 'highlight_menu': '',
           \ 'highlight_selected': 'PmenuSel',
+          \ 'horizontal_menu': v:false,
           \ 'setline_insert': v:false,
           \ }
   endif
@@ -96,6 +98,8 @@ function! s:open(startcol, items, mode) abort
         \ })
 
   let pum = pum#_get()
+  let pum.items = copy(items)
+
   let options = pum#_options()
 
   let width = max_abbr + max_kind + max_menu
@@ -141,49 +145,61 @@ function! s:open(startcol, items, mode) abort
         \ [spos.row, spos.col - 1]
 
   if has('nvim')
-    if pum.buf < 0
-      let pum.buf = nvim_create_buf(v:false, v:true)
-    endif
-    call nvim_buf_set_lines(pum.buf, 0, -1, v:true, lines)
+    if options.horizontal_menu && a:mode !=# 'c'
+      let pum.horizontal_menu = v:true
+      let pum.cursor = 0
 
-    let winopts = {
-          \ 'border': options.border,
-          \ 'relative': 'editor',
-          \ 'width': width,
-          \ 'height': height,
-          \ 'col': pos[1],
-          \ 'row': pos[0],
-          \ 'anchor': 'NW',
-          \ 'style': 'minimal',
-          \ }
+      call pum#_redraw_horizontal_menu()
 
-    if pum.id > 0
-      if pos == pum.pos
-        " Resize window
-        call nvim_win_set_width(pum.id, width)
-        call nvim_win_set_height(pum.id, height)
-      else
-        " Reuse window
-        call nvim_win_set_config(pum.id, winopts)
-      endif
+      " Dummy
+      let pum.id = 1000
+      let pum.buf = pum.id
     else
-      call pum#close()
+      if pum.buf < 0
+        let pum.buf = nvim_create_buf(v:false, v:true)
+      endif
+      call nvim_buf_set_lines(pum.buf, 0, -1, v:true, lines)
 
-      " Note: It cannot set in nvim_win_set_config()
-      let winopts.noautocmd = v:true
+      let winopts = {
+            \ 'border': options.border,
+            \ 'relative': 'editor',
+            \ 'width': width,
+            \ 'height': height,
+            \ 'col': pos[1],
+            \ 'row': pos[0],
+            \ 'anchor': 'NW',
+            \ 'style': 'minimal',
+            \ }
 
-      " Create new window
-      let id = nvim_open_win(pum.buf, v:false, winopts)
+      if pum.id > 0
+        if pos == pum.pos
+          " Resize window
+          call nvim_win_set_width(pum.id, width)
+          call nvim_win_set_height(pum.id, height)
+        else
+          " Reuse window
+          call nvim_win_set_config(pum.id, winopts)
+        endif
+      else
+        call pum#close()
 
-      " Note: nvim_win_set_option() causes title flicker...
-      " Disable 'hlsearch' highlight
-      call nvim_win_set_option(id, 'winhighlight', 'Search:None')
-      call nvim_win_set_option(id, 'winblend', &l:winblend)
+        " Note: It cannot set in nvim_win_set_config()
+        let winopts.noautocmd = v:true
 
-      let pum.id = id
+        " Create new window
+        let id = nvim_open_win(pum.buf, v:false, winopts)
+
+        " Note: nvim_win_set_option() causes title flicker...
+        " Disable 'hlsearch' highlight
+        call nvim_win_set_option(id, 'winhighlight', 'Search:None')
+        call nvim_win_set_option(id, 'winblend', &l:winblend)
+
+        let pum.id = id
+      endif
+
+      let pum.pos = pos
+      let pum.horizontal_menu = v:false
     endif
-
-    let pum.pos = pos
   else
     let winopts = {
           \ 'pos': 'topleft',
@@ -206,7 +222,6 @@ function! s:open(startcol, items, mode) abort
   let pum.height = height
   let pum.width = width
   let pum.len = len(items)
-  let pum.items = copy(items)
   let pum.startcol = a:startcol
   let pum.startrow = s:row()
   let pum.current_line = getline('.')
@@ -216,17 +231,19 @@ function! s:open(startcol, items, mode) abort
   " Clear current highlight
   silent! call matchdelete(pum#_cursor_id(), pum.id)
 
-  " Highlight
-  call s:highlight_items(items, max_abbr, max_kind, max_menu)
+  if !pum.horizontal_menu
+    " Highlight
+    call s:highlight_items(items, max_abbr, max_kind, max_menu)
 
-  " Simple highlight matches
-  silent! call matchdelete(s:pum_matched_id, pum.id)
-  if options.highlight_matches !=# ''
-    let pattern = substitute(escape(pum.orig_input, '~"*\.^$[]'),
-          \ '\w\ze.', '\0[^\0]\\{-}', 'g')
-    call matchadd(
-          \ options.highlight_matches, pattern, 0, s:pum_matched_id,
-          \ { 'window': pum.id })
+    " Simple highlight matches
+    silent! call matchdelete(s:pum_matched_id, pum.id)
+    if options.highlight_matches !=# ''
+      let pattern = substitute(escape(pum.orig_input, '~"*\.^$[]'),
+            \ '\w\ze.', '\0[^\0]\\{-}', 'g')
+      call matchadd(
+            \ options.highlight_matches, pattern, 0, s:pum_matched_id,
+            \ { 'window': pum.id })
+    endif
   endif
 
   if &completeopt =~# 'noinsert'
@@ -276,8 +293,12 @@ function! s:close() abort
   " Note: popup may be already closed
   " Close popup and clear highlights
   if has('nvim')
-    call nvim_win_close(pum.id, v:true)
-    call nvim_buf_clear_namespace(pum.buf, s:namespace, 1, -1)
+    if pum.horizontal_menu
+      call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
+    else
+      call nvim_win_close(pum.id, v:true)
+      call nvim_buf_clear_namespace(pum.buf, g:pum#_namespace, 1, -1)
+    endif
   else
     " Note: prop_remove() is not needed.
     " popup_close() removes the buffer.
@@ -395,6 +416,47 @@ function! pum#_cursor_id() abort
   return s:pum_cursor_id
 endfunction
 
+function! pum#_redraw_horizontal_menu() abort
+  let pum = pum#_get()
+
+  if empty(pum.items)
+    return
+  endif
+
+  if pum.cursor == 0
+    let items = copy(pum.items)
+  else
+    let cursor = pum.cursor - 1
+    let items = [pum.items[cursor]]
+    let items += pum.items[cursor + 1:]
+    if cursor > 0
+      let items += pum.items[: cursor - 1]
+    endif
+  endif
+
+  let max_items = 3
+
+  if len(pum.items) > max_items
+    let items = items[: max_items - 1]
+  endif
+
+  let word = printf('{ %s%s }',
+        \ pum.cursor == 0 ? '' : '> ',
+        \ join(map(items, { _, val -> get(val, 'abbr', val.word) })))
+  if len(pum.items) > max_items
+    let word .= '...'
+  endif
+
+  call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
+
+  call nvim_buf_set_extmark(
+        \ 0, g:pum#_namespace, line('.') - 1, 0, {
+        \ 'virt_text': [[word, pum#_options().highlight_abbr]],
+        \ 'hl_mode': 'combine',
+        \ 'priority': 0,
+        \ })
+endfunction
+
 function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
   let pum = pum#_get()
   let options = pum#_options()
@@ -416,19 +478,19 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
     if highlight_abbr
       call pum#_highlight(
             \ options.highlight_abbr, 'pum_abbr', 0,
-            \ s:namespace, row, start_abbr, end_abbr)
+            \ g:pum#_namespace, row, start_abbr, end_abbr)
     endif
 
     if highlight_kind
       call pum#_highlight(
             \ options.highlight_kind, 'pum_kind', 0,
-            \ s:namespace, row, start_kind, end_kind)
+            \ g:pum#_namespace, row, start_kind, end_kind)
     endif
 
     if highlight_menu
       call pum#_highlight(
             \ options.highlight_menu, 'pum_menu', 0,
-            \ s:namespace, row, start_menu, end_menu)
+            \ g:pum#_namespace, row, start_menu, end_menu)
     endif
 
     let item = a:items[row - 1]
@@ -439,7 +501,7 @@ function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
               \ hl.type ==# 'kind' ? start_kind : start_menu
         call pum#_highlight(
               \ hl.hl_group, hl.name, 1,
-              \ s:namespace, row, start + hl.col, hl.width)
+              \ g:pum#_namespace, row, start + hl.col, hl.width)
       endfor
     endif
   endfor

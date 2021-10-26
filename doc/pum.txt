@@ -90,6 +90,13 @@ highlight_selected
 
 		Default: "PmenuSel"
 
+					*pum-options-horizontal_menu*
+horizontal_menu
+		Use horizontal menu instead of vertical popup menu.
+		Note: neovim only.
+
+		Default: v:false
+
 					*pum-options-setline_insert*
 setline_insert
 		Use |setline()| instead of |feedkeys()|.
@@ -235,14 +242,16 @@ plugins.  You can donate money to help me!
 
    https://github.com/sponsors/Shougo
 
+
 Q: The popup menu does not close immediately in Vim.
 
 A: It is the known issue of Vim.  |popup_close()| does not work immediately.
 
+
 Q: The popup menu does not work in Command line window.
 
-A: It is the limitation of Command line window.  I recommend for you to use
-it.
+A: It is the limitation of Command line window.
+
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*

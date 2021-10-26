@@ -68,7 +68,7 @@ highlight_abbr
 
 					*pum-options-highlight_horizontal_menu*
 highlight_horizontal_menu
-		The highlight of horizontal menu.
+		The highlight of the horizontal menu.
 		|pum-options-horizontal_menu|
 
 		Default: ""
@@ -103,6 +103,13 @@ horizontal_menu
 		Note: neovim only.
 
 		Default: v:false
+
+					*pum-options-max_horizontal_items*
+max_horizontal_items
+		The max items of the horizontal menu.
+		|pum-options-horizontal_menu|
+
+		Default: 3
 
 					*pum-options-setline_insert*
 setline_insert

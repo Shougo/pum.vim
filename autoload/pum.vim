@@ -43,6 +43,7 @@ function! pum#_options() abort
           \ 'highlight_menu': '',
           \ 'highlight_selected': 'PmenuSel',
           \ 'horizontal_menu': v:false,
+          \ 'max_horizontal_items': 3,
           \ 'setline_insert': v:false,
           \ }
   endif
@@ -435,7 +436,7 @@ function! pum#_redraw_horizontal_menu() abort
     endif
   endif
 
-  let max_items = 3
+  let max_items = pum#_options().max_horizontal_items
 
   if len(pum.items) > max_items
     let items = items[: max_items - 1]

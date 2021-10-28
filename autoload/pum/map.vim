@@ -171,7 +171,7 @@ function! s:check_user_input(callback) abort
   endif
 
   let pum = pum#_get()
-  let pum.current_line = pum#_getline()
+  let pum.current_line = pum#_getline()[: pum.startcol]
 
   if mode() ==# 'c'
     autocmd pum-temp CmdlineChanged *
@@ -188,7 +188,7 @@ function! s:check_user_input(callback) abort
           \ call s:reset_skip_complete()
     autocmd pum-temp TextChangedI *
           \ if line('.') != pum#_get().startrow ||
-          \ pum#_get().current_line != pum#_getline() |
+          \ pum#_get().current_line != pum#_getline()[: pum#_get().startcol] |
           \   call pum#close() |
           \ endif
   endif

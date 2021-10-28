@@ -95,7 +95,7 @@ highlight_menu
 highlight_normal_menu
 		The highlight of the normal menu.
 
-		Default: ""
+		Default: "Pmenu"
 
 					*pum-options-highlight_selected*
 highlight_selected

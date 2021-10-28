@@ -2,7 +2,7 @@ let s:skip_count = -1
 
 function! pum#map#select_relative(delta) abort
   let pum = pum#_get()
-  if pum.buf <= 0 || pum.id <= 0
+  if pum.id <= 0
     return ''
   endif
 

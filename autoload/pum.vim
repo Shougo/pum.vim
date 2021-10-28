@@ -215,6 +215,7 @@ function! s:open(startcol, items, mode) abort
       let pum.id = popup_create(lines, winopts)
       let pum.buf = winbufnr(pum.id)
     endif
+    let pum.horizontal_menu = v:false
   endif
 
   let pum.cursor = 0
@@ -459,7 +460,6 @@ function! pum#_redraw_horizontal_menu() abort
 
     " Dummy
     let pum.id = 1000
-    let pum.buf = pum.id
   else
     let winopts = {
           \ 'pos': 'topleft',

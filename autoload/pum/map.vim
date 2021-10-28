@@ -74,7 +74,9 @@ function! pum#map#insert_relative(delta) abort
 
   call s:insert_current_word(prev_word)
 
-  call pum#_redraw_horizontal_menu()
+  if pum.horizontal_menu
+    call pum#_redraw_horizontal_menu()
+  endif
 
   " Call CompleteDone if user input
   call s:check_user_input({ -> s:complete_done() })

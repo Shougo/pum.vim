@@ -74,6 +74,8 @@ function! pum#map#insert_relative(delta) abort
 
   call s:insert_current_word(prev_word)
 
+  call pum#_redraw_horizontal_menu()
+
   " Call CompleteDone if user input
   call s:check_user_input({ -> s:complete_done() })
 
@@ -166,6 +168,9 @@ function! s:check_user_input(callback) abort
     let s:skip_count = 1
   endif
 
+  let pum = pum#_get()
+  let pum.current_line = pum#_getline()
+
   if mode() ==# 'c'
     autocmd pum-temp CmdlineChanged *
           \ call s:check_skip_count(g:PumCallback)
@@ -180,7 +185,10 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp InsertLeave *
           \ call s:reset_skip_complete()
     autocmd pum-temp TextChangedI *
-          \ if line('.') != pum#_get().startrow | call pum#close() | endif
+          \ if line('.') != pum#_get().startrow ||
+          \ pum#_get().current_line != pum#_getline() |
+          \   call pum#close() |
+          \ endif
   endif
 endfunction
 function! s:check_skip_count(callback) abort

@@ -215,6 +215,7 @@ function! s:open(startcol, items, mode) abort
       let pum.id = popup_create(lines, winopts)
       let pum.buf = winbufnr(pum.id)
     endif
+    let pum.pos = pos
     let pum.horizontal_menu = v:false
   endif
 

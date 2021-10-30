@@ -187,11 +187,13 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp InsertLeave *
           \ call s:reset_skip_complete()
     autocmd pum-temp TextChangedI *
-          \ if line('.') != pum#_get().startrow ||
-          \ pum#_get().current_line != pum#_getline()[: pum#_get().startcol] |
-          \   call pum#close() |
-          \ endif
+          \ if s:check_text_changed() | call pum#close() | endif
   endif
+endfunction
+function! s:check_text_changed() abort
+  return line('.') != pum#_get().startrow ||
+        \ (strchars(pum#_get().current_line) >
+        \  strchars(pum#_getline()[: pum#_get().startcol]))
 endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1

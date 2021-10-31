@@ -276,11 +276,11 @@ function! s:insertline(text) abort
 
   let chars = ''
   " Note: Change backspace option to work <BS> correctly
-  if mode() !=# 't'
+  if mode() ==# 'i'
     let chars .= "\<Cmd>set backspace=start\<CR>"
   endif
   let chars .= repeat("\<BS>", strchars(current_word)) . a:text
-  if mode() !=# 't'
+  if mode() ==# 'i'
     let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
   endif
   let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1

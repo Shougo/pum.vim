@@ -144,7 +144,7 @@ function! s:open(startcol, items, mode) abort
   let height = max([height, 1])
 
   let pos = a:mode ==# 'c' ?
-        \ [&lines - height - &cmdheight, a:startcol] :
+        \ [&lines - height - max([1, &cmdheight]), a:startcol] :
         \ [spos.row, spos.col - 1]
 
   if options.horizontal_menu && a:mode ==# 'i'

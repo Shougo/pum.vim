@@ -140,6 +140,12 @@ function! s:open(startcol, items, mode) abort
       let spos.row = spos.row - height - padding
       let height = minheight_above
     endif
+
+    if has('nvim') && !empty(get(nvim_win_get_config(0), 'border', []))
+      " Adjust border
+      let spos.row += 1
+      let spos.col += 1
+    endif
   endif
   let height = max([height, 1])
 
@@ -167,6 +173,7 @@ function! s:open(startcol, items, mode) abort
           \ 'row': pos[0],
           \ 'anchor': 'NW',
           \ 'style': 'minimal',
+          \ 'zindex': 100,
           \ }
 
     if pum.id > 0
@@ -253,6 +260,7 @@ function! s:open(startcol, items, mode) abort
     " Note: :redraw is needed for command line completion in neovim
     redraw
   endif
+  redraw
 
   augroup pum
     autocmd!

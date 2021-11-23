@@ -79,7 +79,7 @@ function! pum#map#insert_relative(delta) abort
   endif
 
   " Call CompleteDone if user input
-  call s:check_user_input({ -> s:complete_done() })
+  call s:check_user_input({ -> pum#_complete_done() })
 
   return ''
 endfunction
@@ -93,11 +93,11 @@ function! pum#map#confirm() abort
 
   call pum#close()
 
-  call s:complete_done()
+  call pum#_complete_done()
 
   " Skip completion until next input
   let pum.skip_complete = v:true
-  call s:check_user_input({ -> s:reset_skip_complete() })
+  call s:check_user_input({ -> pum#_reset_skip_complete() })
 
   return ''
 endfunction
@@ -108,11 +108,12 @@ function! pum#map#cancel() abort
   if pum.cursor > 0 && pum.current_word !=# ''
     call s:insert(pum.orig_input, pum.current_word)
   endif
+
   call pum#close()
 
   " Skip completion until next input
   let pum.skip_complete = v:true
-  call s:check_user_input({ -> s:reset_skip_complete() })
+  call s:check_user_input({ -> pum#_reset_skip_complete() })
 
   return ''
 endfunction
@@ -177,7 +178,7 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp CmdlineChanged *
           \ call s:check_skip_count(g:PumCallback)
     autocmd pum-temp CmdlineLeave *
-          \ call s:reset_skip_complete()
+          \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
     autocmd pum-temp User PumTextChanged
           \ call s:check_skip_count(g:PumCallback)
@@ -185,7 +186,7 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp InsertCharPre *
           \ call s:check_skip_count(g:PumCallback)
     autocmd pum-temp InsertLeave *
-          \ call s:reset_skip_complete()
+          \ call pum#_reset_skip_complete()
     autocmd pum-temp TextChangedI *
           \ if s:check_text_changed() | call pum#close() | endif
   endif
@@ -209,25 +210,6 @@ function! s:check_skip_count(callback) abort
   augroup END
 
   call call(a:callback, [])
-endfunction
-function! s:complete_done() abort
-  let pum = pum#_get()
-
-  if pum.cursor <= 0
-    return
-  endif
-
-  call s:reset_skip_complete()
-
-  let g:pum#completed_item = pum.items[pum.cursor - 1]
-  if exists('#User#PumCompleteDone')
-    doautocmd <nomodeline> User PumCompleteDone
-  endif
-endfunction
-function! s:reset_skip_complete() abort
-  let pum = pum#_get()
-  let pum.skip_complete = v:false
-  let pum.current_word = ''
 endfunction
 
 function! s:cursor(col) abort

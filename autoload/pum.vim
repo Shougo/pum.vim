@@ -270,18 +270,18 @@ function! s:open(startcol, items, mode) abort
 
   " Close popup automatically
   if exists('##ModeChanged')
-    autocmd pum ModeChanged * ++once call pum#close()
+    autocmd pum ModeChanged * ++once call pum#_auto_done()
   elseif a:mode ==# 'i'
-    autocmd pum InsertLeave * ++once call pum#close()
+    autocmd pum InsertLeave * ++once call pum#_auto_done()
     autocmd pum CursorMovedI *
           \ if pum#_get().current_line ==# getline('.')
-          \    && pum#_get().col !=# pum#_col() | call pum#close() | endif
+          \    && pum#_get().col !=# pum#_col() | call pum#_auto_done() | endif
   elseif a:mode ==# 'c'
-    autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()
+    autocmd pum WinEnter,CmdlineLeave * ++once call pum#_auto_done()
   elseif a:mode ==# 't' && exists('##TermEnter')
-    autocmd pum TermEnter,TermLeave * ++once call pum#close()
+    autocmd pum TermEnter,TermLeave * ++once call pum#_auto_done()
   endif
-  autocmd pum CursorHold * ++once call pum#close()
+  autocmd pum CursorHold * ++once call pum#_auto_done()
 
   return pum.id
 endfunction
@@ -580,4 +580,28 @@ function! s:uniq_by_word_or_dup(items) abort
     endif
   endfor
   return ret
+endfunction
+
+function! pum#_auto_done() abort
+  call pum#close()
+  call pum#_complete_done()
+endfunction
+function! pum#_complete_done() abort
+  let pum = pum#_get()
+
+  if pum.cursor <= 0 || pum.current_word ==# ''
+    return
+  endif
+
+  call pum#_reset_skip_complete()
+
+  let g:pum#completed_item = pum.items[pum.cursor - 1]
+  if exists('#User#PumCompleteDone')
+    doautocmd <nomodeline> User PumCompleteDone
+  endif
+endfunction
+function! pum#_reset_skip_complete() abort
+  let pum = pum#_get()
+  let pum.skip_complete = v:false
+  let pum.current_word = ''
 endfunction

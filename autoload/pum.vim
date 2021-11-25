@@ -114,7 +114,7 @@ function! s:open(startcol, items, mode) abort
     let width += 1
   endif
   if &pumwidth > 0
-    let width = min([width, &pumwidth])
+    let width = max([width, &pumwidth])
   endif
 
   if (!has('nvim') && a:mode ==# 't')

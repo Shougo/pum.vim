@@ -113,6 +113,9 @@ function! s:open(startcol, items, mode) abort
   if max_menu != 0
     let width += 1
   endif
+  if &pumwidth > 0
+    let width = min([width, &pumwidth])
+  endif
 
   if (!has('nvim') && a:mode ==# 't')
     let cursor = term_getcursor(bufnr('%'))
@@ -201,6 +204,8 @@ function! s:open(startcol, items, mode) abort
       call nvim_win_set_option(id, 'winhighlight',
             \ printf('Normal:%s,Search:None', options.highlight_normal_menu))
       call nvim_win_set_option(id, 'winblend', &l:winblend)
+      call nvim_win_set_option(id, 'wrap', v:false)
+      call nvim_win_set_option(id, 'scrolloff', 0)
 
       let pum.id = id
     endif
@@ -223,6 +228,8 @@ function! s:open(startcol, items, mode) abort
     else
       let pum.id = popup_create(lines, winopts)
       let pum.buf = winbufnr(pum.id)
+      call setwinvar(win_id2win(pum.id), '&wrap', 0)
+      call setwinvar(win_id2win(pum.id), '&scrolloff', 0)
     endif
     let pum.pos = pos
     let pum.horizontal_menu = v:false

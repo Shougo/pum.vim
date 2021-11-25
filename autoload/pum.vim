@@ -230,6 +230,7 @@ function! s:open(startcol, items, mode) abort
           \ 'highlight': options.highlight_normal_menu,
           \ 'maxwidth': width,
           \ 'maxheight': height,
+          \ 'wrap': 0,
           \ }
 
     if pum.id > 0
@@ -238,8 +239,6 @@ function! s:open(startcol, items, mode) abort
     else
       let pum.id = popup_create(lines, winopts)
       let pum.buf = winbufnr(pum.id)
-      call setwinvar(win_id2win(pum.id), '&wrap', 0)
-      call setwinvar(win_id2win(pum.id), '&scrolloff', 0)
     endif
     let pum.pos = pos
     let pum.horizontal_menu = v:false

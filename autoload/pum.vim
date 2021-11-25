@@ -124,6 +124,8 @@ function! s:open(startcol, items, mode) abort
     let spos = screenpos(0, line('.'), a:startcol)
   endif
 
+  let padding = options.border !=# 'none' && has('nvim') ? 3 : 1
+
   let height = len(items)
   if &pumheight > 0
     let height = min([height, &pumheight])
@@ -132,7 +134,6 @@ function! s:open(startcol, items, mode) abort
   endif
   if a:mode !=# 'c'
     " Adjust to screen row
-    let padding = options.border !=# 'none' && has('nvim') ? 3 : 1
     let minheight_below = min([height, &lines - spos.row - padding])
     let minheight_above = min([height, spos.row - padding])
     if minheight_below >= minheight_above
@@ -153,6 +154,15 @@ function! s:open(startcol, items, mode) abort
     endif
   endif
   let height = max([height, 1])
+
+  " Adjust to screen col
+  let rest_width = &columns - spos.col - padding
+  if rest_width < width
+    let spos.col -= width - rest_width
+    if spos.col < 0
+      let spos.col = 0
+    endif
+  endif
 
   let pos = a:mode ==# 'c' ?
         \ [&lines - height - max([1, &cmdheight]), a:startcol] :

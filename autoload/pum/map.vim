@@ -78,8 +78,8 @@ function! pum#map#insert_relative(delta) abort
     call pum#_redraw_horizontal_menu()
   endif
 
-  " Call CompleteDone if user input
-  call s:check_user_input({ -> pum#_complete_done() })
+  " Close popup menu and CompleteDone if user input
+  call s:check_user_input({ -> pum#close() })
 
   return ''
 endfunction
@@ -92,8 +92,6 @@ function! pum#map#confirm() abort
   endif
 
   call pum#close()
-
-  call pum#_complete_done()
 
   " Skip completion until next input
   let pum.skip_complete = v:true
@@ -108,6 +106,8 @@ function! pum#map#cancel() abort
   if pum.cursor > 0 && pum.current_word !=# ''
     call s:insert(pum.orig_input, pum.current_word)
   endif
+
+  let pum.current_word = ''
 
   call pum#close()
 

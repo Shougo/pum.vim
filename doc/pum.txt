@@ -116,6 +116,12 @@ max_horizontal_items
 
 		Default: 3
 
+					*pum-options-item_orders*
+item_orders
+		The order of the item.
+
+		Default: ["abbr", "kind", "menu"]
+
 					*pum-options-setline_insert*
 setline_insert
 		Use |setline()| instead of |feedkeys()|.

@@ -45,6 +45,7 @@ function! pum#_options() abort
           \ 'highlight_selected': 'PmenuSel',
           \ 'horizontal_menu': v:false,
           \ 'max_horizontal_items': 3,
+          \ 'item_orders': ['abbr', 'kind', 'menu'],
           \ 'setline_insert': v:false,
           \ }
   endif
@@ -81,6 +82,8 @@ function! s:open(startcol, items, mode) abort
     return -1
   endif
 
+  let options = pum#_options()
+
   " Remove dup
   let items = s:uniq_by_word_or_dup(a:items)
 
@@ -93,17 +96,13 @@ function! s:open(startcol, items, mode) abort
   let max_menu = max(map(copy(items), { _, val ->
         \ strwidth(get(val, 'menu', ''))
         \ }))
-  let format = printf('%%s%s%%s%s%%s',
-        \ (max_kind != 0 ? ' ' : ''),
-        \ (max_menu != 0 ? ' ' : ''))
   let lines = map(copy(items), { _, val ->
-        \ s:format_item(format, val, max_abbr, max_kind, max_menu)
+        \ pum#_format_item(val, options.item_orders,
+        \               max_abbr, max_kind, max_menu)
         \ })
 
   let pum = pum#_get()
   let pum.items = copy(items)
-
-  let options = pum#_options()
 
   let width = max_abbr + max_kind + max_menu
   " Padding
@@ -259,7 +258,8 @@ function! s:open(startcol, items, mode) abort
 
   if !pum.horizontal_menu
     " Highlight
-    call s:highlight_items(items, max_abbr, max_kind, max_menu)
+    call s:highlight_items(
+          \ items, options.item_orders, max_abbr, max_kind, max_menu)
 
     " Simple highlight matches
     silent! call matchdelete(s:pum_matched_id, pum.id)
@@ -506,65 +506,100 @@ function! pum#_redraw_horizontal_menu() abort
   endif
 endfunction
 
-function! s:highlight_items(items, max_abbr, max_kind, max_menu) abort
+function! s:highlight_items(items, orders, max_abbr, max_kind, max_menu) abort
   let pum = pum#_get()
   let options = pum#_options()
 
-  let start_abbr = 1
-  let end_abbr = a:max_abbr + 1
-  let start_kind = start_abbr + end_abbr
-  let end_kind = a:max_kind + 1
-  let start_menu = (a:max_kind != 0) ?
-        \ start_kind + end_kind : start_abbr + end_abbr
-  let end_menu = a:max_menu + 1
-
-  let highlight_abbr = options.highlight_abbr !=# '' && a:max_abbr != 0
-  let highlight_kind = options.highlight_kind !=# '' && a:max_kind != 0
-  let highlight_menu = options.highlight_menu !=# '' && a:max_menu != 0
-
   for row in range(1, len(a:items))
     " Default highlights
-    if highlight_abbr
-      call pum#_highlight(
-            \ options.highlight_abbr, 'pum_abbr', 0,
-            \ g:pum#_namespace, row, start_abbr, end_abbr)
-    endif
-
-    if highlight_kind
-      call pum#_highlight(
-            \ options.highlight_kind, 'pum_kind', 0,
-            \ g:pum#_namespace, row, start_kind, end_kind)
-    endif
-
-    if highlight_menu
-      call pum#_highlight(
-            \ options.highlight_menu, 'pum_menu', 0,
-            \ g:pum#_namespace, row, start_menu, end_menu)
-    endif
 
     let item = a:items[row - 1]
-    if !empty(get(item, 'highlights', []))
-      " Use custom highlights
-      for hl in item.highlights
-        let start = hl.type ==# 'abbr' ? start_abbr :
-              \ hl.type ==# 'kind' ? start_kind : start_menu
-        call pum#_highlight(
-              \ hl.hl_group, hl.name, 1,
-              \ g:pum#_namespace, row, start + hl.col, hl.width)
-      endfor
-    endif
+    let item_highlights = get(item, 'highlights', [])
+
+    let start = 1
+    for order in a:orders
+      if order ==# 'abbr' && a:max_abbr != 0
+        if options.highlight_abbr !=# ''
+          call pum#_highlight(
+                \ options.highlight_abbr, 'pum_abbr', 0,
+                \ g:pum#_namespace, row, start, a:max_abbr + 1)
+        endif
+
+        for hl in filter(copy(item_highlights),
+              \ {_, val -> val.type ==# 'abbr'})
+          call pum#_highlight(
+                \ hl.hl_group, hl.name, 1,
+                \ g:pum#_namespace, row, start + hl.col, hl.width)
+        endfor
+
+        let start += a:max_abbr + 1
+      elseif order ==# 'kind' && a:max_kind != 0
+        if options.highlight_kind !=# ''
+          call pum#_highlight(
+                \ options.highlight_kind, 'pum_kind', 0,
+                \ g:pum#_namespace, row, start, a:max_kind + 1)
+        endif
+
+        for hl in filter(copy(item_highlights),
+              \ {_, val -> val.type ==# 'kind'})
+          call pum#_highlight(
+                \ hl.hl_group, hl.name, 1,
+                \ g:pum#_namespace, row, start + hl.col, hl.width)
+        endfor
+
+        let start += a:max_kind + 1
+      elseif order ==# 'menu' && a:max_menu != 0
+        if options.highlight_menu !=# ''
+          call pum#_highlight(
+                \ options.highlight_menu, 'pum_menu', 0,
+                \ g:pum#_namespace, row, start, a:max_menu + 1)
+        endif
+
+        for hl in filter(copy(item_highlights),
+              \ {_, val -> val.type ==# 'menu'})
+          call pum#_highlight(
+                \ hl.hl_group, hl.name, 1,
+                \ g:pum#_namespace, row, start + hl.col, hl.width)
+        endfor
+
+        let start += a:max_menu + 1
+      endif
+    endfor
   endfor
 endfunction
 
-function! s:format_item(format, item, max_abbr, max_kind, max_menu) abort
+function! pum#_format_item(item, orders, max_abbr, max_kind, max_menu) abort
   let abbr = substitute(get(a:item, 'abbr', a:item.word),
         \ '[[:cntrl:]]', '?', 'g')
   let abbr .= repeat(' ' , a:max_abbr - strwidth(abbr))
+
   let kind = get(a:item, 'kind', '')
   let kind .= repeat(' ' , a:max_kind - strwidth(kind))
+
   let menu = get(a:item, 'menu', '')
   let menu .= repeat(' ' , a:max_menu - strwidth(menu))
-  return printf(a:format, abbr, kind, menu)
+
+  let str = ''
+  for order in a:orders
+    if order ==# 'abbr' && a:max_abbr != 0
+      if str !=# ''
+        let str .= ' '
+      endif
+      let str .= abbr
+    elseif order ==# 'kind' && a:max_kind != 0
+      if str !=# ''
+        let str .= ' '
+      endif
+      let str .= kind
+    elseif order ==# 'menu' && a:max_menu != 0
+      if str !=# ''
+        let str .= ' '
+      endif
+      let str .= menu
+    endif
+  endfor
+
+  return str
 endfunction
 
 function! s:print_error(string) abort

@@ -642,6 +642,8 @@ function! s:complete_done() abort
     return
   endif
 
+  call pum#_reset_skip_complete()
+
   let g:pum#completed_item = pum.items[pum.cursor - 1]
   if exists('#User#PumCompleteDone')
     doautocmd <nomodeline> User PumCompleteDone

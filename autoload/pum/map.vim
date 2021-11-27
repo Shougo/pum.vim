@@ -67,12 +67,13 @@ function! pum#map#insert_relative(delta) abort
         \ pum.orig_input
 
   call pum#map#select_relative(a:delta)
+
   if pum.cursor < 0 || pum.id <= 0
     let pum.current_word = ''
     return ''
   endif
 
-  call s:insert_current_word(prev_word)
+  call s:insert_current_word(prev_word, v:null)
 
   if pum.horizontal_menu
     call pum#_redraw_horizontal_menu()
@@ -88,32 +89,35 @@ function! pum#map#confirm() abort
   let pum = pum#_get()
 
   if pum.cursor > 0 && pum.current_word ==# ''
-    call s:insert_current_word(pum.orig_input)
+    call s:insert_current_word(pum.orig_input, { -> s:confirm_after() })
+  else
+    call s:confirm_after()
   endif
 
+  return ''
+endfunction
+
+function! s:confirm_after() abort
   call pum#close()
 
   " Skip completion until next input
+  let pum = pum#_get()
   let pum.skip_complete = v:true
+  let s:skip_count = 1
   call s:check_user_input({ -> pum#_reset_skip_complete() })
-
-  return ''
 endfunction
 
 function! pum#map#cancel() abort
   let pum = pum#_get()
 
-  if pum.cursor > 0 && pum.current_word !=# ''
-    call s:insert(pum.orig_input, pum.current_word)
-  endif
-
+  let current_word = pum.current_word
   let pum.current_word = ''
 
-  call pum#close()
-
-  " Skip completion until next input
-  let pum.skip_complete = v:true
-  call s:check_user_input({ -> pum#_reset_skip_complete() })
+  if pum.cursor > 0 && current_word !=# ''
+    call s:insert(pum.orig_input, current_word, { -> s:confirm_after() })
+  else
+    call s:confirm_after()
+  endif
 
   return ''
 endfunction
@@ -131,7 +135,7 @@ function! pum#map#_skip_count() abort
   return s:skip_count
 endfunction
 
-function! s:insert(word, prev_word) abort
+function! s:insert(word, prev_word, after_func) abort
   let pum = pum#_get()
 
   " Convert to 0 origin
@@ -142,8 +146,11 @@ function! s:insert(word, prev_word) abort
   if mode() ==# 'c' || pum#_options().setline_insert
     call s:setline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
+    if a:after_func != v:null
+      call call(a:after_func, [])
+    endif
   else
-    call s:insertline(a:word)
+    call s:insertline(a:word, a:after_func)
   endif
 
   let pum.current_word = a:word
@@ -151,13 +158,13 @@ function! s:insert(word, prev_word) abort
   " Note: The text changes fires TextChanged events.  It must be ignored.
   let pum.skip_complete = v:true
 endfunction
-function! s:insert_current_word(prev_word) abort
+function! s:insert_current_word(prev_word, after_func) abort
   let pum = pum#_get()
 
   let word = pum.cursor > 0 ?
         \ pum.items[pum.cursor - 1].word :
         \ pum.orig_input
-  call s:insert(word, a:prev_word)
+  call s:insert(word, a:prev_word, a:after_func)
 endfunction
 
 function! s:check_user_input(callback) abort
@@ -244,7 +251,7 @@ function! s:setline(text) abort
     endif
   endif
 endfunction
-function! s:insertline(text) abort
+function! s:insertline(text, after_func) abort
   let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
   if current_word ==# a:text
     return
@@ -264,6 +271,10 @@ function! s:insertline(text) abort
   let chars .= repeat("\<BS>", strchars(current_word)) . a:text
   if mode() ==# 'i'
     let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
+  endif
+  if a:after_func != v:null
+    let g:PumCallback = function(a:after_func)
+    let chars .= "\<Cmd>call call(g:PumCallback, [])\<CR>"
   endif
   let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1
 

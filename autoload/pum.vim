@@ -88,13 +88,13 @@ function! s:open(startcol, items, mode) abort
   let items = s:uniq_by_word_or_dup(a:items)
 
   let max_abbr = max(map(copy(items), { _, val ->
-        \ strwidth(get(val, 'abbr', val.word))
+        \ strdisplaywidth(get(val, 'abbr', val.word))
         \ }))
   let max_kind = max(map(copy(items), { _, val ->
-        \ strwidth(get(val, 'kind', ''))
+        \ strdisplaywidth(get(val, 'kind', ''))
         \ }))
   let max_menu = max(map(copy(items), { _, val ->
-        \ strwidth(get(val, 'menu', ''))
+        \ strdisplaywidth(get(val, 'menu', ''))
         \ }))
   let lines = map(copy(items), { _, val ->
         \ pum#_format_item(val, options.item_orders,
@@ -573,13 +573,13 @@ endfunction
 function! pum#_format_item(item, orders, max_abbr, max_kind, max_menu) abort
   let abbr = substitute(get(a:item, 'abbr', a:item.word),
         \ '[[:cntrl:]]', '?', 'g')
-  let abbr .= repeat(' ' , a:max_abbr - strwidth(abbr))
+  let abbr .= repeat(' ' , a:max_abbr - strdisplaywidth(abbr))
 
   let kind = get(a:item, 'kind', '')
-  let kind .= repeat(' ' , a:max_kind - strwidth(kind))
+  let kind .= repeat(' ' , a:max_kind - strdisplaywidth(kind))
 
   let menu = get(a:item, 'menu', '')
-  let menu .= repeat(' ' , a:max_menu - strwidth(menu))
+  let menu .= repeat(' ' , a:max_menu - strdisplaywidth(menu))
 
   let str = ''
   for order in a:orders

@@ -202,6 +202,7 @@ KEY MAPPINGS 						*pum-key-mappings*
 pum#map#cancel()
 		Cancel the select and close the popup.
 		Note: It must not be called in |:map-<expr>|.
+
 							*pum#map#confirm()*
 pum#map#confirm()
 		Insert the select and close the popup.

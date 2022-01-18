@@ -163,8 +163,10 @@ function! s:open(startcol, items, mode) abort
     endif
   endif
 
+  " Note: In Vim8, floating window must above of status line
   let pos = a:mode ==# 'c' ?
-        \ [&lines - height - max([1, &cmdheight]), a:startcol] :
+        \ [&lines - height - max([1, &cmdheight])
+        \  - (has('nvim') ? 0 : 1), a:startcol] :
         \ [spos.row, spos.col - 1]
 
   if options.horizontal_menu && a:mode ==# 'i'
@@ -274,11 +276,10 @@ function! s:open(startcol, items, mode) abort
 
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)
-  elseif a:mode ==# 'c' && has('nvim')
-    " Note: :redraw is needed for command line completion in neovim
+  elseif a:mode ==# 'c'
+    " Note: :redraw is needed for command line completion
     redraw
   endif
-  redraw
 
   augroup pum
     autocmd!
@@ -332,6 +333,10 @@ function! s:close() abort
     " Note: prop_remove() is not needed.
     " popup_close() removes the buffer.
     call popup_close(pum.id)
+  endif
+
+  if mode() ==# 'c'
+    redraw
   endif
 
   augroup pum

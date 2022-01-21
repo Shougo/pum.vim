@@ -279,8 +279,8 @@ function! s:open(startcol, items, mode) abort
   elseif a:mode ==# 'c'
     " Note: :redraw is needed for command line completion
     if &incsearch && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
-      " redraw without breaking 'incsearch' in search command
-      call feedkeys("\<C-R>\<BS>", 'n')
+      " Redraw without breaking 'incsearch' in search commands
+      call feedkeys("\<C-r>\<BS>", 'n')
     else
       redraw
     endif

@@ -278,7 +278,12 @@ function! s:open(startcol, items, mode) abort
     call pum#map#select_relative(+1)
   elseif a:mode ==# 'c'
     " Note: :redraw is needed for command line completion
-    redraw
+    if &incsearch && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
+      " redraw without breaking 'incsearch' in search command
+      call feedkeys("\<C-R>\<BS>", 'n')
+    else
+      redraw
+    endif
   endif
 
   augroup pum

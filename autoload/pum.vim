@@ -648,11 +648,11 @@ endfunction
 function! s:complete_done() abort
   let pum = pum#_get()
 
+  call pum#_reset_skip_complete()
+
   if pum.cursor <= 0 || pum.current_word ==# ''
     return
   endif
-
-  call pum#_reset_skip_complete()
 
   let g:pum#completed_item = pum.items[pum.cursor - 1]
   if exists('#User#PumCompleteDone')

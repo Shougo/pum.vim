@@ -663,5 +663,4 @@ endfunction
 function! pum#_reset_skip_complete() abort
   let pum = pum#_get()
   let pum.skip_complete = v:false
-  let pum.current_word = ''
 endfunction

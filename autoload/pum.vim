@@ -281,9 +281,12 @@ function! s:open(startcol, items, mode) abort
     if &incsearch && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
       " Redraw without breaking 'incsearch' in search commands
       call feedkeys("\<C-r>\<BS>", 'n')
-    else
-      redraw
     endif
+  endif
+
+  " Note: redraw is needed for Vim8 or command line mode
+  if !has('nvim') || a:mode ==# 'c'
+    redraw
   endif
 
   augroup pum
@@ -340,7 +343,8 @@ function! s:close() abort
     call popup_close(pum.id)
   endif
 
-  if mode() ==# 'c'
+  " Note: redraw is needed for Vim8 or command line mode
+  if !has('nvim') || mode() ==# 'c'
     redraw
   endif
 

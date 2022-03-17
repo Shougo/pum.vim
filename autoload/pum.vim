@@ -143,14 +143,6 @@ function! s:open(startcol, items, mode) abort
       let spos.row = spos.row - height - padding
       let height = minheight_above
     endif
-
-    if has('nvim') && !empty(get(nvim_win_get_config(0), 'border', []))
-      " Adjust floating window border
-      if minheight_below >= minheight_above
-        let spos.row += 1
-      endif
-      let spos.col += 1
-    endif
   endif
   let height = max([height, 1])
 

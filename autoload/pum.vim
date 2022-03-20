@@ -209,6 +209,7 @@ function! s:open(startcol, items, mode) abort
       call nvim_win_set_option(id, 'winblend', &l:winblend)
       call nvim_win_set_option(id, 'wrap', v:false)
       call nvim_win_set_option(id, 'scrolloff', 0)
+      call nvim_win_set_option(id, 'statusline', &l:statusline)
 
       let pum.id = id
     endif
@@ -647,6 +648,7 @@ function! s:complete_done() abort
   call pum#_reset_skip_complete()
 
   if pum.cursor <= 0 || pum.current_word ==# ''
+        \ || len(pum.items) < pum.cursor
     return
   endif
 

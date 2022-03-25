@@ -648,8 +648,8 @@ endfunction
 " returns [border_left, border_top, border_right, border_bottom]
 function! s:get_border_size(border) abort
   if type(a:border) == v:t_string
-    return a:border == 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
-  elseif (type(a:border) == v:t_list && len(a:border) >= 1)
+    return a:border ==# 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
+  elseif type(a:border) == v:t_list && len(a:border) >= 1
     return [s:get_borderchar_width(a:border[1 % len(a:border)]),
           \ s:get_borderchar_height(a:border[3 % len(a:border)]),
           \ s:get_borderchar_width(a:border[7 % len(a:border)]),
@@ -663,7 +663,7 @@ function! s:get_borderchar_height(ch) abort
   if type(a:ch) == v:t_string
     " character
     return empty(a:ch) ? 0 : 1
-  elseif (type(a:ch) == v:t_list && len(a:ch) > 0 && type(a:ch[0]) == v:t_string)
+  elseif type(a:ch) == v:t_list && !empty(a:ch) && type(a:ch[0]) == v:t_string
     " character with highlight: [ch, highlight]
     return empty(a:ch[0]) ? 0 : 1
   else
@@ -676,19 +676,8 @@ function! s:get_borderchar_width(ch) abort
   if type(a:ch) == v:t_string
     " character
     return strdisplaywidth(a:ch)
-  elseif (type(a:ch) == v:t_list && len(a:ch) > 0 && type(a:ch[0]) == v:t_string)
+  elseif type(a:ch) == v:t_list && !empty(a:ch) && type(a:ch[0]) == v:t_string
     " character with highlight: [ch, highlight]
-    return strdisplaywidth(a:ch[0])
-  else
-    call s:print_error('invalid border character: %s', a:ch)
-    return 0
-  endif
-endfunction
-
-function! s:get_borderchar_width(ch) abort
-  if type(a:ch) == v:t_string
-    return strdisplaywidth(a:ch)
-  elseif (type(a:ch) == v:t_list && len(a:ch) > 0 && type(a:ch[0]) == v:t_string)
     return strdisplaywidth(a:ch[0])
   else
     call s:print_error('invalid border character: %s', a:ch)

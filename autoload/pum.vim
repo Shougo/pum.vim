@@ -123,7 +123,9 @@ function! s:open(startcol, items, mode) abort
     let spos = screenpos(0, line('.'), a:startcol)
   endif
 
-  let padding = options.border !=# 'none' && has('nvim') ? 3 : 1
+  let has_border = 
+        \ (type(options.border) !=# v:t_string || options.border !=# 'none')
+  let padding = (has_border && has('nvim')) ? 3 : 1
 
   let height = len(items)
   if &pumheight > 0

@@ -123,7 +123,10 @@ function! s:open(startcol, items, mode) abort
     let spos = screenpos(0, line('.'), a:startcol)
   endif
 
-  let padding = options.border !=# 'none' && has('nvim') ? 3 : 1
+  let [border_left, border_top, border_right, border_bottom] =
+        \ s:get_border_size(options.border)
+  let padding_height = 1 + border_top + border_bottom
+  let padding_width = 1 + border_left + border_right
 
   let height = len(items)
   if &pumheight > 0
@@ -133,21 +136,21 @@ function! s:open(startcol, items, mode) abort
   endif
   if a:mode !=# 'c'
     " Adjust to screen row
-    let minheight_below = min([height, &lines - spos.row - padding])
-    let minheight_above = min([height, spos.row - padding])
+    let minheight_below = min([height, &lines - spos.row - padding_height])
+    let minheight_above = min([height, spos.row - padding_height])
     if minheight_below >= minheight_above
       " Use below window
       let height = minheight_below
     else
       " Use above window
-      let spos.row = spos.row - height - padding
+      let spos.row = spos.row - height - padding_height
       let height = minheight_above
     endif
   endif
   let height = max([height, 1])
 
   " Adjust to screen col
-  let rest_width = &columns - spos.col - padding
+  let rest_width = &columns - spos.col - padding_width
   if rest_width < width
     let spos.col -= width - rest_width
     if spos.col < 0
@@ -640,6 +643,57 @@ function! s:uniq_by_word_or_dup(items) abort
     endif
   endfor
   return ret
+endfunction
+
+" returns [border_left, border_top, border_right, border_bottom]
+function! s:get_border_size(border) abort
+  if type(a:border) == v:t_string
+    return a:border == 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
+  elseif (type(a:border) == v:t_list && len(a:border) >= 1)
+    return [s:get_borderchar_width(a:border[1 % len(a:border)]),
+          \ s:get_borderchar_height(a:border[3 % len(a:border)]),
+          \ s:get_borderchar_width(a:border[7 % len(a:border)]),
+          \ s:get_borderchar_height(a:border[5 % len(a:border)])]
+  else
+    return [0, 0, 0, 0]
+  endif
+endfunction
+
+function! s:get_borderchar_height(ch) abort
+  if type(a:ch) == v:t_string
+    " character
+    return empty(a:ch) ? 0 : 1
+  elseif (type(a:ch) == v:t_list && len(a:ch) > 0 && type(a:ch[0]) == v:t_string)
+    " character with highlight: [ch, highlight]
+    return empty(a:ch[0]) ? 0 : 1
+  else
+    call s:print_error('invalid border character: %s', a:ch)
+    return 0
+  endif
+endfunction
+
+function! s:get_borderchar_width(ch) abort
+  if type(a:ch) == v:t_string
+    " character
+    return strdisplaywidth(a:ch)
+  elseif (type(a:ch) == v:t_list && len(a:ch) > 0 && type(a:ch[0]) == v:t_string)
+    " character with highlight: [ch, highlight]
+    return strdisplaywidth(a:ch[0])
+  else
+    call s:print_error('invalid border character: %s', a:ch)
+    return 0
+  endif
+endfunction
+
+function! s:get_borderchar_width(ch) abort
+  if type(a:ch) == v:t_string
+    return strdisplaywidth(a:ch)
+  elseif (type(a:ch) == v:t_list && len(a:ch) > 0 && type(a:ch[0]) == v:t_string)
+    return strdisplaywidth(a:ch[0])
+  else
+    call s:print_error('invalid border character: %s', a:ch)
+    return 0
+  endif
 endfunction
 
 function! s:complete_done() abort

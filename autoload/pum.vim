@@ -113,6 +113,9 @@ function! s:open(startcol, items, mode) abort
   if max_menu != 0
     let width += 1
   endif
+  if (options.padding && a:startcol != 1)
+    let width += 2
+  endif
   if &pumwidth > 0
     let width = max([width, &pumwidth])
   endif
@@ -432,6 +435,11 @@ endfunction
 function! pum#_highlight(highlight, prop_type, priority, id, row, col, length) abort
   let pum = pum#_get()
 
+  let col = a:col
+  if (pum#_options().padding && pum.startcol != 1)
+    let col += 1
+  endif
+
   if !has('nvim')
     " Add prop_type
     if empty(prop_type_get(a:prop_type))
@@ -448,11 +456,11 @@ function! pum#_highlight(highlight, prop_type, priority, id, row, col, length) a
           \ a:id,
           \ a:highlight,
           \ a:row - 1,
-          \ a:col - 1,
-          \ a:col - 1 + a:length
+          \ col - 1,
+          \ col - 1 + a:length
           \ )
   else
-    call prop_add(a:row, a:col, {
+    call prop_add(a:row, col, {
           \ 'length': a:length,
           \ 'type': a:prop_type,
           \ 'bufnr': pum.buf,

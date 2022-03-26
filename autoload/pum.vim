@@ -44,8 +44,9 @@ function! pum#_options() abort
           \ 'highlight_normal_menu': 'Pmenu',
           \ 'highlight_selected': 'PmenuSel',
           \ 'horizontal_menu': v:false,
-          \ 'max_horizontal_items': 3,
           \ 'item_orders': ['abbr', 'kind', 'menu'],
+          \ 'max_horizontal_items': 3,
+          \ 'padding': v:false,
           \ 'setline_insert': v:false,
           \ }
   endif
@@ -97,8 +98,8 @@ function! s:open(startcol, items, mode) abort
         \ strdisplaywidth(get(val, 'menu', ''))
         \ }))
   let lines = map(copy(items), { _, val ->
-        \ pum#_format_item(val, options.item_orders,
-        \               max_abbr, max_kind, max_menu)
+        \   pum#_format_item(val, options, a:mode, a:startcol,
+        \                    max_abbr, max_kind, max_menu)
         \ })
 
   let pum = pum#_get()
@@ -127,6 +128,11 @@ function! s:open(startcol, items, mode) abort
         \ s:get_border_size(options.border)
   let padding_height = 1 + border_top + border_bottom
   let padding_width = 1 + border_left + border_right
+  let padding_left = border_left
+  if options.padding && (a:mode ==# 'c' || a:startcol != 1)
+    let padding_width += 2
+    let padding_left += 1
+  endif
 
   let height = len(items)
   if &pumheight > 0
@@ -153,18 +159,19 @@ function! s:open(startcol, items, mode) abort
   let rest_width = &columns - spos.col - padding_width
   if rest_width < width
     let spos.col -= width - rest_width
-    if spos.col < 0
-      let spos.col = 0
-    endif
   endif
 
-  " Adjust to border_left
-  let spos.col -= border_left
+  " Adjust to padding
+  let spos.col -= padding_left
+
+  if spos.col <= 0
+    let spos.col = 1
+  endif
 
   " Note: In Vim8, floating window must above of status line
   let pos = a:mode ==# 'c' ?
         \ [&lines - height - max([1, &cmdheight])
-        \  - (has('nvim') ? 0 : 1), a:startcol] :
+        \  - (has('nvim') ? 0 : 1), a:startcol - padding_left] :
         \ [spos.row, spos.col - 1]
 
   if options.horizontal_menu && a:mode ==# 'i'
@@ -583,7 +590,8 @@ function! s:highlight_items(items, orders, max_abbr, max_kind, max_menu) abort
   endfor
 endfunction
 
-function! pum#_format_item(item, orders, max_abbr, max_kind, max_menu) abort
+function! pum#_format_item(
+      \ item, options, mode, startcol, max_abbr, max_kind, max_menu) abort
   let abbr = substitute(get(a:item, 'abbr', a:item.word),
         \ '[[:cntrl:]]', '?', 'g')
   let abbr .= repeat(' ' , a:max_abbr - strdisplaywidth(abbr))
@@ -595,7 +603,7 @@ function! pum#_format_item(item, orders, max_abbr, max_kind, max_menu) abort
   let menu .= repeat(' ' , a:max_menu - strdisplaywidth(menu))
 
   let str = ''
-  for order in a:orders
+  for order in a:options.item_orders
     if order ==# 'abbr' && a:max_abbr != 0
       if str !=# ''
         let str .= ' '
@@ -613,6 +621,10 @@ function! pum#_format_item(item, orders, max_abbr, max_kind, max_menu) abort
       let str .= menu
     endif
   endfor
+
+  if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)
+    let str = ' ' . str . ' '
+  endif
 
   return str
 endfunction

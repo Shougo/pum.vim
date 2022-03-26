@@ -51,7 +51,7 @@ OPTIONS	 						*pum-options*
 Options can be toggled through the use of |pum#set_option()|.
 Note: The options must be set before call of |pum#open()|.
 
-					*pum-options-border*
+							*pum-options-border*
 border
 		The completion window border.  You can specify border
 		|nvim_open_win()| border option.
@@ -60,7 +60,7 @@ border
 
 		Default: "none"
 
-					*pum-options-highlight_abbr*
+						*pum-options-highlight_abbr*
 highlight_abbr
 		The abbr section highlight of candidates.
 
@@ -73,7 +73,7 @@ highlight_horizontal_menu
 
 		Default: ""
 
-					*pum-options-highlight_kind*
+						*pum-options-highlight_kind*
 highlight_kind
 		The kind section highlight of candidates.
 
@@ -85,7 +85,7 @@ highlight_matches
 
 		Default: ""
 
-					*pum-options-highlight_menu*
+						*pum-options-highlight_menu*
 highlight_menu
 		The menu section highlight of candidates.
 
@@ -103,11 +103,17 @@ highlight_selected
 
 		Default: "PmenuSel"
 
-					*pum-options-horizontal_menu*
+						*pum-options-horizontal_menu*
 horizontal_menu
 		Use horizontal menu instead of vertical popup menu.
 
 		Default: v:false
+
+						*pum-options-item_orders*
+item_orders
+		The order of the item.
+
+		Default: ["abbr", "kind", "menu"]
 
 					*pum-options-max_horizontal_items*
 max_horizontal_items
@@ -116,11 +122,11 @@ max_horizontal_items
 
 		Default: 3
 
-					*pum-options-item_orders*
-item_orders
-		The order of the item.
+							*pum-options-padding*
+padding
+		Enable left/right padding like native completion menu.
 
-		Default: ["abbr", "kind", "menu"]
+		Default: v:false
 
 					*pum-options-setline_insert*
 setline_insert

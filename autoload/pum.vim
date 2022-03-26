@@ -143,7 +143,7 @@ function! s:open(startcol, items, mode) abort
       let height = minheight_below
     else
       " Use above window
-      let spos.row = spos.row - height - padding_height
+      let spos.row -= height + padding_height
       let height = minheight_above
     endif
   endif
@@ -157,6 +157,9 @@ function! s:open(startcol, items, mode) abort
       let spos.col = 0
     endif
   endif
+
+  " Adjust to border_left
+  let spos.col -= border_left
 
   " Note: In Vim8, floating window must above of status line
   let pos = a:mode ==# 'c' ?
@@ -647,11 +650,14 @@ endfunction
 
 " returns [border_left, border_top, border_right, border_bottom]
 function! s:get_border_size(border) abort
-  if type(a:border) == v:t_string
+  if !has('nvim')
+    " Note: Vim is not supported
+    return [0, 0, 0, 0]
+  elseif type(a:border) == v:t_string
     return a:border ==# 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
-  elseif type(a:border) == v:t_list && len(a:border) >= 1
-    return [s:get_borderchar_width(a:border[1 % len(a:border)]),
-          \ s:get_borderchar_height(a:border[3 % len(a:border)]),
+  elseif type(a:border) == v:t_list && !empty(a:border)
+    return [s:get_borderchar_width(a:border[3 % len(a:border)]),
+          \ s:get_borderchar_height(a:border[1 % len(a:border)]),
           \ s:get_borderchar_width(a:border[7 % len(a:border)]),
           \ s:get_borderchar_height(a:border[5 % len(a:border)])]
   else

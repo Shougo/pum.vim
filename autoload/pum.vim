@@ -113,14 +113,14 @@ function! s:open(startcol, items, mode) abort
   if max_menu != 0
     let width += 1
   endif
-  if (options.padding && a:startcol != 1)
+  if options.padding && a:startcol != 1
     let width += 2
   endif
   if &pumwidth > 0
     let width = max([width, &pumwidth])
   endif
 
-  if (!has('nvim') && a:mode ==# 't')
+  if !has('nvim') && a:mode ==# 't'
     let cursor = term_getcursor(bufnr('%'))
     let spos = { 'row': cursor[0], 'col': a:startcol }
   else
@@ -432,11 +432,12 @@ function! pum#_col() abort
   return col
 endfunction
 
-function! pum#_highlight(highlight, prop_type, priority, id, row, col, length) abort
+function! pum#_highlight(
+      \ highlight, prop_type, priority, id, row, col, length) abort
   let pum = pum#_get()
 
   let col = a:col
-  if (pum#_options().padding && pum.startcol != 1)
+  if pum#_options().padding && pum.startcol != 1
     let col += 1
   endif
 

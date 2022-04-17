@@ -249,7 +249,7 @@ function! s:open(startcol, items, mode) abort
   else
     let winopts = {
           \ 'pos': 'topleft',
-          \ 'line': reversed ? len(items) : pos[0] + 1,
+          \ 'line': pos[0] + 1,
           \ 'col': pos[1] + 1,
           \ 'highlight': options.highlight_normal_menu,
           \ 'maxwidth': width,

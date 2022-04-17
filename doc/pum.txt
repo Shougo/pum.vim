@@ -122,6 +122,13 @@ max_horizontal_items
 
 		Default: 3
 
+							*pum-options-offset*
+offset
+		Popup row offset in the command line mode.
+
+		Default: 1 (Vim)
+		         0 (neovim)
+
 							*pum-options-padding*
 padding
 		Enable left/right padding like native completion menu.

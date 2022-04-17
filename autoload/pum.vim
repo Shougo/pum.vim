@@ -46,6 +46,7 @@ function! pum#_options() abort
           \ 'horizontal_menu': v:false,
           \ 'item_orders': ['abbr', 'kind', 'menu'],
           \ 'max_horizontal_items': 3,
+          \ 'offset': has('nvim') ? 0 : 1,
           \ 'padding': v:false,
           \ 'setline_insert': v:false,
           \ }
@@ -173,8 +174,8 @@ function! s:open(startcol, items, mode) abort
 
   " Note: In Vim8, floating window must above of status line
   let pos = a:mode ==# 'c' ?
-        \ [&lines - height - max([1, &cmdheight])
-        \  - (has('nvim') ? 0 : 1), a:startcol - padding_left] :
+        \ [&lines - height - max([1, &cmdheight]) - options.offset,
+        \  a:startcol - padding_left] :
         \ [spos.row, spos.col - 1]
 
   if options.horizontal_menu && a:mode ==# 'i'

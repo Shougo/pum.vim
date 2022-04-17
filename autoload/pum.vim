@@ -48,6 +48,7 @@ function! pum#_options() abort
           \ 'max_horizontal_items': 3,
           \ 'offset': has('nvim') ? 0 : 1,
           \ 'padding': v:false,
+          \ 'reversed': v:false,
           \ 'setline_insert': v:false,
           \ }
   endif
@@ -104,7 +105,6 @@ function! s:open(startcol, items, mode) abort
         \ })
 
   let pum = pum#_get()
-  let pum.items = copy(items)
 
   let width = max_abbr + max_kind + max_menu
   " Padding
@@ -144,20 +144,33 @@ function! s:open(startcol, items, mode) abort
   else
     let height = min([height, &lines - 1])
   endif
+
   if a:mode !=# 'c'
     " Adjust to screen row
     let minheight_below = min([height, &lines - spos.row - padding_height])
     let minheight_above = min([height, spos.row - padding_height])
-    if minheight_below >= minheight_above
-      " Use below window
-      let height = minheight_below
-    else
+    if minheight_below < minheight_above ||
+          \ (minheight_above >= 1 && options.reversed)
       " Use above window
       let spos.row -= height + padding_height
       let height = minheight_above
+      let direction = 'above'
+    else
+      " Use below window
+      let height = minheight_below
+      let direction = 'below'
     endif
+  else
+    let direction = 'above'
   endif
   let height = max([height, 1])
+
+  " Reversed
+  let reversed = direction ==# 'above' && options.reversed
+  if reversed
+    let lines = reverse(lines)
+    let items = reverse(items)
+  endif
 
   " Adjust to screen col
   let rest_width = &columns - spos.col - padding_width
@@ -236,7 +249,7 @@ function! s:open(startcol, items, mode) abort
   else
     let winopts = {
           \ 'pos': 'topleft',
-          \ 'line': pos[0] + 1,
+          \ 'line': reversed ? len(items) : pos[0] + 1,
           \ 'col': pos[1] + 1,
           \ 'highlight': options.highlight_normal_menu,
           \ 'maxwidth': width,
@@ -255,10 +268,18 @@ function! s:open(startcol, items, mode) abort
     let pum.horizontal_menu = v:false
   endif
 
+  if reversed
+    " The cursor must be end
+    call win_execute(pum.id, 'call cursor("$", 0) | redraw')
+  endif
+
+  let pum.items = copy(items)
   let pum.cursor = 0
+  let pum.direction = direction
   let pum.height = height
   let pum.width = width
   let pum.len = len(items)
+  let pum.reversed = reversed
   let pum.startcol = a:startcol
   let pum.startrow = s:row()
   let pum.current_line = getline('.')

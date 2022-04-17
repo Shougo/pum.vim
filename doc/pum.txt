@@ -135,6 +135,14 @@ padding
 
 		Default: v:false
 
+							*pum-options-reversed*
+reversed
+		Enable reveresd mode.
+		The popup menu is above the cursor if possible.
+		And the items order is reversed.
+
+		Default: v:false
+
 					*pum-options-setline_insert*
 setline_insert
 		Use |setline()| instead of |feedkeys()|.

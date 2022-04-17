@@ -6,12 +6,17 @@ function! pum#map#select_relative(delta) abort
     return ''
   endif
 
+  let delta = a:delta
+  if pum.reversed
+    let delta *= -1
+  endif
+
   " Clear current highlight
   if !pum.horizontal_menu
     silent! call matchdelete(pum#_cursor_id(), pum.id)
   endif
 
-  let pum.cursor += a:delta
+  let pum.cursor += delta
 
   if pum.cursor > pum.len || pum.cursor == 0
     " Reset
@@ -41,17 +46,17 @@ function! pum#map#select_relative(delta) abort
     " Note: If up scroll, cursor must adjust...
     " Note: Use matchaddpos() instead of nvim_buf_add_highlight() or prop_add()
     " Because the highlight conflicts with other highlights
-    if a:delta < 0
+    if delta < 0
       call win_execute(pum.id, '
             \ call cursor(pum#_get().cursor, 0) |
             \ call matchaddpos(pum#_options().highlight_selected,
-            \                   [pum#_get().cursor], 0, pum#_cursor_id()) |
+            \                  [pum#_get().cursor], 0, pum#_cursor_id()) |
             \ redraw')
     else
       call win_execute(pum.id, '
             \ call cursor(pum#_get().cursor + 1, 0) |
             \ call matchaddpos(pum#_options().highlight_selected,
-            \                   [pum#_get().cursor], 0, pum#_cursor_id()) |
+            \                  [pum#_get().cursor], 0, pum#_cursor_id()) |
             \ redraw')
     endif
   endif

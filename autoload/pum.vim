@@ -191,6 +191,11 @@ function! s:open(startcol, items, mode) abort
         \  a:startcol - padding_left] :
         \ [spos.row, spos.col - 1]
 
+  if a:mode ==# 'c' && exists('*getcmdscreenpos')
+    " Use getcmdscreenpos() for adjustment
+    let pos[1] += (getcmdscreenpos() - 1) - getcmdpos()
+  endif
+
   if options.horizontal_menu && a:mode ==# 'i'
     let pum.horizontal_menu = v:true
     let pum.cursor = 0

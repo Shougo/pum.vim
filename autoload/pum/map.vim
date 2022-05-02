@@ -257,11 +257,6 @@ function! s:setline(text) abort
   endif
 endfunction
 function! s:insertline(text, after_func) abort
-  let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  if current_word ==# a:text
-    return
-  endif
-
   " Note: ":undojoin" is needed to prevent undo breakage
   let tree = undotree()
   if tree.seq_cur == tree.seq_last
@@ -273,6 +268,7 @@ function! s:insertline(text, after_func) abort
   if mode() ==# 'i'
     let chars .= "\<Cmd>set backspace=start\<CR>"
   endif
+  let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
   let chars .= repeat("\<BS>", strchars(current_word)) . a:text
   if mode() ==# 'i'
     let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)

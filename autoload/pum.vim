@@ -241,7 +241,7 @@ function! s:open(startcol, items, mode) abort
       " Disable 'hlsearch' highlight
       call nvim_win_set_option(id, 'winhighlight',
             \ printf('Normal:%s,Search:None', options.highlight_normal_menu))
-      call nvim_win_set_option(id, 'winblend', &l:winblend)
+      call nvim_win_set_option(id, 'winblend', &l:pumblend)
       call nvim_win_set_option(id, 'wrap', v:false)
       call nvim_win_set_option(id, 'scrolloff', 0)
       call nvim_win_set_option(id, 'statusline', &l:statusline)

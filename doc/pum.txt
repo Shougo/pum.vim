@@ -122,13 +122,17 @@ max_horizontal_items
 
 		Default: 3
 
+			    			*pum-options-max_width*
+max_width
+		The maximum width of the popup menu.
+
+		Default: 0
+
 			    			*pum-options-min_width*
 min_width
 		The minimum width of the popup menu.
-		If you want to change the maximum width, please change
-		'pumwidth' option instead.
 
-		Default: 0
+		Default: 'pumwidth' value
 
 							*pum-options-offset*
 offset

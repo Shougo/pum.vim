@@ -152,44 +152,6 @@ function! pum#_col() abort
   return col
 endfunction
 
-function! pum#_highlight(
-      \ highlight, prop_type, priority, id, row, col, length) abort
-  let pum = pum#_get()
-
-  let col = a:col
-  if pum#_options().padding && pum.startcol != 1
-    let col += 1
-  endif
-
-  if !has('nvim')
-    " Add prop_type
-    if empty(prop_type_get(a:prop_type))
-      call prop_type_add(a:prop_type, {
-            \ 'highlight': a:highlight,
-            \ 'priority': a:priority,
-            \ })
-    endif
-  endif
-
-  if has('nvim')
-    call nvim_buf_add_highlight(
-          \ pum.buf,
-          \ a:id,
-          \ a:highlight,
-          \ a:row - 1,
-          \ col - 1,
-          \ col - 1 + a:length
-          \ )
-  else
-    call prop_add(a:row, col, {
-          \ 'length': a:length,
-          \ 'type': a:prop_type,
-          \ 'bufnr': pum.buf,
-          \ 'id': a:id,
-          \ })
-  endif
-endfunction
-
 function! pum#_cursor_id() abort
   return s:pum_cursor_id
 endfunction

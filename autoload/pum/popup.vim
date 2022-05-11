@@ -386,14 +386,14 @@ function! s:highlight_items(items, orders, max_abbr, max_kind, max_menu) abort
     for order in a:orders
       if order ==# 'abbr' && a:max_abbr != 0
         if options.highlight_abbr !=# ''
-          call pum#_highlight(
+          call s:highlight(
                 \ options.highlight_abbr, 'pum_abbr', 0,
                 \ g:pum#_namespace, row, start, a:max_abbr + 1)
         endif
 
         for hl in filter(copy(item_highlights),
               \ {_, val -> val.type ==# 'abbr'})
-          call pum#_highlight(
+          call s:highlight(
                 \ hl.hl_group, hl.name, 1,
                 \ g:pum#_namespace, row, start + hl.col, hl.width)
         endfor
@@ -401,14 +401,14 @@ function! s:highlight_items(items, orders, max_abbr, max_kind, max_menu) abort
         let start += a:max_abbr + 1
       elseif order ==# 'kind' && a:max_kind != 0
         if options.highlight_kind !=# ''
-          call pum#_highlight(
+          call s:highlight(
                 \ options.highlight_kind, 'pum_kind', 0,
                 \ g:pum#_namespace, row, start, a:max_kind + 1)
         endif
 
         for hl in filter(copy(item_highlights),
               \ {_, val -> val.type ==# 'kind'})
-          call pum#_highlight(
+          call s:highlight(
                 \ hl.hl_group, hl.name, 1,
                 \ g:pum#_namespace, row, start + hl.col, hl.width)
         endfor
@@ -416,14 +416,14 @@ function! s:highlight_items(items, orders, max_abbr, max_kind, max_menu) abort
         let start += a:max_kind + 1
       elseif order ==# 'menu' && a:max_menu != 0
         if options.highlight_menu !=# ''
-          call pum#_highlight(
+          call s:highlight(
                 \ options.highlight_menu, 'pum_menu', 0,
                 \ g:pum#_namespace, row, start, a:max_menu + 1)
         endif
 
         for hl in filter(copy(item_highlights),
               \ {_, val -> val.type ==# 'menu'})
-          call pum#_highlight(
+          call s:highlight(
                 \ hl.hl_group, hl.name, 1,
                 \ g:pum#_namespace, row, start + hl.col, hl.width)
         endfor
@@ -432,4 +432,41 @@ function! s:highlight_items(items, orders, max_abbr, max_kind, max_menu) abort
       endif
     endfor
   endfor
+endfunction
+
+function! s:highlight(highlight, prop_type, priority, id, row, col, length) abort
+  let pum = pum#_get()
+
+  let col = a:col
+  if pum#_options().padding && pum.startcol != 1
+    let col += 1
+  endif
+
+  if !has('nvim')
+    " Add prop_type
+    if empty(prop_type_get(a:prop_type))
+      call prop_type_add(a:prop_type, {
+            \ 'highlight': a:highlight,
+            \ 'priority': a:priority,
+            \ })
+    endif
+  endif
+
+  if has('nvim')
+    call nvim_buf_add_highlight(
+          \ pum.buf,
+          \ a:id,
+          \ a:highlight,
+          \ a:row - 1,
+          \ col - 1,
+          \ col - 1 + a:length
+          \ )
+  else
+    call prop_add(a:row, col, {
+          \ 'length': a:length,
+          \ 'type': a:prop_type,
+          \ 'bufnr': pum.buf,
+          \ 'id': a:id,
+          \ })
+  endif
 endfunction

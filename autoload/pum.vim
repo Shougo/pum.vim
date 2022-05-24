@@ -270,7 +270,8 @@ function! s:complete_done() abort
 
   let g:pum#completed_item = pum.items[pum.cursor - 1]
   if exists('#User#PumCompleteDone')
-    doautocmd <nomodeline> User PumCompleteDone
+    " Note: It may be failed when InsertCharPre
+    silent! doautocmd <nomodeline> User PumCompleteDone
   endif
 endfunction
 

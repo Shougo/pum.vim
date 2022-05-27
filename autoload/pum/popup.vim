@@ -1,4 +1,5 @@
 let s:pum_matched_id = 70
+let s:pum_ids = []
 
 function! pum#popup#_open(startcol, items, mode) abort
   if a:mode !~# '[ict]' || bufname('%') ==# '[Command Line]'
@@ -279,19 +280,30 @@ function! pum#popup#_close() abort
     return
   endif
 
+  " Note: The previous close may be failed
+  call add(s:pum_ids, pum.id)
+  let ids = s:pum_ids
+
   " Note: popup may be already closed
   " Close popup and clear highlights
   if has('nvim')
     if pum.horizontal_menu
       call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
     else
-      call nvim_win_close(pum.id, v:true)
       call nvim_buf_clear_namespace(pum.buf, g:pum#_namespace, 1, -1)
+
+      for id in ids
+        call nvim_win_close(id, v:true)
+        call remove(s:pum_ids, 0)
+      endfor
     endif
   else
     " Note: prop_remove() is not needed.
     " popup_close() removes the buffer.
-    call popup_close(pum.id)
+    for id in ids
+      call popup_close(id)
+      call remove(s:pum_ids, 0)
+    endfor
   endif
 
   " Note: redraw is needed for Vim8 or command line mode
@@ -307,6 +319,7 @@ function! pum#popup#_close() abort
   let pum.id = -1
 
   let g:pum#completed_item = {}
+  let s:pum_ids = []
 endfunction
 
 function! s:uniq_by_word_or_dup(items) abort

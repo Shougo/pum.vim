@@ -84,13 +84,7 @@ endfunction
 
 function! pum#close() abort
   call s:complete_done()
-
-  try
-    return pum#popup#_close()
-  catch /E523:\|E5555:/
-    " Ignore "Not allowed here"
-    return -1
-  endtry
+  return pum#popup#_close(pum#_get().id)
 endfunction
 
 function! pum#visible() abort

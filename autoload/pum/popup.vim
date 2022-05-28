@@ -1,5 +1,4 @@
 let s:pum_matched_id = 70
-let s:pum_ids = []
 
 function! pum#popup#_open(startcol, items, mode) abort
   if a:mode !~# '[ict]' || bufname('%') ==# '[Command Line]'
@@ -273,54 +272,54 @@ function! pum#popup#_open(startcol, items, mode) abort
   return pum.id
 endfunction
 
-function! pum#popup#_close() abort
-  let pum = pum#_get()
-
-  if pum.id <= 0
+function! pum#popup#_close(id) abort
+  if a:id <= 0
     return
   endif
-
-  " Note: The previous close may be failed
-  call add(s:pum_ids, pum.id)
-  let ids = s:pum_ids
 
   " Reset
   augroup pum
     autocmd!
   augroup END
 
+  let pum = pum#_get()
   let pum.current_word = ''
   let pum.id = -1
 
   let g:pum#completed_item = {}
-  " Note: popup may be already closed
-  " Close popup and clear highlights
-  if has('nvim')
-    if pum.horizontal_menu
-      call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
-    else
-      call nvim_buf_clear_namespace(pum.buf, g:pum#_namespace, 1, -1)
 
-      for id in ids
-        call nvim_win_close(id, v:true)
-        call remove(s:pum_ids, 0)
-      endfor
+  call pum#popup#_close_id(a:id)
+endfunction
+function! pum#popup#_close_id(id) abort
+  try
+    " Note: popup may be already closed
+    " Close popup and clear highlights
+    if has('nvim')
+      let pum = pum#_get()
+
+      if pum.horizontal_menu
+        call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
+      else
+        call nvim_buf_clear_namespace(pum.buf, g:pum#_namespace, 1, -1)
+
+        call nvim_win_close(a:id, v:true)
+      endif
+    else
+      " Note: prop_remove() is not needed.
+      " popup_close() removes the buffer.
+      call popup_close(a:id)
     endif
-  else
-    " Note: prop_remove() is not needed.
-    " popup_close() removes the buffer.
-    for id in ids
-      call popup_close(id)
-      call remove(s:pum_ids, 0)
-    endfor
-  endif
+  catch /E523:\|E5555:/
+    " Ignore "Not allowed here"
+
+    " Close the popup window later
+    call timer_start(10, { -> pum#popup#_close_id(a:id) })
+  endtry
 
   " Note: redraw is needed for Vim8 or command line mode
   if !has('nvim') || mode() ==# 'c'
     redraw
   endif
-
-  let s:pum_ids = []
 endfunction
 
 function! s:uniq_by_word_or_dup(items) abort

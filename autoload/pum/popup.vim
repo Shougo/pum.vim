@@ -284,6 +284,15 @@ function! pum#popup#_close() abort
   call add(s:pum_ids, pum.id)
   let ids = s:pum_ids
 
+  " Reset
+  augroup pum
+    autocmd!
+  augroup END
+
+  let pum.current_word = ''
+  let pum.id = -1
+
+  let g:pum#completed_item = {}
   " Note: popup may be already closed
   " Close popup and clear highlights
   if has('nvim')
@@ -311,14 +320,6 @@ function! pum#popup#_close() abort
     redraw
   endif
 
-  augroup pum
-    autocmd!
-  augroup END
-
-  let pum.current_word = ''
-  let pum.id = -1
-
-  let g:pum#completed_item = {}
   let s:pum_ids = []
 endfunction
 

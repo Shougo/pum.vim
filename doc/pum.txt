@@ -311,6 +311,18 @@ Q: The popup menu does not work in Command line window.
 
 A: It is the limitation of Command line window.
 
+Q: Auto import or auto snippet expansion does not work in pum.vim.
+
+A: pum.vim does not support |CompleteDone| autocmd.  You need to emulate the
+event like this.
+
+Note: It is for ale plugin. >
+	 autocmd User PumCompleteDone
+	 \ call ale#completion#HandleUserData(g:pum#completed_item)
+
+For vsnip plugin, you need to install "vim-vsnip-integ" plugin and please read
+the documentation.
+	https://github.com/hrsh7th/vim-vsnip-integ
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*

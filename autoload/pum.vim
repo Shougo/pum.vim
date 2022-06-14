@@ -29,6 +29,8 @@ function! pum#_init() abort
         \ 'startcol': -1,
         \ 'startrow': -1,
         \ 'width': -1,
+        \ 'border_width': 0,
+        \ 'border_height': 0,
         \}
 endfunction
 function! pum#_options() abort
@@ -120,8 +122,8 @@ function! pum#get_pos() abort
 
   let pum = pum#_get()
   return {
-        \ 'height': pum.height,
-        \ 'width': pum.width,
+        \ 'height': pum.height + pum.border_height,
+        \ 'width': pum.width + pum.border_width,
         \ 'row': pum.pos[0],
         \ 'col': pum.pos[1],
         \ 'size': pum.len,

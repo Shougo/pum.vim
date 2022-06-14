@@ -208,6 +208,8 @@ function! pum#popup#_open(startcol, items, mode) abort
   let pum.direction = direction
   let pum.height = height
   let pum.width = width
+  let pum.border_width = border_left + border_right
+  let pum.border_height = border_top + border_bottom
   let pum.len = len(items)
   let pum.reversed = reversed
   let pum.startcol = a:startcol

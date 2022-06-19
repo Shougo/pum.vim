@@ -267,6 +267,10 @@ pum#map#select_relative_page()
 ------------------------------------------------------------------------------
 AUTOCMDS	 					*pum-autocmds*
 
+							*PumClose*
+PumClose
+		It is called before completion menu is closed.
+
 							*PumCompleteChanged*
 PumCompleteChanged
 		After each time completion menu changed like |CompleteChanged|.
@@ -276,10 +280,6 @@ PumCompleteChanged
 PumCompleteDone
 		It is called after completion is done like |CompleteDone|.
 		|g:pum#completed_item| gives the completed item.
-
-							*PumClose*
-PumClose
-		It is called before completion menu is closed.
 
 
 ==============================================================================

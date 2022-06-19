@@ -86,6 +86,9 @@ endfunction
 
 function! pum#close() abort
   call s:complete_done()
+  if exists('#User#PumClose')
+    silent! doautocmd <nomodeline> User PumClose
+  endif
   return pum#popup#_close(pum#_get().id)
 endfunction
 

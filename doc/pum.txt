@@ -242,25 +242,27 @@ pum#map#confirm()
 		Note: It must not be called in |:map-<expr>|.
 
 						*pum#map#insert_relative()*
-pum#map#insert_relative({number})
-		Move forward or backward {number} and insert the candidate.
+pum#map#insert_relative({delta})
+		Move forward or backward {delta} number and insert the
+		candidate.
 		Note: It must not be called in |:map-<expr>|.
 
 					*pum#map#insert_relative_page()*
-pum#map#insert_relative_page({number})
-		Move forward or backward "{number} * page height" and insert
-		the candidate.
+pum#map#insert_relative_page({delta})
+		Move forward or backward "{delta} * page height" number and
+		insert the candidate.
 		Note: It must not be called in |:map-<expr>|.
 
 						*pum#map#select_relative()*
-pum#map#select_relative()
-		Move forward or backward {number} and select the candidate.
+pum#map#select_relative({delta})
+		Move forward or backward {delta} number and select the
+		candidate.
 		Note: It must not be called in |:map-<expr>|.
 
 					*pum#map#select_relative_page()*
-pum#map#select_relative_page()
-		Move forward or backward "{number} * page height" and select
-		the candidate.
+pum#map#select_relative_page({delta})
+		Move forward or backward "{delta} * page height" number and
+		select the candidate.
 		Note: It must not be called in |:map-<expr>|.
 
 

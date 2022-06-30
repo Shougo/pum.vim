@@ -217,6 +217,7 @@ function! pum#popup#_open(startcol, items, mode) abort
   let pum.current_line = getline('.')
   let pum.col = pum#_col()
   let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
+  let pum.orig_line = getline('.')
 
   " Clear current highlight
   silent! call matchdelete(pum#_cursor_id(), pum.id)

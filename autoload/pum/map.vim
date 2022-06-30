@@ -204,9 +204,11 @@ function! s:check_user_input(callback) abort
   endif
 endfunction
 function! s:check_text_changed() abort
-  return line('.') != pum#_get().startrow ||
-        \ (strchars(pum#_get().current_line) >
-        \  strchars(pum#_getline()[: pum#_get().startcol]))
+  let pum = pum#_get()
+  let startcol_line = pum#_getline()[: pum.startcol]
+  return line('.') != pum.startrow ||
+        \ (startcol_line !=# pum.orig_line &&
+        \  (strchars(pum.current_line) > strchars(startcol_line)))
 endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1

@@ -78,7 +78,7 @@ function! pum#open(startcol, items, ...) abort
 
   try
     return pum#popup#_open(a:startcol, a:items, get(a:000, 0, mode()))
-  catch /E523:/
+  catch /E523:\|E565:\|E5555:/
     " Ignore "Not allowed here"
     return -1
   endtry

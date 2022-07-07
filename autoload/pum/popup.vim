@@ -312,7 +312,7 @@ function! pum#popup#_close_id(id) abort
       " popup_close() removes the buffer.
       call popup_close(a:id)
     endif
-  catch /E523:\|E5555:/
+  catch /E523:\|E565:\|E5555:/
     " Ignore "Not allowed here"
 
     " Close the popup window later

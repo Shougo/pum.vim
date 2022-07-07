@@ -49,7 +49,7 @@ function! pum#_options() abort
           \ 'max_horizontal_items': 3,
           \ 'max_width': 0,
           \ 'min_width': &pumwidth,
-          \ 'offset': has('nvim') ? 0 : 1,
+          \ 'offset': has('nvim') || v:version >= 900 ? 0 : 1,
           \ 'padding': v:false,
           \ 'reversed': v:false,
           \ 'setline_insert': v:false,

@@ -138,8 +138,9 @@ min_width
 offset
 		Popup row offset in the command line mode.
 
-		Default: 1 (Vim)
-		         0 (neovim)
+		Default:
+			0 (neovim / Vim9+)
+			1 (Vim8)
 
 							*pum-options-padding*
 padding

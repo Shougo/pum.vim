@@ -141,7 +141,7 @@ function! pum#popup#_open(startcol, items, mode) abort
           \ 'row': pos[0],
           \ 'anchor': 'NW',
           \ 'style': 'minimal',
-          \ 'zindex': 100,
+          \ 'zindex': options.zindex,
           \ }
 
     if pum.id > 0
@@ -185,6 +185,7 @@ function! pum#popup#_open(startcol, items, mode) abort
           \ 'maxwidth': width,
           \ 'maxheight': height,
           \ 'wrap': 0,
+          \ 'zindex': options.zindex,
           \ }
 
     if pum.id > 0

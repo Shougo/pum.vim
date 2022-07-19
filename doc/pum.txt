@@ -164,6 +164,11 @@ setline_insert
 
 		Default: v:false
 
+					*pum-options-zindex*
+zindex
+		Popup window z-index.
+
+		Default: 1000
 
 ------------------------------------------------------------------------------
 FUNCTIONS 						*pum-functions*

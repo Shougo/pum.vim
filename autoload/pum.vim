@@ -53,6 +53,7 @@ function! pum#_options() abort
           \ 'padding': v:false,
           \ 'reversed': v:false,
           \ 'setline_insert': v:false,
+          \ 'zindex': 1000,
           \ }
   endif
   return s:options

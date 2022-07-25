@@ -208,6 +208,8 @@ function! pum#popup#_open(startcol, items, mode) abort
         call nvim_win_set_option(scroll_id, 'winhighlight',
               \ printf('Normal:%s,NormalFloat:None',
               \        options.highlight_scroll_bar))
+        call nvim_win_set_option(scroll_id, 'winblend', &l:pumblend)
+        call nvim_win_set_option(scroll_id, 'statusline', &l:statusline)
 
         let pum.scroll_id = scroll_id
       endif

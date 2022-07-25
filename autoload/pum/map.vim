@@ -61,6 +61,20 @@ function! pum#map#select_relative(delta) abort
     endif
   endif
 
+  " Update scroll bar
+  if pum.scroll_id > 0 && has('nvim')
+    let offset = min([
+          \ float2nr(pum.height * (pum.cursor + 0.0) / pum.len),
+          \ pum.height - 1
+          \ ])
+
+    call nvim_win_set_config(pum.scroll_id, {
+          \ 'relative': 'editor',
+          \ 'row': pum.scroll_row + offset,
+          \ 'col': pum.scroll_col,
+          \ })
+  endif
+
   " Close popup menu and CompleteDone if user input
   call s:check_user_input({ -> pum#close() })
 

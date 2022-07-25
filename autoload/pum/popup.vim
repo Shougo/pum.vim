@@ -130,19 +130,44 @@ function! pum#popup#_open(startcol, items, mode) abort
     if pum.buf < 0
       let pum.buf = nvim_create_buf(v:false, v:true)
     endif
+    if pum.scroll_buf < 0
+      let pum.scroll_buf = nvim_create_buf(v:false, v:true)
+    endif
+
     call nvim_buf_set_lines(pum.buf, 0, -1, v:true, lines)
+
+    let scroll_lines = map(copy(lines), { _ -> options.scrollbar_char })
+    call nvim_buf_set_lines(pum.scroll_buf, 0, -1, v:true, scroll_lines)
 
     let winopts = {
           \ 'border': options.border,
           \ 'relative': 'editor',
           \ 'width': width,
           \ 'height': height,
-          \ 'col': pos[1],
           \ 'row': pos[0],
+          \ 'col': pos[1],
           \ 'anchor': 'NW',
           \ 'style': 'minimal',
           \ 'zindex': options.zindex,
           \ }
+
+    let scroll_height = float2nr(
+          \ height * ((height + 0.0) / len(lines)) + 0.5)
+
+    let scroll_row = pos[0]
+    let scroll_col = pos[1] + width
+    let scroll_winopts = {
+          \ 'relative': 'editor',
+          \ 'width': 1,
+          \ 'height': scroll_height,
+          \ 'row': scroll_row,
+          \ 'col': scroll_col,
+          \ 'anchor': 'NW',
+          \ 'style': 'minimal',
+          \ 'zindex': options.zindex + 1,
+          \ }
+    let pum.scroll_row = scroll_row
+    let pum.scroll_col = scroll_col
 
     if pum.id > 0
       if pos == pum.pos
@@ -152,6 +177,10 @@ function! pum#popup#_open(startcol, items, mode) abort
       else
         " Reuse window
         call nvim_win_set_config(pum.id, winopts)
+      endif
+
+      if pum.scroll_id > 0
+        call nvim_win_set_config(pum.scroll_id, scroll_winopts)
       endif
     else
       call pum#close()
@@ -172,6 +201,16 @@ function! pum#popup#_open(startcol, items, mode) abort
       call nvim_win_set_option(id, 'statusline', &l:statusline)
 
       let pum.id = id
+
+      if options.scrollbar_char !=# '' && len(lines) > height
+        let scroll_id = nvim_open_win(
+              \ pum.scroll_buf, v:false, scroll_winopts)
+        call nvim_win_set_option(scroll_id, 'winhighlight',
+              \ printf('Normal:%s,NormalFloat:None',
+              \        options.highlight_scroll_bar))
+
+        let pum.scroll_id = scroll_id
+      endif
     endif
 
     let pum.pos = pos
@@ -184,6 +223,7 @@ function! pum#popup#_open(startcol, items, mode) abort
           \ 'highlight': options.highlight_normal_menu,
           \ 'maxwidth': width,
           \ 'maxheight': height,
+          \ 'scroll': options.scrollbar_char !=# '',
           \ 'wrap': 0,
           \ 'zindex': options.zindex,
           \ }
@@ -191,10 +231,16 @@ function! pum#popup#_open(startcol, items, mode) abort
     if pum.id > 0
       call popup_move(pum.id, winopts)
       call popup_settext(pum.id, lines)
+
+      if pum.scroll_id > 0
+        call popup_move(pum.scroll_id, scroll_winopts)
+        call popup_settext(pum.scroll_id, scroll_lines)
+      endif
     else
       let pum.id = popup_create(lines, winopts)
       let pum.buf = winbufnr(pum.id)
     endif
+
     let pum.pos = pos
     let pum.horizontal_menu = v:false
   endif

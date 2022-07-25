@@ -97,6 +97,13 @@ highlight_normal_menu
 
 		Default: "Pmenu"
 
+					*pum-options-highlight_scrollbar*
+highlight_scrollbar
+		The scrollbar highlight.
+		Note: neovim only feature.
+
+		Default: "PmenuSbar"
+
 					*pum-options-highlight_selected*
 highlight_selected
 		The selected highlight of candidates.
@@ -155,6 +162,14 @@ reversed
 		And the items order is reversed.
 
 		Default: v:false
+
+						*pum-options-scrollbar_char*
+scrollbar_char
+		Specify scrollbar character.
+		Note: The scrollbar feature is disabled if it is empty string.
+		Note: neovim only feature.
+
+		Default: "|"
 
 					*pum-options-setline_insert*
 setline_insert

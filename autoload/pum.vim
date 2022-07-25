@@ -25,6 +25,8 @@ function! pum#_init() abort
         \ 'len': 0,
         \ 'orig_input': '',
         \ 'pos': [],
+        \ 'scroll_buf': -1,
+        \ 'scroll_id': -1,
         \ 'skip_complete': v:false,
         \ 'startcol': -1,
         \ 'startrow': -1,
@@ -43,6 +45,7 @@ function! pum#_options() abort
           \ 'highlight_matches': '',
           \ 'highlight_menu': '',
           \ 'highlight_normal_menu': 'Pmenu',
+          \ 'highlight_scroll_bar': 'PmenuSbar',
           \ 'highlight_selected': 'PmenuSel',
           \ 'horizontal_menu': v:false,
           \ 'item_orders': ['abbr', 'kind', 'menu'],
@@ -52,6 +55,7 @@ function! pum#_options() abort
           \ 'offset': has('nvim') || v:version >= 900 ? 0 : 1,
           \ 'padding': v:false,
           \ 'reversed': v:false,
+          \ 'scrollbar_char': '|',
           \ 'setline_insert': v:false,
           \ 'zindex': 1000,
           \ }
@@ -90,7 +94,9 @@ function! pum#close() abort
   if exists('#User#PumClose')
     silent! doautocmd <nomodeline> User PumClose
   endif
-  return pum#popup#_close(pum#_get().id)
+
+  call pum#popup#_close(pum#_get().id)
+  call pum#popup#_close(pum#_get().scroll_id)
 endfunction
 
 function! pum#visible() abort

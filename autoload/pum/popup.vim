@@ -50,7 +50,7 @@ function! pum#popup#_open(startcol, items, mode) abort
     let cursor = term_getcursor(bufnr('%'))
     let spos = { 'row': cursor[0], 'col': a:startcol }
   else
-    let spos = screenpos(0, line('.'), a:startcol)
+    let spos = { 'row': winline(), 'col': a:startcol }
   endif
 
   let [border_left, border_top, border_right, border_bottom] =

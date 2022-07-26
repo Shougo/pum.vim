@@ -158,7 +158,7 @@ function! pum#popup#_open(startcol, items, mode) abort
     let scroll_col = pos[1] + width
     let scroll_winopts = {
           \ 'relative': 'editor',
-          \ 'width': 1,
+          \ 'width': strwidth(options.scrollbar_char),
           \ 'height': scroll_height,
           \ 'row': scroll_row,
           \ 'col': scroll_col,

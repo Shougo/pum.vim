@@ -62,7 +62,7 @@ function! pum#map#select_relative(delta) abort
   endif
 
   " Update scroll bar
-  if pum.scroll_id > 0 && has('nvim')
+  if pum.scroll_id > 0 && has('nvim') && winbufnr(pum.scroll_id) > 0
     let offset = min([
           \ float2nr(pum.height * (pum.cursor + 0.0) / pum.len),
           \ pum.height - 1

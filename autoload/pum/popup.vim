@@ -178,10 +178,6 @@ function! pum#popup#_open(startcol, items, mode) abort
         " Reuse window
         call nvim_win_set_config(pum.id, winopts)
       endif
-
-      if pum.scroll_id > 0
-        call nvim_win_set_config(pum.scroll_id, scroll_winopts)
-      endif
     else
       call pum#close()
 
@@ -201,8 +197,13 @@ function! pum#popup#_open(startcol, items, mode) abort
       call nvim_win_set_option(id, 'statusline', &l:statusline)
 
       let pum.id = id
+    endif
 
-      if options.scrollbar_char !=# '' && len(lines) > height
+    if options.scrollbar_char !=# '' && len(lines) > height
+      if pum.scroll_id > 0
+        " Reuse window
+        call nvim_win_set_config(pum.scroll_id, scroll_winopts)
+      else
         let scroll_id = nvim_open_win(
               \ pum.scroll_buf, v:false, scroll_winopts)
         call nvim_win_set_option(scroll_id, 'winhighlight',
@@ -213,6 +214,9 @@ function! pum#popup#_open(startcol, items, mode) abort
 
         let pum.scroll_id = scroll_id
       endif
+    elseif pum.scroll_id > 0
+      call pum#popup#_close_id(pum.scroll_id)
+      let pum.scroll_id = -1
     endif
 
     let pum.pos = pos
@@ -337,6 +341,7 @@ function! pum#popup#_close(id) abort
   let pum = pum#_get()
   let pum.current_word = ''
   let pum.id = -1
+  let pum.scroll_id = -1
 
   let g:pum#completed_item = {}
 

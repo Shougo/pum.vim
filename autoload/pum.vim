@@ -95,8 +95,14 @@ function! pum#close() abort
     silent! doautocmd <nomodeline> User PumClose
   endif
 
-  call pum#popup#_close(pum#_get().id)
-  call pum#popup#_close(pum#_get().scroll_id)
+  let pum = pum#_get()
+
+  " NOTE: pum.scroll_id is broken after pum#popup#_close()
+  let id = pum.id
+  let scroll_id = pum.scroll_id
+
+  call pum#popup#_close(id)
+  call pum#popup#_close(scroll_id)
 endfunction
 
 function! pum#visible() abort

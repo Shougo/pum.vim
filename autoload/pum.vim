@@ -281,10 +281,18 @@ function! s:complete_done() abort
   endif
 
   let g:pum#completed_item = pum.items[pum.cursor - 1]
-  if exists('#User#PumCompleteDone')
+
+  try
+    let v:completed_item = g:pum#completed_item
+
     " Note: It may be failed when InsertCharPre
-    silent! doautocmd <nomodeline> User PumCompleteDone
-  endif
+    silent! doautocmd <nomodeline> CompleteDone
+  catch
+    if exists('#User#PumCompleteDone')
+      " Note: It may be failed when InsertCharPre
+      silent! doautocmd <nomodeline> User PumCompleteDone
+    endif
+  endtry
 endfunction
 
 function! pum#_reset_skip_complete() abort

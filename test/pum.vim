@@ -66,24 +66,22 @@ function! s:suite.insert_relative() abort
   call s:assert.equals(pum#_get().cursor, 0)
 endfunction
 
-function! s:suite.multi_lines() abort
-  call pum#set_option('setline_insert', v:true)
-  call pum#open(1, [{'word': "foo\nbar"}, {'word': 'bar'}], 'i')
-
-  call pum#map#insert_relative(1)
-
-  call s:assert.equals(pum#_get().cursor, 1)
-  call s:assert.equals(getline(1, 2), ['foo', 'bar'])
-endfunction
-
 function! s:suite.format_item() abort
-  call s:assert.equals(
-        \ pum#_format_item({'word': 'foo', 'kind': 'bar', 'menu': 'baz'},
-        \ ['abbr', 'kind', 'menu'], 3, 3, 3),
-        \ 'foo bar baz')
+  let item = {'word': 'foo', 'kind': 'bar', 'menu': 'baz'}
 
   call s:assert.equals(
-        \ pum#_format_item({'word': 'foo', 'kind': 'bar', 'menu': 'baz'},
-        \ ['menu', 'abbr', 'kind'], 3, 3, 3),
+        \ pum#_format_item(item,
+        \ {
+        \   'item_orders': ['abbr', 'kind', 'menu'],
+        \   'padding': v:true,
+        \ }, 'i', 2, 3, 3, 3),
+        \ ' foo bar baz ')
+
+  call s:assert.equals(
+        \ pum#_format_item(item,
+        \ {
+        \   'item_orders': ['menu', 'abbr', 'kind'],
+        \   'padding': v:false,
+        \ }, 'i', 1, 3, 3, 3),
         \ 'baz foo bar')
 endfunction

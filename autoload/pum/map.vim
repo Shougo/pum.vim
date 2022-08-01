@@ -125,6 +125,7 @@ function! s:confirm_after() abort
   " Skip completion until next input
   let pum = pum#_get()
   let pum.skip_complete = v:true
+  let pum.cursor = 0
   let s:skip_count = 1
   call s:check_user_input({ -> pum#_reset_skip_complete() })
 endfunction
@@ -165,14 +166,17 @@ function! s:insert(word, prev_word, after_func) abort
   let prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
   let next_input = pum#_getline()[startcol :][len(a:prev_word):]
 
-  if mode() ==# 'c' || pum#_options().setline_insert
+  if mode() ==# 'c'
     call s:setline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
     if a:after_func != v:null
       call call(a:after_func, [])
     endif
+  elseif a:word ==# '' || !pum#_options().use_complete
+    " Note: complete() does not work for empty string
+    call s:insert_line_feedkeys(a:word, a:after_func)
   else
-    call s:insertline(a:word, a:after_func)
+    call s:insert_line_complete(a:word, a:after_func)
   endif
 
   let pum.current_word = a:word
@@ -195,10 +199,6 @@ function! s:check_user_input(callback) abort
   augroup END
 
   let g:PumCallback = function(a:callback)
-
-  if mode() ==# 'i' && pum#_options().setline_insert
-    let s:skip_count = 1
-  endif
 
   let pum = pum#_get()
   let pum.current_line = pum#_getline()[: pum.startcol]
@@ -246,36 +246,26 @@ endfunction
 function! s:cursor(col) abort
   return mode() ==# 'c' ? setcmdpos(a:col) : cursor(0, a:col)
 endfunction
+
 function! s:setline(text) abort
-  if mode() ==# 'c'
-    " setcmdline() is not exists...
+  " setcmdline() is not exists...
 
-    " Clear cmdline
-    let chars = "\<C-e>\<C-u>"
+  " Clear cmdline
+  let chars = "\<C-e>\<C-u>"
 
-    " Note: for control chars
-    let chars .= join(map(split(a:text, '\zs'),
-          \ { _, val -> val <# ' ' ? "\<C-q>" . val : val }), '')
+  " Note: for control chars
+  let chars .= join(map(split(a:text, '\zs'),
+        \ { _, val -> val <# ' ' ? "\<C-q>" . val : val }), '')
 
-    " Note: skip_count is needed to skip feedkeys() in s:setline()
-    let s:skip_count = strchars(chars)
+  " Note: skip_count is needed to skip feedkeys() in s:setline()
+  let s:skip_count = strchars(chars)
 
-    call feedkeys(chars, 'n')
-  else
-    " Note: ":undojoin" is needed to prevent undo breakage
-    let tree = undotree()
-    if tree.seq_cur == tree.seq_last
-      undojoin
-    endif
-
-    if pum#_options().setline_insert
-      call setline('.', split(a:text, '\n'))
-    else
-      call feedkeys(a:text, 'n')
-    endif
-  endif
+  call feedkeys(chars, 'n')
 endfunction
-function! s:insertline(text, after_func) abort
+
+function! s:insert_line_feedkeys(text, after_func) abort
+  " feedkeys() implementation
+
   " Note: ":undojoin" is needed to prevent undo breakage
   let tree = undotree()
   if tree.seq_cur == tree.seq_last
@@ -299,4 +289,24 @@ function! s:insertline(text, after_func) abort
   let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1
 
   call feedkeys(chars, 'n')
+endfunction
+
+function! s:insert_line_complete(text, after_func) abort
+  " Note: complete() implementation
+
+  " Note: CompleteDone may does not work for complete() insertion
+  if a:after_func != v:null
+    let g:PumCallback = function(a:after_func)
+    autocmd pum TextChangedI,TextChangedP * ++once
+          \ let &completeopt = s:save_completeopt |
+          \ call call(g:PumCallback, [])
+  else
+    autocmd pum TextChangedI,TextChangedP * ++once
+          \ let &completeopt = s:save_completeopt
+  endif
+
+  let s:save_completeopt = &completeopt
+  set completeopt=menu
+
+  call complete(pum#_get().startcol, [a:text])
 endfunction

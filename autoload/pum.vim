@@ -56,7 +56,7 @@ function! pum#_options() abort
           \ 'padding': v:false,
           \ 'reversed': v:false,
           \ 'scrollbar_char': '|',
-          \ 'setline_insert': v:false,
+          \ 'use_complete': v:false,
           \ 'zindex': 1000,
           \ }
   endif

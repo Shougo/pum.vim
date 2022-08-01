@@ -312,7 +312,8 @@ function! pum#popup#_open(startcol, items, mode) abort
 
   " Close popup automatically
   if exists('##ModeChanged')
-    autocmd pum ModeChanged * ++once call pum#close()
+    autocmd pum ModeChanged i:[^i]* ++once call pum#close()
+    autocmd pum ModeChanged [ct]:* ++once call pum#close()
   elseif a:mode ==# 'i'
     autocmd pum InsertLeave * ++once call pum#close()
     autocmd pum CursorMovedI *
@@ -349,6 +350,9 @@ function! pum#popup#_close(id) abort
 endfunction
 function! pum#popup#_close_id(id) abort
   try
+    " Move cursor
+    call win_execute(a:id, 'call cursor(1, 0)')
+
     " Note: popup may be already closed
     " Close popup and clear highlights
     if has('nvim')

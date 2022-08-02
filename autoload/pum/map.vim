@@ -167,7 +167,7 @@ function! s:insert(word, prev_word, after_func) abort
   let next_input = pum#_getline()[startcol :][len(a:prev_word):]
 
   if mode() ==# 'c'
-    call s:setline(prev_input . a:word . next_input)
+    call s:setcmdline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
     if a:after_func != v:null
       call call(a:after_func, [])
@@ -247,20 +247,23 @@ function! s:cursor(col) abort
   return mode() ==# 'c' ? setcmdpos(a:col) : cursor(0, a:col)
 endfunction
 
-function! s:setline(text) abort
-  " setcmdline() is not exists...
+function! s:setcmdline(text) abort
+  if exists('*setcmdline')
+    " NOTE: CmdlineChanged autocmd must be disabled
+    noautocmd call setcmdline(a:text)
+  else
+    " Clear cmdline
+    let chars = "\<C-e>\<C-u>"
 
-  " Clear cmdline
-  let chars = "\<C-e>\<C-u>"
+    " Note: for control chars
+    let chars .= join(map(split(a:text, '\zs'),
+          \ { _, val -> val <# ' ' ? "\<C-q>" . val : val }), '')
 
-  " Note: for control chars
-  let chars .= join(map(split(a:text, '\zs'),
-        \ { _, val -> val <# ' ' ? "\<C-q>" . val : val }), '')
+    " Note: skip_count is needed to skip feedkeys()
+    let s:skip_count = strchars(chars)
 
-  " Note: skip_count is needed to skip feedkeys() in s:setline()
-  let s:skip_count = strchars(chars)
-
-  call feedkeys(chars, 'n')
+    call feedkeys(chars, 'n')
+  endif
 endfunction
 
 function! s:insert_line_feedkeys(text, after_func) abort

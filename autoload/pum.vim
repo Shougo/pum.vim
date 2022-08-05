@@ -25,6 +25,7 @@ function! pum#_init() abort
         \ 'len': 0,
         \ 'orig_input': '',
         \ 'pos': [],
+        \ 'reversed': v:false,
         \ 'scroll_buf': -1,
         \ 'scroll_id': -1,
         \ 'skip_complete': v:false,
@@ -285,11 +286,11 @@ function! s:complete_done() abort
   try
     let v:completed_item = g:pum#completed_item
 
-    " Note: It may be failed when InsertCharPre
+    " NOTE: It may be failed when InsertCharPre
     silent! doautocmd <nomodeline> CompleteDone
   catch
     if exists('#User#PumCompleteDone')
-      " Note: It may be failed when InsertCharPre
+      " NOTE: It may be failed when InsertCharPre
       silent! doautocmd <nomodeline> User PumCompleteDone
     endif
   endtry

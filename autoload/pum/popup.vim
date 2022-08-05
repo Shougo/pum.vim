@@ -110,7 +110,7 @@ function! pum#popup#_open(startcol, items, mode) abort
     let spos.col = 1
   endif
 
-  " Note: In Vim8, floating window must above of status line
+  " NOTE: In Vim8, floating window must above of status line
   let pos = a:mode ==# 'c' ?
         \ [&lines - height - max([1, &cmdheight]) - options.offset,
         \  a:startcol - padding_left] :
@@ -153,6 +153,8 @@ function! pum#popup#_open(startcol, items, mode) abort
 
     let scroll_height = float2nr(
           \ height * ((height + 0.0) / len(lines)) + 0.5)
+    " NOTE: scroll_height must be positive
+    let scroll_height = max([scroll_height, 1])
 
     let scroll_row = pos[0]
     let scroll_col = pos[1] + width
@@ -181,13 +183,13 @@ function! pum#popup#_open(startcol, items, mode) abort
     else
       call pum#close()
 
-      " Note: It cannot set in nvim_win_set_config()
+      " NOTE: It cannot set in nvim_win_set_config()
       let winopts.noautocmd = v:true
 
       " Create new window
       let id = nvim_open_win(pum.buf, v:false, winopts)
 
-      " Note: nvim_win_set_option() causes title flicker...
+      " NOTE: nvim_win_set_option() causes title flicker...
       " Disable 'hlsearch' highlight
       call nvim_win_set_option(id, 'winhighlight',
             \ printf('Normal:%s,Search:None', options.highlight_normal_menu))
@@ -294,14 +296,14 @@ function! pum#popup#_open(startcol, items, mode) abort
   if &completeopt =~# 'noinsert'
     call pum#map#select_relative(+1)
   elseif a:mode ==# 'c'
-    " Note: :redraw is needed for command line completion
+    " NOTE: :redraw is needed for command line completion
     if &incsearch && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
       " Redraw without breaking 'incsearch' in search commands
       call feedkeys("\<C-r>\<BS>", 'n')
     endif
   endif
 
-  " Note: redraw is needed for Vim8 or command line mode
+  " NOTE: redraw is needed for Vim8 or command line mode
   if !has('nvim') || a:mode ==# 'c'
     redraw
   endif
@@ -353,7 +355,7 @@ function! pum#popup#_close_id(id) abort
     " Move cursor
     call win_execute(a:id, 'call cursor(1, 0)')
 
-    " Note: popup may be already closed
+    " NOTE: popup may be already closed
     " Close popup and clear highlights
     if has('nvim')
       let pum = pum#_get()
@@ -366,7 +368,7 @@ function! pum#popup#_close_id(id) abort
         call nvim_win_close(a:id, v:true)
       endif
     else
-      " Note: prop_remove() is not needed.
+      " NOTE: prop_remove() is not needed.
       " popup_close() removes the buffer.
       call popup_close(a:id)
     endif
@@ -377,7 +379,7 @@ function! pum#popup#_close_id(id) abort
     call timer_start(10, { -> pum#popup#_close_id(a:id) })
   endtry
 
-  " Note: redraw is needed for Vim8 or command line mode
+  " NOTE: redraw is needed for Vim8 or command line mode
   if !has('nvim') || mode() ==# 'c'
     redraw
   endif
@@ -399,7 +401,7 @@ endfunction
 " returns [border_left, border_top, border_right, border_bottom]
 function! s:get_border_size(border) abort
   if !has('nvim')
-    " Note: Vim is not supported
+    " NOTE: Vim is not supported
     return [0, 0, 0, 0]
   elseif type(a:border) == v:t_string
     return a:border ==# 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]

@@ -43,8 +43,8 @@ function! pum#map#select_relative(delta) abort
     call pum#_redraw_horizontal_menu()
   else
     " Move real cursor
-    " Note: If up scroll, cursor must adjust...
-    " Note: Use matchaddpos() instead of nvim_buf_add_highlight() or prop_add()
+    " NOTE: If up scroll, cursor must adjust...
+    " NOTE: Use matchaddpos() instead of nvim_buf_add_highlight() or prop_add()
     " Because the highlight conflicts with other highlights
     if delta < 0
       call win_execute(pum.id, '
@@ -173,7 +173,7 @@ function! s:insert(word, prev_word, after_func) abort
       call call(a:after_func, [])
     endif
   elseif a:word ==# '' || !pum#_options().use_complete
-    " Note: complete() does not work for empty string
+    " NOTE: complete() does not work for empty string
     call s:insert_line_feedkeys(a:word, a:after_func)
   else
     call s:insert_line_complete(a:word, a:after_func)
@@ -181,7 +181,7 @@ function! s:insert(word, prev_word, after_func) abort
 
   let pum.current_word = a:word
 
-  " Note: The text changes fires TextChanged events.  It must be ignored.
+  " NOTE: The text changes fires TextChanged events.  It must be ignored.
   let pum.skip_complete = v:true
 endfunction
 function! s:insert_current_word(prev_word, after_func) abort
@@ -255,11 +255,11 @@ function! s:setcmdline(text) abort
     " Clear cmdline
     let chars = "\<C-e>\<C-u>"
 
-    " Note: for control chars
+    " NOTE: for control chars
     let chars .= join(map(split(a:text, '\zs'),
           \ { _, val -> val <# ' ' ? "\<C-q>" . val : val }), '')
 
-    " Note: skip_count is needed to skip feedkeys()
+    " NOTE: skip_count is needed to skip feedkeys()
     let s:skip_count = strchars(chars)
 
     call feedkeys(chars, 'n')
@@ -269,14 +269,14 @@ endfunction
 function! s:insert_line_feedkeys(text, after_func) abort
   " feedkeys() implementation
 
-  " Note: ":undojoin" is needed to prevent undo breakage
+  " NOTE: ":undojoin" is needed to prevent undo breakage
   let tree = undotree()
   if tree.seq_cur == tree.seq_last
     undojoin
   endif
 
   let chars = ''
-  " Note: Change backspace option to work <BS> correctly
+  " NOTE: Change backspace option to work <BS> correctly
   if mode() ==# 'i'
     let chars .= "\<Cmd>set backspace=start\<CR>"
   endif
@@ -295,9 +295,9 @@ function! s:insert_line_feedkeys(text, after_func) abort
 endfunction
 
 function! s:insert_line_complete(text, after_func) abort
-  " Note: complete() implementation
+  " NOTE: complete() implementation
 
-  " Note: CompleteDone may does not work for complete() insertion
+  " NOTE: CompleteDone may does not work for complete() insertion
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)
     autocmd pum TextChangedI,TextChangedP * ++once

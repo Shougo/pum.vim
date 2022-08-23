@@ -206,6 +206,7 @@ function! pum#popup#_open(startcol, items, mode) abort
         " Reuse window
         call nvim_win_set_config(pum.scroll_id, scroll_winopts)
       else
+        let scroll_winopts.noautocmd = v:true
         let scroll_id = nvim_open_win(
               \ pum.scroll_buf, v:false, scroll_winopts)
         call nvim_win_set_option(scroll_id, 'winhighlight',

@@ -60,11 +60,13 @@ border
 
 		Default: "none"
 
-						*pum-options-highlight_abbr*
-highlight_abbr
-		The abbr section highlight of candidates.
+						*pum-options-highlight_columns*
+highlight_columns
+		The columns highlights of candidates.
+		The key is column name.
+		The value is highlight name.
 
-		Default: ""
+		Default: {}
 
 					*pum-options-highlight_horizontal_menu*
 highlight_horizontal_menu
@@ -73,21 +75,9 @@ highlight_horizontal_menu
 
 		Default: ""
 
-						*pum-options-highlight_kind*
-highlight_kind
-		The kind section highlight of candidates.
-
-		Default: ""
-
 					*pum-options-highlight_matches*
 highlight_matches
 		The input matches highlight of candidates.
-
-		Default: ""
-
-						*pum-options-highlight_menu*
-highlight_menu
-		The menu section highlight of candidates.
 
 		Default: ""
 
@@ -357,6 +347,11 @@ the documentation.
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*
+
+2022.09.08
+
+* Remove "highlight_abbr", "highlight_kind" and "highlight_menu" options.
+  Please use "highlight_columns" instead.
 
 
 ==============================================================================

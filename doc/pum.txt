@@ -216,6 +216,7 @@ pum#open({startcol}, {items})
 		Open popup menu like |complete()|.
 		{startcol} is the byte offset in the line where the completed
 		text start.
+		Note: {startcol} is 1 origin like |col()|.
 		{items} must be a |List|.  See |complete-items| for the kind
 		of items.  You can use following special key.
 

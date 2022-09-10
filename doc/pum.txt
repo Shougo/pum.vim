@@ -134,8 +134,8 @@ min_width
 
 		Default: 'pumwidth' value
 
-							*pum-options-offset*
-offset
+						*pum-options-offset_row*
+offset_row
 		Popup row offset in the command line mode.
 
 		Default:
@@ -350,6 +350,9 @@ the documentation.
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*
+
+2022.09.10
+* Rename "offset" option to "offset_row".
 
 2022.09.08
 

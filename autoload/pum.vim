@@ -231,6 +231,12 @@ function! pum#_redraw_horizontal_menu() abort
 endfunction
 
 function! pum#_format_item(item, options, mode, startcol, max_columns) abort
+  let columns = extend(copy(get(a:item, 'columns', {})), {
+        \ 'abbr': get(a:item, 'abbr', a:item.word),
+        \ 'kind': get(a:item, 'kind', ''),
+        \ 'menu': get(a:item, 'menu', ''),
+        \ })
+
   let str = ''
   for order in a:options.item_orders
     if get(a:max_columns, order, 0) <= 0
@@ -241,7 +247,7 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
       let str .= ' '
     endif
 
-    let column = substitute(get(a:item, order, ''), '[[:cntrl:]]', '?', 'g')
+    let column = substitute(get(columns, order, ''), '[[:cntrl:]]', '?', 'g')
     if order ==# 'abbr' && column ==# ''
       " Fallback to "word"
       let column = a:item.word

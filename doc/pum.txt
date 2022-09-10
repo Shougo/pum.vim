@@ -108,7 +108,10 @@ horizontal_menu
 
 						*pum-options-item_orders*
 item_orders
-		The order of the item.
+		The column order of the item.
+		Note: "abbr", "kind" and "menu" columns are from the item
+		attribute.  Other columns are from the item's "columns"
+		attribute.
 
 		Default: ["abbr", "kind", "menu"]
 

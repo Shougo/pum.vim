@@ -11,20 +11,24 @@ function! pum#popup#_open(startcol, items, mode) abort
   " Remove dup
   let items = s:uniq_by_word_or_dup(a:items)
 
-  let max_abbr = max(map(copy(items), { _, val ->
+  " Calc max columns
+  let max_columns = {}
+  for column in options.item_orders
+    let max_columns[column] = max(map(copy(items), { _, val ->
+          \ strdisplaywidth(get(get(val, 'columns', {}), column, ''))
+          \ }))
+  endfor
+  let max_columns.abbr = max(map(copy(items), { _, val ->
         \ strdisplaywidth(get(val, 'abbr', val.word))
         \ }))
-  let max_kind = max(map(copy(items), { _, val ->
+  let max_columns.kind = max(map(copy(items), { _, val ->
         \ strdisplaywidth(get(val, 'kind', ''))
         \ }))
-  let max_menu = max(map(copy(items), { _, val ->
+  let max_columns.menu = max(map(copy(items), { _, val ->
         \ strdisplaywidth(get(val, 'menu', ''))
         \ }))
-  let max_columns = {
-        \ 'abbr': max_abbr,
-        \ 'kind': max_kind,
-        \ 'menu': max_menu,
-        \ }
+  call filter(max_columns, { _, val -> val != 0 })
+
   let lines = map(copy(items), { _, val ->
         \   pum#_format_item(val, options, a:mode, a:startcol, max_columns)
         \ })
@@ -38,12 +42,7 @@ function! pum#popup#_open(startcol, items, mode) abort
   endfor
 
   " Padding
-  if max_kind != 0
-    let width += 1
-  endif
-  if max_menu != 0
-    let width += 1
-  endif
+  let width += len(max_columns) - 1
   if options.padding && a:startcol != 1
     let width += 2
   endif

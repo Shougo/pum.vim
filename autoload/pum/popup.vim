@@ -11,31 +11,38 @@ function! pum#popup#_open(startcol, items, mode) abort
   " Remove dup
   let items = s:uniq_by_word_or_dup(a:items)
 
-  let max_abbr = max(map(copy(items), { _, val ->
+  " Calc max columns
+  let max_columns = {}
+  for column in options.item_orders
+    let max_columns[column] = max(map(copy(items), { _, val ->
+          \ strdisplaywidth(get(get(val, 'columns', {}), column, ''))
+          \ }))
+  endfor
+  let max_columns.abbr = max(map(copy(items), { _, val ->
         \ strdisplaywidth(get(val, 'abbr', val.word))
         \ }))
-  let max_kind = max(map(copy(items), { _, val ->
+  let max_columns.kind = max(map(copy(items), { _, val ->
         \ strdisplaywidth(get(val, 'kind', ''))
         \ }))
-  let max_menu = max(map(copy(items), { _, val ->
+  let max_columns.menu = max(map(copy(items), { _, val ->
         \ strdisplaywidth(get(val, 'menu', ''))
         \ }))
+  call filter(max_columns, { _, val -> val != 0 })
+
   let lines = map(copy(items), { _, val ->
-        \   pum#_format_item(val, options, a:mode, a:startcol,
-        \                    max_abbr, max_kind, max_menu)
+        \   pum#_format_item(val, options, a:mode, a:startcol, max_columns)
         \ })
 
   let pum = pum#_get()
 
   " Calc width
-  let width = max_abbr + max_kind + max_menu
+  let width = 0
+  for max_column in values(max_columns)
+    let width += max_column
+  endfor
+
   " Padding
-  if max_kind != 0
-    let width += 1
-  endif
-  if max_menu != 0
-    let width += 1
-  endif
+  let width += len(max_columns) - 1
   if options.padding && a:startcol != 1
     let width += 2
   endif
@@ -283,7 +290,7 @@ function! pum#popup#_open(startcol, items, mode) abort
   if !pum.horizontal_menu
     " Highlight
     call s:highlight_items(
-          \ items, options.item_orders, max_abbr, max_kind, max_menu)
+          \ items, options.item_orders, max_columns)
 
     " Simple highlight matches
     silent! call matchdelete(s:pum_matched_id, pum.id)
@@ -451,7 +458,7 @@ function! s:row() abort
   return row
 endfunction
 
-function! s:highlight_items(items, orders, max_abbr, max_kind, max_menu) abort
+function! s:highlight_items(items, orders, max_columns) abort
   let pum = pum#_get()
   let options = pum#_options()
 
@@ -463,52 +470,27 @@ function! s:highlight_items(items, orders, max_abbr, max_kind, max_menu) abort
 
     let start = 1
     for order in a:orders
-      if order ==# 'abbr' && a:max_abbr != 0
-        if options.highlight_abbr !=# ''
-          call s:highlight(
-                \ options.highlight_abbr, 'pum_abbr', 0,
-                \ g:pum#_namespace, row, start, a:max_abbr + 1)
-        endif
+      let max_column = get(a:max_columns, order, 0)
 
-        for hl in filter(copy(item_highlights),
-              \ {_, val -> val.type ==# 'abbr'})
-          call s:highlight(
-                \ hl.hl_group, hl.name, 1,
-                \ g:pum#_namespace, row, start + hl.col, hl.width)
-        endfor
-
-        let start += a:max_abbr + 1
-      elseif order ==# 'kind' && a:max_kind != 0
-        if options.highlight_kind !=# ''
-          call s:highlight(
-                \ options.highlight_kind, 'pum_kind', 0,
-                \ g:pum#_namespace, row, start, a:max_kind + 1)
-        endif
-
-        for hl in filter(copy(item_highlights),
-              \ {_, val -> val.type ==# 'kind'})
-          call s:highlight(
-                \ hl.hl_group, hl.name, 1,
-                \ g:pum#_namespace, row, start + hl.col, hl.width)
-        endfor
-
-        let start += a:max_kind + 1
-      elseif order ==# 'menu' && a:max_menu != 0
-        if options.highlight_menu !=# ''
-          call s:highlight(
-                \ options.highlight_menu, 'pum_menu', 0,
-                \ g:pum#_namespace, row, start, a:max_menu + 1)
-        endif
-
-        for hl in filter(copy(item_highlights),
-              \ {_, val -> val.type ==# 'menu'})
-          call s:highlight(
-                \ hl.hl_group, hl.name, 1,
-                \ g:pum#_namespace, row, start + hl.col, hl.width)
-        endfor
-
-        let start += a:max_menu + 1
+      if max_column <= 0
+        continue
       endif
+
+      let highlight_column = get(options.highlight_columns, order, '')
+      if highlight_column !=# ''
+        call s:highlight(
+              \ highlight_column, 'pum_' . order, 0,
+              \ g:pum#_namespace, row, start, max_column + 1)
+      endif
+
+      for hl in filter(copy(item_highlights),
+            \ {_, val -> val.type ==# order})
+        call s:highlight(
+              \ hl.hl_group, hl.name, 1,
+              \ g:pum#_namespace, row, start + hl.col, hl.width)
+      endfor
+
+      let start += max_column + 1
     endfor
   endfor
 endfunction

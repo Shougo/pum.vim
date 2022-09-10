@@ -74,7 +74,12 @@ function! s:suite.format_item() abort
         \ {
         \   'item_orders': ['abbr', 'kind', 'menu'],
         \   'padding': v:true,
-        \ }, 'i', 2, 3, 3, 3),
+        \ }, 'i', 2,
+        \ {
+        \   'abbr': 3,
+        \   'kind': 3,
+        \   'menu': 3,
+        \ }),
         \ ' foo bar baz ')
 
   call s:assert.equals(
@@ -82,6 +87,11 @@ function! s:suite.format_item() abort
         \ {
         \   'item_orders': ['menu', 'abbr', 'kind'],
         \   'padding': v:false,
-        \ }, 'i', 1, 3, 3, 3),
+        \ }, 'i', 1,
+        \ {
+        \   'abbr': 3,
+        \   'kind': 3,
+        \   'menu': 3,
+        \ }),
         \ 'baz foo bar')
 endfunction

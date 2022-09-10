@@ -40,11 +40,9 @@ function! pum#_options() abort
   if !exists('s:options')
     let s:options = {
           \ 'border': 'none',
-          \ 'highlight_abbr': '',
+          \ 'highlight_columns': {},
           \ 'highlight_horizontal_menu': '',
-          \ 'highlight_kind': '',
           \ 'highlight_matches': '',
-          \ 'highlight_menu': '',
           \ 'highlight_normal_menu': 'Pmenu',
           \ 'highlight_scroll_bar': 'PmenuSbar',
           \ 'highlight_selected': 'PmenuSel',
@@ -232,36 +230,31 @@ function! pum#_redraw_horizontal_menu() abort
   endif
 endfunction
 
-function! pum#_format_item(
-      \ item, options, mode, startcol, max_abbr, max_kind, max_menu) abort
-  let abbr = substitute(get(a:item, 'abbr', a:item.word),
-        \ '[[:cntrl:]]', '?', 'g')
-  let abbr .= repeat(' ' , a:max_abbr - strdisplaywidth(abbr))
-
-  let kind = get(a:item, 'kind', '')
-  let kind .= repeat(' ' , a:max_kind - strdisplaywidth(kind))
-
-  let menu = get(a:item, 'menu', '')
-  let menu .= repeat(' ' , a:max_menu - strdisplaywidth(menu))
+function! pum#_format_item(item, options, mode, startcol, max_columns) abort
+  let columns = extend(copy(get(a:item, 'columns', {})), {
+        \ 'abbr': get(a:item, 'abbr', a:item.word),
+        \ 'kind': get(a:item, 'kind', ''),
+        \ 'menu': get(a:item, 'menu', ''),
+        \ })
 
   let str = ''
   for order in a:options.item_orders
-    if order ==# 'abbr' && a:max_abbr != 0
-      if str !=# ''
-        let str .= ' '
-      endif
-      let str .= abbr
-    elseif order ==# 'kind' && a:max_kind != 0
-      if str !=# ''
-        let str .= ' '
-      endif
-      let str .= kind
-    elseif order ==# 'menu' && a:max_menu != 0
-      if str !=# ''
-        let str .= ' '
-      endif
-      let str .= menu
+    if get(a:max_columns, order, 0) <= 0
+      continue
     endif
+
+    if str !=# ''
+      let str .= ' '
+    endif
+
+    let column = substitute(get(columns, order, ''), '[[:cntrl:]]', '?', 'g')
+    if order ==# 'abbr' && column ==# ''
+      " Fallback to "word"
+      let column = a:item.word
+    endif
+    let column .= repeat(' ' , a:max_columns[order] - strdisplaywidth(column))
+
+    let str .= column
   endfor
 
   if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)

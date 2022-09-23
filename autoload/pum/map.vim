@@ -107,6 +107,34 @@ function! pum#map#insert_relative(delta) abort
   return ''
 endfunction
 
+function! pum#map#longest_relative(delta) abort
+  let pum = pum#_get()
+  if empty(pum.items)
+    return ''
+  endif
+
+  let complete_str = pum.orig_input
+  let common_str = pum.items[0].word
+  for item in pum.items[1:]
+    while stridx(tolower(item.word), tolower(common_str)) != 0
+      let common_str = common_str[: -2]
+    endwhile
+  endfor
+
+  if common_str ==# '' || complete_str ==? common_str
+    return pum#map#select_relative(a:delta)
+  endif
+
+  " Insert the longest word.
+  let prev_word = pum.cursor > 0 ?
+        \ pum.items[pum.cursor - 1].word :
+        \ pum.orig_input
+  call s:insert(common_str, prev_word, v:null)
+  let pum.skip_complete = v:false
+
+  return ''
+endfunction
+
 function! pum#map#confirm() abort
   let pum = pum#_get()
 

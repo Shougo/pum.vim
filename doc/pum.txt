@@ -270,6 +270,13 @@ pum#map#insert_relative_page({delta})
 		insert the candidate.
 		Note: It must not be called in |:map-<expr>|.
 
+						*pum#map#longest_relative()*
+pum#map#longest_relative({delta})
+		Insert the longest word.
+		If the longest word is not found, it is same with
+		|pum#map#insert_relative()|.
+		Note: It must not be called in |:map-<expr>|.
+
 						*pum#map#select_relative()*
 pum#map#select_relative({delta})
 		Move forward or backward {delta} number and select the

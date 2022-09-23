@@ -275,6 +275,7 @@ pum#map#longest_relative({delta})
 		Insert the longest word.
 		If the longest word is not found, it is same with
 		|pum#map#insert_relative()|.
+		The behavior is like "list:longest,full" in 'wildmode'.
 		Note: It must not be called in |:map-<expr>|.
 
 						*pum#map#select_relative()*

@@ -89,7 +89,7 @@ function! pum#open(startcol, items, ...) abort
 endfunction
 
 function! pum#close() abort
-  if pum#visible()
+  if !pum#visible()
     return
   endif
 

@@ -127,11 +127,13 @@ function! pum#map#longest_relative(delta) abort
 
   if common_str ==# '' || complete_str ==? common_str
         \ || common_str ==# prev_word
-    return pum#map#select_relative(a:delta)
+    return pum#map#insert_relative(a:delta)
   endif
 
   " Insert the longest word.
   call s:insert(common_str, prev_word, v:null)
+
+  let pum.orig_input = common_str
   let pum.skip_complete = v:false
 
   return ''

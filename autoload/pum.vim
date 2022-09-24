@@ -89,6 +89,10 @@ function! pum#open(startcol, items, ...) abort
 endfunction
 
 function! pum#close() abort
+  if pum#visible()
+    return
+  endif
+
   call s:complete_done()
   if exists('#User#PumClose')
     silent! doautocmd <nomodeline> User PumClose

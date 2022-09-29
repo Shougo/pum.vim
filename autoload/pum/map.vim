@@ -29,6 +29,15 @@ function! pum#map#select_relative(delta) abort
       call win_execute(pum.id, 'call cursor(1, 0) | redraw')
     endif
 
+    " Reset scroll bar
+    if pum.scroll_id > 0 && has('nvim') && winbufnr(pum.scroll_id) > 0
+      call nvim_win_set_config(pum.scroll_id, {
+            \ 'relative': 'editor',
+            \ 'row': pum.scroll_row,
+            \ 'col': pum.scroll_col,
+            \ })
+    endif
+
     return ''
   elseif pum.cursor < 0
     " Reset
@@ -63,10 +72,9 @@ function! pum#map#select_relative(delta) abort
 
   " Update scroll bar
   if pum.scroll_id > 0 && has('nvim') && winbufnr(pum.scroll_id) > 0
-    let offset = min([
-          \ float2nr(pum.height * (pum.cursor + 0.0) / pum.len),
-          \ pum.height - 1
-          \ ])
+    let offset = line('w$', pum.id) == pum.len ?
+          \ pum.height - pum.scroll_height : float2nr(floor(
+          \ pum.height * (line('w0', pum.id) + 0.0) / pum.len + 0.5))
 
     call nvim_win_set_config(pum.scroll_id, {
           \ 'relative': 'editor',

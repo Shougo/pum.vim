@@ -177,6 +177,7 @@ function! pum#popup#_open(startcol, items, mode) abort
           \ }
     let pum.scroll_row = scroll_row
     let pum.scroll_col = scroll_col
+    let pum.scroll_height = scroll_height
 
     if pum.id > 0
       if pos == pum.pos

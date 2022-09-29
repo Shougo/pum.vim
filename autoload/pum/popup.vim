@@ -159,7 +159,7 @@ function! pum#popup#_open(startcol, items, mode) abort
           \ }
 
     let scroll_height = float2nr(
-          \ height * ((height + 0.0) / len(lines)) + 0.5)
+          \ floor(height * ((height + 0.0) / len(lines)) + 0.5))
     " NOTE: scroll_height must be positive
     let scroll_height = max([scroll_height, 1])
 

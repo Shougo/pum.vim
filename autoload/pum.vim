@@ -133,6 +133,10 @@ function! pum#complete_info(...) abort
 
   return ret
 endfunction
+function! pum#current_item() abort
+  let info = pum#complete_info()
+  return get(info.items, info.selected, {})
+endfunction
 
 function! pum#get_pos() abort
   if !pum#visible()

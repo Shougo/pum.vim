@@ -72,9 +72,12 @@ function! pum#map#select_relative(delta) abort
 
   " Update scroll bar
   if pum.scroll_id > 0 && has('nvim') && winbufnr(pum.scroll_id) > 0
-    let offset = line('w$', pum.id) == pum.len ?
-          \ pum.height - pum.scroll_height : float2nr(floor(
-          \ pum.height * (line('w0', pum.id) + 0.0) / pum.len + 0.5))
+    let head = line('w0', pum.id)
+    let bottom = line('w$', pum.id)
+    let offset =
+          \ head == 1 ? 0 :
+          \ bottom == pum.len ? pum.height - pum.scroll_height :
+          \ float2nr(floor(pum.height * (head + 0.0) / pum.len + 0.5))
 
     call nvim_win_set_config(pum.scroll_id, {
           \ 'relative': 'editor',

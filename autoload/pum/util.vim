@@ -56,3 +56,8 @@ function! s:strwidthpart_reverse(str, width) abort
   let vcol = strwidth(str) - a:width
   return matchstr(str, '\%>' . (vcol < 0 ? 0 : vcol) . 'v.*')
 endfunction
+
+function! pum#util#_luacheck(module) abort
+  return has('nvim')
+        \ && luaeval('pcall(require, _A.module)', { 'module': a:module })
+endfunction

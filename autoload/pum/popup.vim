@@ -130,8 +130,11 @@ function! pum#popup#_open(startcol, items, mode) abort
             \ 'require("noice.util.cursor").get_cmdline_cursor()')
       let win_cursor = cmdline_cursor.win_cursor
       let screen_cursor = cmdline_cursor.screen_cursor
+
       let pos[0] = screen_cursor[0]
       let pos[0] += win_cursor[0] - 1
+      let pos[0] += options.offset_row
+
       let pos[1] += screen_cursor[1] - win_cursor[1] - 1
     elseif exists('*getcmdscreenpos')
       " Use getcmdscreenpos() for adjustment

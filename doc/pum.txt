@@ -33,6 +33,10 @@ INSTALL							*pum-install*
 Note: pum.vim requires Neovim (0.5.0+) or Vim8.2.1978+ (latest is
 recommended).
 
+pum.vim detects if "noice.nvim" is installed.
+
+https://github.com/folke/noice.nvim
+
 
 ==============================================================================
 INTERFACE						*pum-interface*

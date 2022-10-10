@@ -252,8 +252,10 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp CmdlineLeave *
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
-    autocmd pum-temp User PumTextChanged
-          \ call s:check_skip_count(g:PumCallback)
+    if exists('##TermOutput')
+      autocmd pum-temp TermOutput *
+            \ if s:check_text_changed_terminal() | call pum#close() | endif
+    endif
   else
     autocmd pum-temp InsertCharPre *
           \ call s:check_skip_count(g:PumCallback)
@@ -266,9 +268,16 @@ endfunction
 function! s:check_text_changed() abort
   let pum = pum#_get()
   let startcol_line = pum#_getline()[: pum.startcol]
-  return line('.') != pum.startrow ||
-        \ (startcol_line !=# pum.orig_line &&
-        \  (strchars(pum.current_line) > strchars(startcol_line)))
+  let check_startcol_line = startcol_line !=# pum.orig_line &&
+        \ (strchars(pum.current_line) > strchars(startcol_line))
+  return line('.') != pum.startrow || check_startcol_line
+endfunction
+function! s:check_text_changed_terminal() abort
+  " Check pum.items is inserted
+  let pum = pum#_get()
+  let current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
+  let words = map(copy(pum.items), { _, val -> val.word })
+  return index(words, current_word) < 0
 endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1

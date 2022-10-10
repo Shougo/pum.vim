@@ -215,7 +215,7 @@ function! s:insert(word, prev_word, after_func) abort
     if a:after_func != v:null
       call call(a:after_func, [])
     endif
-  elseif a:word ==# '' || !pum#_options().use_complete
+  elseif mode() ==# 't' || a:word ==# '' || !pum#_options().use_complete
     " NOTE: complete() does not work for empty string
     call s:insert_line_feedkeys(a:word, a:after_func)
   else

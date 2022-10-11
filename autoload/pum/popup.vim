@@ -348,8 +348,8 @@ function! pum#popup#_open(startcol, items, mode) abort
   elseif a:mode ==# 't' && exists('##TermEnter')
     autocmd pum TermEnter,TermLeave * ++once call pum#close()
   endif
-  if a:mode ==# 't' && exists('##TermOutput')
-    autocmd pum TermOutput *
+  if a:mode ==# 't' && exists('##TextChangedT')
+    autocmd pum TextChangedT *
           \ if pum#_get().startrow !=# line('.') | call pum#close() | endif
   endif
   autocmd pum CursorHold * ++once call pum#close()

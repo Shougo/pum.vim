@@ -252,8 +252,8 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp CmdlineLeave *
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
-    if exists('##TermOutput')
-      autocmd pum-temp TermOutput *
+    if exists('##TextChangedT')
+      autocmd pum-temp TextChangedT *
             \ if s:check_text_changed_terminal() | call pum#close() | endif
     endif
   else

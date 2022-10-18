@@ -31,7 +31,7 @@ https://github.com/folke/noice.nvim
 
 For vim-plug
 
-```viml
+```vim
 call plug#begin()
 
 Plug 'Shougo/pum.vim'
@@ -41,7 +41,7 @@ call plug#end()
 
 For dein.vim
 
-```viml
+```vim
 call dein#begin()
 
 call dein#add('Shougo/pum.vim')

@@ -303,11 +303,10 @@ function! s:setcmdline(text) abort
   if exists('*setcmdline')
     " NOTE: CmdlineChanged autocmd must be disabled
     noautocmd call setcmdline(a:text)
-
     if !has('nvim')
       " NOTE: skip_count is needed for Vim
       " CmdlineChanged is triggered after setcmdline() call
-      let s:skip_count = strchars(a:text)
+      let s:skip_count = 2
     endif
   else
     " Clear cmdline

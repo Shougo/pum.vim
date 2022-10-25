@@ -49,6 +49,7 @@ function! pum#_options() abort
           \ 'horizontal_menu': v:false,
           \ 'item_orders': ['abbr', 'kind', 'menu'],
           \ 'max_horizontal_items': 3,
+          \ 'max_height': &pumheight,
           \ 'max_width': 0,
           \ 'min_width': &pumwidth,
           \ 'offset_row': has('nvim') || v:version >= 900 ? 0 : 1,

@@ -71,10 +71,8 @@ function! pum#popup#_open(startcol, items, mode) abort
   endif
 
   let height = len(items)
-  if &pumheight > 0
-    let height = min([height, &pumheight])
-  else
-    let height = min([height, &lines - 1])
+  if options.max_height > 0
+    let height = min([height, options.max_height])
   endif
 
   if a:mode !=# 'c'
@@ -94,6 +92,7 @@ function! pum#popup#_open(startcol, items, mode) abort
     endif
   else
     let direction = 'above'
+    let height = min([height, &lines - max([&cmdheight, 1])])
   endif
   let height = max([height, 1])
 

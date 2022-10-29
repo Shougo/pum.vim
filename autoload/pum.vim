@@ -115,7 +115,7 @@ endfunction
 
 function! pum#entered() abort
   let info = pum#complete_info()
-  return info.selected >= 0 || info.inserted >= 0
+  return info.selected >= 0 || info.inserted != ''
 endfunction
 
 function! pum#complete_info(...) abort

@@ -113,6 +113,11 @@ function! pum#visible() abort
   return pum#_get().id > 0
 endfunction
 
+function! pum#entered() abort
+  let info = pum#complete_info()
+  return info.selected >= 0 || info.inserted >= 0
+endfunction
+
 function! pum#complete_info(...) abort
   let pum = pum#_get()
   let info =  {

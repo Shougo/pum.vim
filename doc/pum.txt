@@ -203,6 +203,10 @@ pum#complete_info([{what}])
 		If {what} is supplied, then only the items listed in {what}
 		are returned.
 
+							*pum#entered()*
+pum#entered()
+		Returns |v:true| if you have selected or inserted popup menu.
+
 							*pum#get_pos()*
 pum#get_pos()
 		Returns like |pum_getpos()| result.
@@ -365,6 +369,14 @@ Note: It is for ale plugin. >
 For vsnip plugin, you need to install "vim-vsnip-integ" plugin and please read
 the documentation.
 	https://github.com/hrsh7th/vim-vsnip-integ
+
+Q: I want to use j/k keys to navigate popup menu when only entered popup menu.
+
+A: >
+	inoremap <expr> j   pum#entered() ?
+	      \ '<Cmd> call pum#map#insert_relative(+1)<CR>' : 'j'
+	inoremap <expr> k   pum#entered() ?
+	      \ '<Cmd> call pum#map#insert_relative(-1)<CR>' : 'k'
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*

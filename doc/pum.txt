@@ -55,6 +55,12 @@ OPTIONS	 						*pum-options*
 Options can be toggled through the use of |pum#set_option()|.
 Note: The options must be set before call of |pum#open()|.
 
+						*pum-options-auto_select*
+auto_select
+		Enable the auto selection of the first item.
+
+		Default: v:true if 'completeopt' contains "noinsert"
+
 							*pum-options-border*
 border
 		The completion window border.  You can specify border
@@ -160,7 +166,7 @@ padding
 
 							*pum-options-reversed*
 reversed
-		Enable reveresd mode.
+		Enable reversed mode.
 		The popup menu is above the cursor if possible.
 		And the items order is reversed.
 

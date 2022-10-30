@@ -39,6 +39,7 @@ endfunction
 function! pum#_options() abort
   if !exists('s:options')
     let s:options = {
+          \ 'auto_select': &completeopt =~# 'noinsert',
           \ 'border': 'none',
           \ 'highlight_columns': {},
           \ 'highlight_horizontal_menu': '',

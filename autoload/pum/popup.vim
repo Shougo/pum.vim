@@ -317,7 +317,7 @@ function! pum#popup#_open(startcol, items, mode) abort
     endif
   endif
 
-  if &completeopt =~# 'noinsert'
+  if options.auto_select
     call pum#map#select_relative(+1)
   elseif a:mode ==# 'c'
     " NOTE: :redraw is needed for command line completion

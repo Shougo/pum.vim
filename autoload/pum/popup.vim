@@ -335,6 +335,9 @@ function! pum#popup#_open(startcol, items, mode) abort
   augroup pum
     autocmd!
   augroup END
+  augroup pum-temp
+    autocmd!
+  augroup END
 
   " Close popup automatically
   if exists('##ModeChanged')
@@ -366,6 +369,9 @@ function! pum#popup#_close(id) abort
 
   " Reset
   augroup pum
+    autocmd!
+  augroup END
+  augroup pum-temp
     autocmd!
   augroup END
 

@@ -170,7 +170,13 @@ function! s:confirm_after() abort
   let pum.skip_complete = v:true
   let pum.cursor = 0
   let s:skip_count = 1
-  call s:check_user_input({ -> pum#_reset_skip_complete() })
+
+  " Note: s:check_user_input() does not work well in terminal mode
+  if mode() ==# 't'
+    autocmd pum-temp TextChangedT * call pum#_reset_skip_complete()
+  else
+    call s:check_user_input({ -> pum#_reset_skip_complete() })
+  endif
 endfunction
 
 function! pum#map#cancel() abort
@@ -276,8 +282,7 @@ function! s:check_text_changed_terminal() abort
   " Check pum.items is inserted
   let pum = pum#_get()
   let current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
-  let words = map(copy(pum.items), { _, val -> val.word })
-  return index(words, current_word) < 0
+  return current_word =~# '\s$'
 endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1

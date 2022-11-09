@@ -292,7 +292,7 @@ function! pum#popup#_open(startcol, items, mode) abort
   let pum.len = len(items)
   let pum.reversed = reversed
   let pum.startcol = a:startcol
-  let pum.startrow = s:row()
+  let pum.startrow = pum#_row()
   let pum.current_line = getline('.')
   let pum.col = pum#_col()
   let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
@@ -352,10 +352,6 @@ function! pum#popup#_open(startcol, items, mode) abort
     autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()
   elseif a:mode ==# 't' && exists('##TermEnter')
     autocmd pum TermEnter,TermLeave * ++once call pum#close()
-  endif
-  if a:mode ==# 't' && exists('##TextChangedT')
-    autocmd pum TextChangedT *
-          \ if pum#_get().startrow !=# line('.') | call pum#close() | endif
   endif
   autocmd pum CursorHold * ++once call pum#close()
 
@@ -473,13 +469,6 @@ function! s:get_borderchar_width(ch) abort
     call pum#util#_print_error('invalid border character: %s', a:ch)
     return 0
   endif
-endfunction
-
-function! s:row() abort
-  let row = mode() ==# 't' && !has('nvim') ?
-        \ term_getcursor(bufnr('%'))[0] :
-        \ line('.')
-  return row
 endfunction
 
 function! s:highlight_items(items, orders, max_columns) abort

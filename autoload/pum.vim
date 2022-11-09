@@ -170,6 +170,12 @@ function! pum#_getline() abort
         \ mode() ==# 't' && !has('nvim') ? term_getline('', '.') :
         \ getline('.')
 endfunction
+function! pum#_row() abort
+  let row = mode() ==# 't' && !has('nvim') ?
+        \ term_getcursor(bufnr('%'))[0] :
+        \ line('.')
+  return row
+endfunction
 function! pum#_col() abort
   let col = mode() ==# 't' && !has('nvim') ?
         \ term_getcursor(bufnr('%'))[1] :

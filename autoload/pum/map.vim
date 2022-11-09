@@ -106,6 +106,7 @@ function! pum#map#insert_relative(delta) abort
     return ''
   endif
 
+  let g:inserted = v:false
   call s:insert_current_word(prev_word, v:null)
 
   if pum.horizontal_menu
@@ -276,13 +277,14 @@ function! s:check_text_changed() abort
   let startcol_line = pum#_getline()[: pum.startcol]
   let check_startcol_line = startcol_line !=# pum.orig_line &&
         \ (strchars(pum.current_line) > strchars(startcol_line))
-  return line('.') != pum.startrow || check_startcol_line
+  return pum#_row() != pum.startrow || check_startcol_line
 endfunction
 function! s:check_text_changed_terminal() abort
   " Check pum.items is inserted
   let pum = pum#_get()
   let current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
-  return current_word =~# '\s$'
+  return pum#_row() != pum.startrow
+        \ || (has('nvim') && current_word =~# '\s$')
 endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1

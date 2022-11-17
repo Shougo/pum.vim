@@ -110,13 +110,17 @@ function! pum#close() abort
   call pum#popup#_close(scroll_id)
 endfunction
 
+function! s:to_bool(int_boolean_value) abort
+  return a:int_boolean_value ==# 1 ? v:true : v:false
+endfunction
+
 function! pum#visible() abort
-  return pum#_get().id > 0
+  return s:to_bool(pum#_get().id > 0)
 endfunction
 
 function! pum#entered() abort
   let info = pum#complete_info()
-  return info.pum_visible && (info.selected >= 0 || info.inserted != '')
+  return s:to_bool(info.pum_visible && (info.selected >= 0 || info.inserted != ''))
 endfunction
 
 function! pum#complete_info(...) abort

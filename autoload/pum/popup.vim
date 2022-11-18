@@ -317,6 +317,13 @@ function! pum#popup#_open(startcol, items, mode) abort
     endif
   endif
 
+  augroup pum
+    autocmd!
+  augroup END
+  augroup pum-temp
+    autocmd!
+  augroup END
+
   if options.auto_select
     call pum#map#select_relative(+1)
   elseif a:mode ==# 'c'
@@ -331,13 +338,6 @@ function! pum#popup#_open(startcol, items, mode) abort
   if !has('nvim') || a:mode ==# 'c'
     redraw
   endif
-
-  augroup pum
-    autocmd!
-  augroup END
-  augroup pum-temp
-    autocmd!
-  augroup END
 
   " Close popup automatically
   if exists('##ModeChanged')

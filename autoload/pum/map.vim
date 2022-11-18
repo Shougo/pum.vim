@@ -31,10 +31,10 @@ function! pum#map#select_relative(delta) abort
 
     " Reset scroll bar
     if pum.scroll_id > 0 && has('nvim') && winbufnr(pum.scroll_id) > 0
-      call nvim_win_set_config(pum.scroll_id, {
-            \ 'relative': 'editor',
-            \ 'row': pum.scroll_row,
-            \ 'col': pum.scroll_col,
+      call nvim_win_set_config(pum.scroll_id, #{
+            \   relative: 'editor',
+            \   row: pum.scroll_row,
+            \   col: pum.scroll_col,
             \ })
     endif
 
@@ -79,10 +79,10 @@ function! pum#map#select_relative(delta) abort
           \ bottom == pum.len ? pum.height - pum.scroll_height :
           \ float2nr(floor(pum.height * (head + 0.0) / pum.len + 0.5))
 
-    call nvim_win_set_config(pum.scroll_id, {
-          \ 'relative': 'editor',
-          \ 'row': pum.scroll_row + offset,
-          \ 'col': pum.scroll_col,
+    call nvim_win_set_config(pum.scroll_id, #{
+          \   relative: 'editor',
+          \   row: pum.scroll_row + offset,
+          \   col: pum.scroll_col,
           \ })
   endif
 

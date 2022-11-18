@@ -59,5 +59,5 @@ endfunction
 
 function! pum#util#_luacheck(module) abort
   return has('nvim')
-        \ && luaeval('pcall(require, _A.module)', { 'module': a:module })
+        \ && luaeval('pcall(require, _A.module)', #{ module: a:module })
 endfunction

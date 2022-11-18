@@ -14,51 +14,51 @@ function! pum#_init() abort
     call pum#close()
   endif
 
-  let s:pum = {
-        \ 'buf': -1,
-        \ 'items': [],
-        \ 'cursor': -1,
-        \ 'current_word': '',
-        \ 'height': -1,
-        \ 'horizontal_menu': v:false,
-        \ 'id': -1,
-        \ 'len': 0,
-        \ 'orig_input': '',
-        \ 'pos': [],
-        \ 'reversed': v:false,
-        \ 'scroll_buf': -1,
-        \ 'scroll_id': -1,
-        \ 'skip_complete': v:false,
-        \ 'startcol': -1,
-        \ 'startrow': -1,
-        \ 'width': -1,
-        \ 'border_width': 0,
-        \ 'border_height': 0,
+  let s:pum = #{
+        \ buf: -1,
+        \ items: [],
+        \ cursor: -1,
+        \ current_word: '',
+        \ height: -1,
+        \ horizontal_menu: v:false,
+        \ id: -1,
+        \ len: 0,
+        \ orig_input: '',
+        \ pos: [],
+        \ reversed: v:false,
+        \ scroll_buf: -1,
+        \ scroll_id: -1,
+        \ skip_complete: v:false,
+        \ startcol: -1,
+        \ startrow: -1,
+        \ width: -1,
+        \ border_width: 0,
+        \ border_height: 0,
         \}
 endfunction
 function! pum#_options() abort
   if !exists('s:options')
-    let s:options = {
-          \ 'auto_select': &completeopt =~# 'noinsert',
-          \ 'border': 'none',
-          \ 'highlight_columns': {},
-          \ 'highlight_horizontal_menu': '',
-          \ 'highlight_matches': '',
-          \ 'highlight_normal_menu': 'Pmenu',
-          \ 'highlight_scroll_bar': 'PmenuSbar',
-          \ 'highlight_selected': 'PmenuSel',
-          \ 'horizontal_menu': v:false,
-          \ 'item_orders': ['abbr', 'kind', 'menu'],
-          \ 'max_horizontal_items': 3,
-          \ 'max_height': &pumheight,
-          \ 'max_width': 0,
-          \ 'min_width': &pumwidth,
-          \ 'offset_row': has('nvim') || v:version >= 900 ? 0 : 1,
-          \ 'padding': v:false,
-          \ 'reversed': v:false,
-          \ 'scrollbar_char': '|',
-          \ 'use_complete': v:false,
-          \ 'zindex': 1000,
+    let s:options = #{
+          \ auto_select: &completeopt =~# 'noinsert',
+          \ border: 'none',
+          \ highlight_columns: {},
+          \ highlight_horizontal_menu: '',
+          \ highlight_matches: '',
+          \ highlight_normal_menu: 'Pmenu',
+          \ highlight_scroll_bar: 'PmenuSbar',
+          \ highlight_selected: 'PmenuSel',
+          \ horizontal_menu: v:false,
+          \ item_orders: ['abbr', 'kind', 'menu'],
+          \ max_horizontal_items: 3,
+          \ max_height: &pumheight,
+          \ max_width: 0,
+          \ min_width: &pumwidth,
+          \ offset_row: has('nvim') || v:version >= 900 ? 0 : 1,
+          \ padding: v:false,
+          \ reversed: v:false,
+          \ scrollbar_char: '|',
+          \ use_complete: v:false,
+          \ zindex: 1000,
           \ }
   endif
   return s:options
@@ -71,9 +71,9 @@ function! pum#set_option(key_or_dict, ...) abort
 endfunction
 
 function! pum#open(startcol, items, ...) abort
-  if !has('patch-8.2.1978') && !has('nvim-0.5')
+  if !has('patch-8.2.1978') && !has('nvim-0.8')
     call pum#util#_print_error(
-          \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.5.0+.')
+          \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.8.0+.')
     return -1
   endif
 
@@ -81,14 +81,6 @@ function! pum#open(startcol, items, ...) abort
     call pum#close()
     return
   endif
-
-  " Reset
-  augroup pum
-    autocmd!
-  augroup END
-  augroup pum-temp
-    autocmd!
-  augroup END
 
   try
     return pum#popup#_open(a:startcol, a:items, get(a:000, 0, mode()))
@@ -133,12 +125,12 @@ endfunction
 
 function! pum#complete_info(...) abort
   let pum = pum#_get()
-  let info =  {
-        \ 'mode': '',
-        \ 'pum_visible': pum#visible(),
-        \ 'items': pum.items,
-        \ 'selected': pum.cursor - 1,
-        \ 'inserted': pum.current_word,
+  let info = #{
+        \ mode: '',
+        \ pum_visible: pum#visible(),
+        \ items: pum.items,
+        \ selected: pum.cursor - 1,
+        \ inserted: pum.current_word,
         \ }
 
   if a:0 == 0 || type(a:1) != v:t_list
@@ -163,13 +155,13 @@ function! pum#get_pos() abort
   endif
 
   let pum = pum#_get()
-  return {
-        \ 'height': pum.height + pum.border_height,
-        \ 'width': pum.width + pum.border_width,
-        \ 'row': pum.pos[0],
-        \ 'col': pum.pos[1],
-        \ 'size': pum.len,
-        \ 'scrollbar': v:false,
+  return #{
+        \ height: pum.height + pum.border_height,
+        \ width: pum.width + pum.border_width,
+        \ row: pum.pos[0],
+        \ col: pum.pos[1],
+        \ size: pum.len,
+        \ scrollbar: v:false,
         \ }
 endfunction
 
@@ -236,20 +228,21 @@ function! pum#_redraw_horizontal_menu() abort
     call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
 
     call nvim_buf_set_extmark(
-          \ 0, g:pum#_namespace, line('.') - 1, 0, {
-          \ 'virt_text': [[word, options.highlight_horizontal_menu]],
-          \ 'hl_mode': 'combine',
-          \ 'priority': 0,
+          \ 0, g:pum#_namespace, line('.') - 1, 0,
+          \ #{
+          \   virt_text: [[word, options.highlight_horizontal_menu]],
+          \   hl_mode: 'combine',
+          \   priority: 0,
           \ })
 
     " Dummy
     let pum.id = 1000
   else
-    let winopts = {
-          \ 'pos': 'topleft',
-          \ 'line': line('.'),
-          \ 'col': col('.') + 3,
-          \ 'highlight': options.highlight_horizontal_menu,
+    let winopts = #{
+          \ pos: 'topleft',
+          \ line: line('.'),
+          \ col: col('.') + 3,
+          \ highlight: options.highlight_horizontal_menu,
           \ }
     let lines = [word]
 
@@ -264,10 +257,10 @@ function! pum#_redraw_horizontal_menu() abort
 endfunction
 
 function! pum#_format_item(item, options, mode, startcol, max_columns) abort
-  let columns = extend(copy(get(a:item, 'columns', {})), {
-        \ 'abbr': get(a:item, 'abbr', a:item.word),
-        \ 'kind': get(a:item, 'kind', ''),
-        \ 'menu': get(a:item, 'menu', ''),
+  let columns = extend(copy(get(a:item, 'columns', {})), #{
+        \   abbr: get(a:item, 'abbr', a:item.word),
+        \   kind: get(a:item, 'kind', ''),
+        \   menu: get(a:item, 'menu', ''),
         \ })
 
   let str = ''

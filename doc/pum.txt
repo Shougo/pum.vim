@@ -387,6 +387,9 @@ A: >
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*
 
+2022.11.18
+* neovim 0.8 is required.
+
 2022.09.10
 * Rename "offset" option to "offset_row".
 

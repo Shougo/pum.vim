@@ -63,7 +63,7 @@ function! pum#popup#_open(startcol, items, mode) abort
 
   if !has('nvim') && a:mode ==# 't'
     let cursor = term_getcursor(bufnr('%'))
-    let spos = { 'row': cursor[0], 'col': a:startcol }
+    let spos = #{ row: cursor[0], col: a:startcol }
   else
     let spos = screenpos(0, line('.'), a:startcol)
   endif
@@ -167,16 +167,16 @@ function! pum#popup#_open(startcol, items, mode) abort
     let scroll_lines = map(copy(lines), { _ -> options.scrollbar_char })
     call nvim_buf_set_lines(pum.scroll_buf, 0, -1, v:true, scroll_lines)
 
-    let winopts = {
-          \ 'border': options.border,
-          \ 'relative': 'editor',
-          \ 'width': width,
-          \ 'height': height,
-          \ 'row': pos[0],
-          \ 'col': pos[1],
-          \ 'anchor': 'NW',
-          \ 'style': 'minimal',
-          \ 'zindex': options.zindex,
+    let winopts = #{
+          \   border: options.border,
+          \   relative: 'editor',
+          \   width: width,
+          \   height: height,
+          \   row: pos[0],
+          \   col: pos[1],
+          \   anchor: 'NW',
+          \   style: 'minimal',
+          \   zindex: options.zindex,
           \ }
 
     let scroll_height = float2nr(
@@ -186,15 +186,15 @@ function! pum#popup#_open(startcol, items, mode) abort
 
     let scroll_row = pos[0]
     let scroll_col = pos[1] + width
-    let scroll_winopts = {
-          \ 'relative': 'editor',
-          \ 'width': strwidth(options.scrollbar_char),
-          \ 'height': scroll_height,
-          \ 'row': scroll_row,
-          \ 'col': scroll_col,
-          \ 'anchor': 'NW',
-          \ 'style': 'minimal',
-          \ 'zindex': options.zindex + 1,
+    let scroll_winopts = #{
+          \   relative: 'editor',
+          \   width: strwidth(options.scrollbar_char),
+          \   height: scroll_height,
+          \   row: scroll_row,
+          \   col: scroll_col,
+          \   anchor: 'NW',
+          \   style: 'minimal',
+          \   zindex: options.zindex + 1,
           \ }
     let pum.scroll_row = scroll_row
     let pum.scroll_col = scroll_col
@@ -256,16 +256,16 @@ function! pum#popup#_open(startcol, items, mode) abort
     let pum.pos = pos
     let pum.horizontal_menu = v:false
   else
-    let winopts = {
-          \ 'pos': 'topleft',
-          \ 'line': pos[0] + 1,
-          \ 'col': pos[1] + 1,
-          \ 'highlight': options.highlight_normal_menu,
-          \ 'maxwidth': width,
-          \ 'maxheight': height,
-          \ 'scroll': options.scrollbar_char !=# '',
-          \ 'wrap': 0,
-          \ 'zindex': options.zindex,
+    let winopts = #{
+          \   pos: 'topleft',
+          \   line: pos[0] + 1,
+          \   col: pos[1] + 1,
+          \   highlight: options.highlight_normal_menu,
+          \   maxwidth: width,
+          \   maxheight: height,
+          \   scroll: options.scrollbar_char !=# '',
+          \   wrap: 0,
+          \   zindex: options.zindex,
           \ }
 
     if pum.id > 0
@@ -321,7 +321,7 @@ function! pum#popup#_open(startcol, items, mode) abort
             \ '\w\ze.', '\0[^\0]\\{-}', 'g')
       call matchadd(
             \ options.highlight_matches, pattern, 0, s:pum_matched_id,
-            \ { 'window': pum.id })
+            \ #{ window: pum.id })
     endif
   endif
 
@@ -437,10 +437,12 @@ function! s:get_border_size(border) abort
   elseif type(a:border) == v:t_string
     return a:border ==# 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
   elseif type(a:border) == v:t_list && !empty(a:border)
-    return [s:get_borderchar_width(a:border[3 % len(a:border)]),
+    return [
+          \ s:get_borderchar_width(a:border[3 % len(a:border)]),
           \ s:get_borderchar_height(a:border[1 % len(a:border)]),
           \ s:get_borderchar_width(a:border[7 % len(a:border)]),
-          \ s:get_borderchar_height(a:border[5 % len(a:border)])]
+          \ s:get_borderchar_height(a:border[5 % len(a:border)]),
+          \ ]
   else
     return [0, 0, 0, 0]
   endif
@@ -520,9 +522,9 @@ function! s:highlight(highlight, prop_type, priority, id, row, col, length) abor
   if !has('nvim')
     " Add prop_type
     if empty(prop_type_get(a:prop_type))
-      call prop_type_add(a:prop_type, {
-            \ 'highlight': a:highlight,
-            \ 'priority': a:priority,
+      call prop_type_add(a:prop_type, #{
+            \   highlight: a:highlight,
+            \   priority: a:priority,
             \ })
     endif
   endif
@@ -537,11 +539,11 @@ function! s:highlight(highlight, prop_type, priority, id, row, col, length) abor
           \ col - 1 + a:length
           \ )
   else
-    call prop_add(a:row, col, {
-          \ 'length': a:length,
-          \ 'type': a:prop_type,
-          \ 'bufnr': pum.buf,
-          \ 'id': a:id,
+    call prop_add(a:row, col, #{
+          \   length: a:length,
+          \   type: a:prop_type,
+          \   bufnr: pum.buf,
+          \   id: a:id,
           \ })
   endif
 endfunction

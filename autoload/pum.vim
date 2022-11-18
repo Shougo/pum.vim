@@ -82,6 +82,14 @@ function! pum#open(startcol, items, ...) abort
     return
   endif
 
+  " Reset
+  augroup pum
+    autocmd!
+  augroup END
+  augroup pum-temp
+    autocmd!
+  augroup END
+
   try
     return pum#popup#_open(a:startcol, a:items, get(a:000, 0, mode()))
   catch /E523:\|E565:\|E5555:/

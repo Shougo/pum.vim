@@ -6,6 +6,14 @@ function! pum#popup#_open(startcol, items, mode) abort
     return -1
   endif
 
+  " Reset
+  augroup pum
+    autocmd!
+  augroup END
+  augroup pum-temp
+    autocmd!
+  augroup END
+
   let options = pum#_options()
 
   " Remove dup
@@ -316,13 +324,6 @@ function! pum#popup#_open(startcol, items, mode) abort
             \ { 'window': pum.id })
     endif
   endif
-
-  augroup pum
-    autocmd!
-  augroup END
-  augroup pum-temp
-    autocmd!
-  augroup END
 
   if options.auto_select
     call pum#map#select_relative(+1)

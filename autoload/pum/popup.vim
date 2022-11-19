@@ -376,6 +376,7 @@ function! pum#popup#_close(id) abort
   let pum.current_word = ''
   let pum.id = -1
   let pum.scroll_id = -1
+  let pum.cursor = -1
 
   let g:pum#completed_item = {}
 

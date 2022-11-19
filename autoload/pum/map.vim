@@ -169,7 +169,6 @@ function! s:confirm_after() abort
   " Skip completion until next input
   let pum = pum#_get()
   let pum.skip_complete = v:true
-  let pum.cursor = 0
   let s:skip_count = 1
 
   " Note: s:check_user_input() does not work well in terminal mode
@@ -184,9 +183,13 @@ function! pum#map#cancel() abort
   let pum = pum#_get()
 
   let current_word = pum.current_word
-  let pum.current_word = ''
+  let current_cursor = pum.cursor
 
-  if pum.cursor > 0 && current_word !=# ''
+  " Disable current inserted text
+  let pum.current_word = ''
+  let pum.cursor = -1
+
+  if current_cursor > 0 && current_word !=# ''
     call s:insert(pum.orig_input, current_word, { -> s:confirm_after() })
   else
     call s:confirm_after()

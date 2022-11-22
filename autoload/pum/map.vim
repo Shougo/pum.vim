@@ -365,7 +365,7 @@ endfunction
 function! s:insert_line_complete(text, after_func) abort
   " NOTE: complete() implementation
 
-  " NOTE: CompleteDone may does not work for complete() insertion
+  " NOTE: CompleteDone does not work for complete() insertion
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)
     autocmd pum TextChangedI,TextChangedP * ++once
@@ -379,5 +379,5 @@ function! s:insert_line_complete(text, after_func) abort
   let s:save_completeopt = &completeopt
   set completeopt=menu
 
-  call complete(pum#_get().startcol, [a:text])
+  noautocmd call complete(pum#_get().startcol, [a:text])
 endfunction

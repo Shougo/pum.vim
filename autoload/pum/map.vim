@@ -226,10 +226,11 @@ function! s:insert(word, prev_word, after_func) abort
       call call(a:after_func, [])
     endif
   elseif mode() ==# 't' || a:word ==# '' || !pum#_options().use_complete
+        \ || a:after_func != v:null
     " NOTE: complete() does not work for empty string
     call s:insert_line_feedkeys(a:word, a:after_func)
   else
-    call s:insert_line_complete(a:word, a:after_func)
+    call s:insert_line_complete(a:word)
   endif
 
   let pum.current_word = a:word
@@ -362,19 +363,11 @@ function! s:insert_line_feedkeys(text, after_func) abort
   call feedkeys(chars, 'n')
 endfunction
 
-function! s:insert_line_complete(text, after_func) abort
+function! s:insert_line_complete(text) abort
   " NOTE: complete() implementation
 
-  " NOTE: CompleteDone does not work for complete() insertion
-  if a:after_func != v:null
-    let g:PumCallback = function(a:after_func)
-    autocmd pum TextChangedI,TextChangedP * ++once
-          \ let &completeopt = s:save_completeopt |
-          \ call call(g:PumCallback, [])
-  else
-    autocmd pum TextChangedI,TextChangedP * ++once
-          \ let &completeopt = s:save_completeopt
-  endif
+  autocmd pum TextChangedI,TextChangedP * ++once
+        \ let &completeopt = s:save_completeopt
 
   let s:save_completeopt = &completeopt
   set completeopt=menu

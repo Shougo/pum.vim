@@ -364,8 +364,9 @@ function! s:insert_line_feedkeys(text, after_func) abort
 endfunction
 
 function! s:insert_line_complete(text) abort
-  " NOTE: complete() implementation
+  " complete() implementation
 
+  " NOTE: Restore completeopt is needed after complete()
   autocmd pum TextChangedI,TextChangedP * ++once
         \ let &completeopt = s:save_completeopt
 

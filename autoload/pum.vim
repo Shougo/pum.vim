@@ -95,12 +95,15 @@ function! pum#close() abort
     return
   endif
 
+  let pum = pum#_get()
+  if pum.id <= 0
+    return
+  endif
+
   call s:complete_done()
   if exists('#User#PumClose')
     silent! doautocmd <nomodeline> User PumClose
   endif
-
-  let pum = pum#_get()
 
   " NOTE: pum.scroll_id is broken after pum#popup#_close()
   let id = pum.id

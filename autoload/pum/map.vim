@@ -177,6 +177,10 @@ function! s:confirm_after() abort
   else
     call s:check_user_input({ -> pum#_reset_skip_complete() })
   endif
+
+  " Reset v:completed_item to prevent CompleteDone is twice
+  autocmd pum-temp TextChangedI,TextChangedP * ++once
+        \ silent! let v:completed_item = {}
 endfunction
 
 function! pum#map#cancel() abort
@@ -373,5 +377,5 @@ function! s:insert_line_complete(text) abort
   let s:save_completeopt = &completeopt
   set completeopt=menu
 
-  noautocmd call complete(pum#_get().startcol, [a:text])
+  call complete(pum#_get().startcol, [a:text])
 endfunction

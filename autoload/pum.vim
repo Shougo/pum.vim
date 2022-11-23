@@ -305,17 +305,24 @@ function! s:complete_done() abort
 
   let g:pum#completed_item = pum.items[pum.cursor - 1]
 
-  try
-    let v:completed_item = g:pum#completed_item
+  if mode() ==# 'i'
+    " NOTE: Call CompleteDone when insert mode only
 
-    " NOTE: It may be failed when InsertCharPre
-    silent! doautocmd <nomodeline> CompleteDone
-  catch
-    if exists('#User#PumCompleteDone')
+    try
+      let v:completed_item = g:pum#completed_item
+
       " NOTE: It may be failed when InsertCharPre
-      silent! doautocmd <nomodeline> User PumCompleteDone
-    endif
-  endtry
+      silent! doautocmd <nomodeline> CompleteDone
+    catch
+      if exists('#User#PumCompleteDone')
+        " NOTE: It may be failed when InsertCharPre
+        silent! doautocmd <nomodeline> User PumCompleteDone
+      endif
+    endtry
+  elseif exists('#User#PumCompleteDone')
+    " NOTE: It may be failed when InsertCharPre
+    silent! doautocmd <nomodeline> User PumCompleteDone
+  endif
 endfunction
 
 function! pum#_reset_skip_complete() abort

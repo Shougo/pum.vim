@@ -305,20 +305,14 @@ function! s:complete_done() abort
 
   let g:pum#completed_item = pum.items[pum.cursor - 1]
 
-  if mode() ==# 'i'
+  " NOTE: Old Vim/neovim does not support v:completed_item changes
+  silent! let v:completed_item = g:pum#completed_item
+
+  if mode() ==# 'i' && v:completed_item ==# g:pum#completed_item
     " NOTE: Call CompleteDone when insert mode only
 
-    try
-      let v:completed_item = g:pum#completed_item
-
-      " NOTE: It may be failed when InsertCharPre
-      silent! doautocmd <nomodeline> CompleteDone
-    catch
-      if exists('#User#PumCompleteDone')
-        " NOTE: It may be failed when InsertCharPre
-        silent! doautocmd <nomodeline> User PumCompleteDone
-      endif
-    endtry
+    " NOTE: It may be failed when InsertCharPre
+    silent! doautocmd <nomodeline> CompleteDone
   elseif exists('#User#PumCompleteDone')
     " NOTE: It may be failed when InsertCharPre
     silent! doautocmd <nomodeline> User PumCompleteDone

@@ -160,6 +160,10 @@ function! pum#map#confirm() abort
     call s:confirm_after()
   endif
 
+  " Reset v:completed_item to prevent CompleteDone is twice
+  autocmd pum-temp TextChangedI,TextChangedP * ++once
+        \ silent! let v:completed_item = {}
+
   return ''
 endfunction
 
@@ -177,10 +181,6 @@ function! s:confirm_after() abort
   else
     call s:check_user_input({ -> pum#_reset_skip_complete() })
   endif
-
-  " Reset v:completed_item to prevent CompleteDone is twice
-  autocmd pum-temp TextChangedI,TextChangedP * ++once
-        \ silent! let v:completed_item = {}
 endfunction
 
 function! pum#map#cancel() abort
@@ -223,6 +223,12 @@ function! s:insert(word, prev_word, after_func) abort
   let prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
   let next_input = pum#_getline()[startcol :][len(a:prev_word):]
 
+  " NOTE: current_word must be changed before call after_func
+  let pum.current_word = a:word
+
+  " NOTE: The text changes fires TextChanged events.  It must be ignored.
+  let pum.skip_complete = v:true
+
   if mode() ==# 'c'
     call s:setcmdline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
@@ -236,11 +242,6 @@ function! s:insert(word, prev_word, after_func) abort
   else
     call s:insert_line_complete(a:word)
   endif
-
-  let pum.current_word = a:word
-
-  " NOTE: The text changes fires TextChanged events.  It must be ignored.
-  let pum.skip_complete = v:true
 endfunction
 function! s:insert_current_word(prev_word, after_func) abort
   let pum = pum#_get()

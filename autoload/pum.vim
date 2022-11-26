@@ -313,7 +313,9 @@ function! s:complete_done() abort
 
     " NOTE: It may be failed when InsertCharPre
     silent! doautocmd <nomodeline> CompleteDone
-  elseif exists('#User#PumCompleteDone')
+  endif
+
+  if exists('#User#PumCompleteDone')
     " NOTE: It may be failed when InsertCharPre
     silent! doautocmd <nomodeline> User PumCompleteDone
   endif

@@ -328,8 +328,8 @@ PumCompleteDone
 		It is called after completion is done like |CompleteDone|.
 		|g:pum#completed_item| gives the completed item.
 
-		Note: When |v:completed_item| is not read only, |CompleteDone|
-		is called instead.
+		Note: When |v:completed_item| is not read only and insert
+		mode, |CompleteDone| is also called.
 
 
 ==============================================================================

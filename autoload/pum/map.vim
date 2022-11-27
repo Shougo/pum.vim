@@ -155,9 +155,10 @@ function! pum#map#confirm() abort
   let pum = pum#_get()
 
   if pum.cursor > 0 && pum.current_word ==# ''
-    call s:insert_current_word(pum.orig_input, { -> s:confirm_after() })
+    call s:insert_current_word(pum.orig_input,
+          \ { -> s:skip_next_complete() })
   else
-    call s:confirm_after()
+    call s:skip_next_complete()
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice
@@ -165,22 +166,6 @@ function! pum#map#confirm() abort
         \ silent! let v:completed_item = {}
 
   return ''
-endfunction
-
-function! s:confirm_after() abort
-  call pum#close()
-
-  " Skip completion until next input
-  let pum = pum#_get()
-  let pum.skip_complete = v:true
-  let s:skip_count = 1
-
-  " Note: s:check_user_input() does not work well in terminal mode
-  if mode() ==# 't'
-    autocmd pum-temp TextChangedT * call pum#_reset_skip_complete()
-  else
-    call s:check_user_input({ -> pum#_reset_skip_complete() })
-  endif
 endfunction
 
 function! pum#map#cancel() abort
@@ -194,9 +179,10 @@ function! pum#map#cancel() abort
   let pum.cursor = -1
 
   if current_cursor > 0 && current_word !=# ''
-    call s:insert(pum.orig_input, current_word, { -> s:confirm_after() })
+    call s:insert(pum.orig_input, current_word,
+          \ { -> s:skip_next_complete() })
   else
-    call s:confirm_after()
+    call s:skip_next_complete()
   endif
 
   return ''
@@ -213,6 +199,23 @@ endfunction
 
 function! pum#map#_skip_count() abort
   return s:skip_count
+endfunction
+
+function! s:skip_next_complete() abort
+  " Skip completion until next input
+
+  call pum#close()
+
+  let pum = pum#_get()
+  let pum.skip_complete = v:true
+  let s:skip_count = 1
+
+  " Note: s:check_user_input() does not work well in terminal mode
+  if mode() ==# 't'
+    autocmd pum-temp TextChangedT * call pum#_reset_skip_complete()
+  else
+    call s:check_user_input({ -> pum#_reset_skip_complete() })
+  endif
 endfunction
 
 function! s:insert(word, prev_word, after_func) abort

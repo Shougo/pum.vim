@@ -212,7 +212,9 @@ function! s:skip_next_complete() abort
 
   " Note: s:check_user_input() does not work well in terminal mode
   if mode() ==# 't'
-    autocmd pum-temp TextChangedT * call pum#_reset_skip_complete()
+    if exists('##TextChangedT')
+      autocmd pum-temp TextChangedT * call pum#_reset_skip_complete()
+    endif
   else
     call s:check_user_input({ -> pum#_reset_skip_complete() })
   endif

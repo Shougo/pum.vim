@@ -384,5 +384,8 @@ function! s:insert_line_complete(text) abort
   set completeopt=menu
 
   call complete(pum#_get().startcol, [a:text])
+
+  " NOTE: Hide native popup menu.
+  " Because native popup menu disables user insert mappings.
   call feedkeys("\<C-x>\<C-z>", 'in')
 endfunction

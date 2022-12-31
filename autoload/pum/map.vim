@@ -376,10 +376,8 @@ endfunction
 function! s:insert_line_complete(text) abort
   " complete() implementation
 
-  " NOTE: <C-y> is needed to close current native popup menu
   " NOTE: Restore completeopt is needed after complete()
   autocmd pum TextChangedI,TextChangedP * ++once
-        \ call feedkeys("\<C-y>", 'n') |
         \ let &completeopt = s:save_completeopt
 
   let s:save_completeopt = &completeopt

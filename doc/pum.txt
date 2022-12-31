@@ -187,9 +187,6 @@ use_complete
 
 		Note: If you insert the item, |CompleteDone| event is fired
 		automatically.  It may break your plugins behavior.
-		Note: It disables your |i_CTRL-N|, |i_CTRL-P| mappings.
-		Because native popup is created by |complete()| and native
-		popup disables your insert mappings.
 
 		Default: v:false
 

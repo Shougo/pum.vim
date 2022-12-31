@@ -384,4 +384,5 @@ function! s:insert_line_complete(text) abort
   set completeopt=menu
 
   call complete(pum#_get().startcol, [a:text])
+  call feedkeys("\<C-x>\<C-z>", 'in')
 endfunction

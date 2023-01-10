@@ -64,13 +64,12 @@ function! pum#_options() abort
   return s:options
 endfunction
 
-function! pum#set_option(key_or_dict, ...) abort
-  let dict = pum#util#_normalize_key_or_dict(
-        \ a:key_or_dict, get(a:000, 0, ''))
+function! pum#set_option(key_or_dict, value = '') abort
+  let dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
   call extend(pum#_options(), dict)
 endfunction
 
-function! pum#open(startcol, items, ...) abort
+function! pum#open(startcol, items, mode = mode()) abort
   if !has('patch-8.2.1978') && !has('nvim-0.8')
     call pum#util#_print_error(
           \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.8.0+.')
@@ -83,7 +82,7 @@ function! pum#open(startcol, items, ...) abort
   endif
 
   try
-    return pum#popup#_open(a:startcol, a:items, get(a:000, 0, mode()))
+    return pum#popup#_open(a:startcol, a:items, a:mode)
   catch /E523:\|E565:\|E5555:/
     " Ignore "Not allowed here"
     return -1

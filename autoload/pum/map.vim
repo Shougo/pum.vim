@@ -89,6 +89,8 @@ function! pum#map#select_relative(delta) abort
   " Close popup menu and CompleteDone if user input
   call s:check_user_input({ -> pum#close() })
 
+  call pum#popup#_reset_auto_confirm(mode())
+
   return ''
 endfunction
 

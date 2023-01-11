@@ -354,6 +354,9 @@ function! pum#popup#_open(startcol, items, mode) abort
   elseif a:mode ==# 't' && exists('##TermEnter')
     autocmd pum TermEnter,TermLeave * ++once call pum#close()
   endif
+  if options.auto_confirm_time > 0
+    call s:reset_auto_confirm(a:mode)
+  endif
   autocmd pum CursorHold * ++once call pum#close()
 
   return pum.id
@@ -381,6 +384,7 @@ function! pum#popup#_close(id) abort
   let g:pum#completed_item = {}
 
   call pum#popup#_close_id(a:id)
+  call s:stop_auto_confirm()
 endfunction
 function! pum#popup#_close_id(id) abort
   try
@@ -547,4 +551,36 @@ function! s:highlight(highlight, prop_type, priority, id, row, col, length) abor
           \   id: a:id,
           \ })
   endif
+endfunction
+
+function! s:reset_auto_confirm(mode) abort
+  let pum = pum#_get()
+  let options = pum#_options()
+
+  call s:stop_auto_confirm()
+
+  let pum.auto_confirm_timer = timer_start(
+        \ options.auto_confirm_time, { -> s:auto_confirm() })
+
+  " Reset the timer when user input texts
+  if a:mode ==# 'i'
+    autocmd pum TextChangedI,TextChangedP * ++once
+          \ call s:reset_auto_confirm(mode())
+  elseif a:mode ==# 'c'
+    autocmd pum CmdlineChanged * ++once
+          \ call s:reset_auto_confirm(mode())
+  elseif a:mode ==# 't' && exists('##TextChangedT')
+    autocmd pum TextChangedT * ++once
+          \ call s:reset_auto_confirm(mode())
+  endif
+endfunction
+function! s:stop_auto_confirm() abort
+  let pum = pum#_get()
+  if pum.auto_confirm_timer > 0
+    call timer_stop(pum.auto_confirm_timer)
+  endif
+endfunction
+function! s:auto_confirm() abort
+  call pum#map#confirm()
+  call pum#close()
 endfunction

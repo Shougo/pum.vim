@@ -55,6 +55,13 @@ OPTIONS	 						*pum-options*
 Options can be toggled through the use of |pum#set_option()|.
 Note: The options must be set before call of |pum#open()|.
 
+					*pum-options-auto_confirm_time*
+auto_confirm_time
+		If it is positive value, the item is auto confirmed after you
+		don't input.
+
+		Default: 0
+
 						*pum-options-auto_select*
 auto_select
 		Enable the auto selection of the first item.
@@ -70,7 +77,7 @@ border
 
 		Default: "none"
 
-						*pum-options-highlight_columns*
+					*pum-options-highlight_columns*
 highlight_columns
 		The columns highlights of candidates.
 		The key is column name.
@@ -78,7 +85,7 @@ highlight_columns
 
 		Default: {}
 
-					*pum-options-highlight_horizontal_menu*
+				*pum-options-highlight_horizontal_menu*
 highlight_horizontal_menu
 		The highlight of the horizontal menu.
 		|pum-options-horizontal_menu|
@@ -320,8 +327,8 @@ PumClose
 
 							*PumCompleteChanged*
 PumCompleteChanged
-		After each time completion menu changed like |CompleteChanged|.
-		|complete_info()| gives the information.
+		After each time completion menu changed like
+		|CompleteChanged|. |complete_info()| gives the information.
 
 							*PumCompleteDone*
 PumCompleteDone

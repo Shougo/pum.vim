@@ -15,6 +15,7 @@ function! pum#_init() abort
   endif
 
   let s:pum = #{
+        \ auto_confirm_timer: -1,
         \ buf: -1,
         \ items: [],
         \ cursor: -1,
@@ -39,6 +40,7 @@ endfunction
 function! pum#_options() abort
   if !exists('s:options')
     let s:options = #{
+          \ auto_confirm_time: 0,
           \ auto_select: &completeopt =~# 'noinsert',
           \ border: 'none',
           \ highlight_columns: {},

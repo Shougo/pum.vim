@@ -354,10 +354,9 @@ function! pum#popup#_open(startcol, items, mode) abort
   elseif a:mode ==# 't' && exists('##TermEnter')
     autocmd pum TermEnter,TermLeave * ++once call pum#close()
   endif
-  if options.auto_confirm_time > 0
-    call pum#popup#_reset_auto_confirm(a:mode)
-  endif
   autocmd pum CursorHold * ++once call pum#close()
+
+  call pum#popup#_reset_auto_confirm(a:mode)
 
   return pum.id
 endfunction
@@ -554,10 +553,14 @@ function! s:highlight(highlight, prop_type, priority, id, row, col, length) abor
 endfunction
 
 function! pum#popup#_reset_auto_confirm(mode) abort
-  let pum = pum#_get()
-  let options = pum#_options()
-
   call s:stop_auto_confirm()
+
+  let options = pum#_options()
+  if options.auto_confirm_time <= 0
+    return
+  endif
+
+  let pum = pum#_get()
 
   let pum.auto_confirm_timer = timer_start(
         \ options.auto_confirm_time, { -> s:auto_confirm() })

@@ -1,6 +1,6 @@
 let s:pum_matched_id = 70
 
-function! pum#popup#_open(startcol, items, mode) abort
+function! pum#popup#_open(startcol, items, mode, insert) abort
   if a:mode !~# '[ict]' || bufname('%') ==# '[Command Line]'
     " Invalid mode
     return -1
@@ -325,7 +325,10 @@ function! pum#popup#_open(startcol, items, mode) abort
     endif
   endif
 
-  if options.auto_select
+  echomsg a:insert
+  if a:insert
+    call pum#map#insert_relative(+1)
+  elseif options.auto_select
     call pum#map#select_relative(+1)
   elseif a:mode ==# 'c'
     " NOTE: :redraw is needed for command line completion

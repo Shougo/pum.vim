@@ -71,7 +71,7 @@ function! pum#set_option(key_or_dict, value = '') abort
   call extend(pum#_options(), dict)
 endfunction
 
-function! pum#open(startcol, items, mode = mode()) abort
+function! pum#open(startcol, items, mode = mode(), insert = v:false) abort
   if !has('patch-8.2.1978') && !has('nvim-0.8')
     call pum#util#_print_error(
           \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.8.0+.')
@@ -84,7 +84,7 @@ function! pum#open(startcol, items, mode = mode()) abort
   endif
 
   try
-    return pum#popup#_open(a:startcol, a:items, a:mode)
+    return pum#popup#_open(a:startcol, a:items, a:mode, a:insert)
   catch /E523:\|E565:\|E5555:/
     " Ignore "Not allowed here"
     return -1

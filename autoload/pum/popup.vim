@@ -325,7 +325,6 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     endif
   endif
 
-  echomsg a:insert
   if a:insert
     call pum#map#insert_relative(+1)
   elseif options.auto_select

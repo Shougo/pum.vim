@@ -284,6 +284,7 @@ pum#map#cancel()
 pum#map#confirm()
 		Insert the select and close the popup.
 		Note: It must not be called in |:map-<expr>|.
+		Note: It does not call |CmdlineChanged| autocmd.
 
 						*pum#map#insert_relative()*
 pum#map#insert_relative({delta})

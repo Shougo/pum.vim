@@ -324,13 +324,12 @@ endfunction
 
 function! s:setcmdline(text) abort
   if exists('*setcmdline')
-    " NOTE: CmdlineChanged autocmd must be disabled
-    noautocmd call setcmdline(a:text)
-
     " NOTE: skip_count is needed
     " CmdlineChanged is triggered after setcmdline() call
     let s:skip_count = 2
-    execute 'doautocmd <nomodeline> CmdlineChanged' getcmdtype()
+
+    " NOTE: CmdlineChanged autocmd must be disabled
+    call setcmdline(a:text)
   else
     " Clear cmdline
     let chars = "\<C-e>\<C-u>"

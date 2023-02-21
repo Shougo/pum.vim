@@ -239,15 +239,23 @@ function! s:insert(word, prev_word, after_func) abort
   if mode() ==# 'c'
     call s:setcmdline(prev_input . a:word . next_input)
     call s:cursor(pum.startcol + len(a:word))
-    if a:after_func != v:null
-      call call(a:after_func, [])
-    endif
-  elseif mode() ==# 't' || a:word ==# '' || !pum#_options().use_complete
+  elseif mode() ==# 't'
+    call s:insert_line_jobsend(a:word)
+  elseif pum#_options().use_setline
+    call setline('.', prev_input . a:word . next_input)
+    call s:cursor(pum.startcol + len(a:word))
+  elseif a:word ==# '' || !pum#_options().use_complete
         \ || a:after_func != v:null
     " NOTE: complete() does not work for empty string
     call s:insert_line_feedkeys(a:word, a:after_func)
+    return
   else
     call s:insert_line_complete(a:word)
+    return
+  endif
+
+  if a:after_func != v:null
+    call call(a:after_func, [])
   endif
 endfunction
 function! s:insert_current_word(prev_word, after_func) abort
@@ -388,4 +396,21 @@ function! s:insert_line_complete(text) abort
   " NOTE: Hide native popup menu.
   " Because native popup menu disables user insert mappings.
   call feedkeys("\<C-x>\<C-z>", 'in')
+endfunction
+
+function! s:insert_line_jobsend(text) abort
+  let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
+  let chars = repeat("\<C-h>", strchars(current_word)) . a:text
+
+  if has('nvim')
+    call chansend(b:terminal_job_id, chars)
+  else
+    call term_sendkeys(bufnr(), chars)
+
+    call term_redraw(bufnr())
+
+    call term_wait(bufnr())
+  endif
+
+  let s:skip_count = strchars(chars) + 1
 endfunction

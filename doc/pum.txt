@@ -194,7 +194,7 @@ use_complete
 
 		Note: If you insert the item, |CompleteDone| event is fired
 		automatically.  It may break your plugins behavior.
-		Note: It is for inset mode only.
+		Note: It is for insert mode only.
 
 		Default: v:false
 
@@ -203,7 +203,7 @@ use_setline
 		Use |setline()| instead of |feedkeys()| when insertion.
 		It is faster but |.| repeat does not work.
 
-		Note: It is for inset mode only.
+		Note: It is for insert mode only.
 
 		Default: v:false
 

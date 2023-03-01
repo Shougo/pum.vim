@@ -98,6 +98,8 @@ function! pum#close() abort
     return
   endif
 
+  echomsg 'Close!'
+
   let pum = pum#_get()
   if pum.id <= 0
     return
@@ -311,16 +313,19 @@ function! s:complete_done() abort
   " NOTE: Old Vim/neovim does not support v:completed_item changes
   silent! let v:completed_item = g:pum#completed_item
 
+  " Call the event later
+  " NOTE: It may be failed when inside autocmd
+  call timer_start(1, { -> s:call_complete_done_event() })
+endfunction
+
+function! s:call_complete_done_event() abort
   if mode() ==# 'i' && v:completed_item ==# g:pum#completed_item
     " NOTE: Call CompleteDone when insert mode only
-
-    " NOTE: It may be failed when InsertCharPre
-    silent! doautocmd <nomodeline> CompleteDone
+    doautocmd <nomodeline> CompleteDone
   endif
 
   if exists('#User#PumCompleteDone')
-    " NOTE: It may be failed when InsertCharPre
-    silent! doautocmd <nomodeline> User PumCompleteDone
+    doautocmd <nomodeline> User PumCompleteDone
   endif
 endfunction
 

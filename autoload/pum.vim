@@ -98,8 +98,6 @@ function! pum#close() abort
     return
   endif
 
-  echomsg 'Close!'
-
   let pum = pum#_get()
   if pum.id <= 0
     return

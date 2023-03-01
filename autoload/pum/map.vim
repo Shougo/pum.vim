@@ -301,7 +301,13 @@ function! s:check_text_changed() abort
   let startcol_line = pum#_getline()[: pum.startcol]
   let check_startcol_line = startcol_line !=# pum.orig_line &&
         \ (strchars(pum.current_line) > strchars(startcol_line))
-  return check_startcol_line
+
+  " NOTE: Check "current_word" is one of the items.
+  let current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
+  let check_item = index(map(copy(pum.items), { _, val -> val.word }),
+        \ current_word) < 0
+
+  return check_item || check_startcol_line
 endfunction
 function! s:check_text_changed_terminal() abort
   " Check pum.items is inserted

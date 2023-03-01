@@ -103,7 +103,16 @@ function! pum#close() abort
     return
   endif
 
-  call s:complete_done()
+  call pum#_reset_skip_complete()
+
+  if pum.cursor >= 0 && pum.current_word !=# ''
+        \ && len(pum.items) >= pum.cursor
+    " Call the event later
+    " NOTE: It may be failed when inside autocmd
+    let completed_item = pum.items[pum.cursor - 1]
+    call timer_start(1, { -> s:complete_done(completed_item) })
+  endif
+
   if exists('#User#PumClose')
     silent! doautocmd <nomodeline> User PumClose
   endif
@@ -296,27 +305,12 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
   return str
 endfunction
 
-function! s:complete_done() abort
-  let pum = pum#_get()
-
-  call pum#_reset_skip_complete()
-
-  if pum.cursor <= 0 || pum.current_word ==# ''
-        \ || len(pum.items) < pum.cursor
-    return
-  endif
-
-  let g:pum#completed_item = pum.items[pum.cursor - 1]
+function! s:complete_done(completed_item) abort
+  let g:pum#completed_item = a:completed_item
 
   " NOTE: Old Vim/neovim does not support v:completed_item changes
   silent! let v:completed_item = g:pum#completed_item
 
-  " Call the event later
-  " NOTE: It may be failed when inside autocmd
-  call timer_start(1, { -> s:call_complete_done_event() })
-endfunction
-
-function! s:call_complete_done_event() abort
   if mode() ==# 'i' && v:completed_item ==# g:pum#completed_item
     " NOTE: Call CompleteDone when insert mode only
     doautocmd <nomodeline> CompleteDone

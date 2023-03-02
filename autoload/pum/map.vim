@@ -30,7 +30,7 @@ function! pum#map#select_relative(delta) abort
     endif
 
     " Reset scroll bar
-    if pum.scroll_id > 0 && has('nvim') && winbufnr(pum.scroll_id) > 0
+    if pum.scroll_id > 0 && has('nvim') && pum.scroll_id->winbufnr() > 0
       call nvim_win_set_config(pum.scroll_id, #{
             \   relative: 'editor',
             \   row: pum.scroll_row,
@@ -44,7 +44,7 @@ function! pum#map#select_relative(delta) abort
     let pum.cursor = pum.len
   endif
 
-  if exists('#User#PumCompleteChanged')
+  if '#User#PumCompleteChanged'->exists()
     silent! doautocmd <nomodeline> User PumCompleteChanged
   endif
 
@@ -71,13 +71,13 @@ function! pum#map#select_relative(delta) abort
   endif
 
   " Update scroll bar
-  if pum.scroll_id > 0 && has('nvim') && winbufnr(pum.scroll_id) > 0
-    let head = line('w0', pum.id)
-    let bottom = line('w$', pum.id)
+  if pum.scroll_id > 0 && has('nvim') && pum.scroll_id->winbufnr() > 0
+    let head = 'w0'->line(pum.id)
+    let bottom = 'w$'->line(pum.id)
     let offset =
           \ head == 1 ? 0 :
           \ bottom == pum.len ? pum.height - pum.scroll_height :
-          \ float2nr(floor(pum.height * (head + 0.0) / pum.len + 0.5))
+          \ (pum.height * (head + 0.0) / pum.len + 0.5)->floor()->float2nr()
 
     call nvim_win_set_config(pum.scroll_id, #{
           \   relative: 'editor',
@@ -123,14 +123,14 @@ endfunction
 
 function! pum#map#longest_relative(delta) abort
   let pum = pum#_get()
-  if empty(pum.items)
+  if pum.items->empty()
     return ''
   endif
 
   let complete_str = pum.orig_input
   let common_str = pum.items[0].word
   for item in pum.items[1:]
-    while stridx(tolower(item.word), tolower(common_str)) != 0
+    while item.word->tolower()->stridx(common_str->tolower()) != 0
       let common_str = common_str[: -2]
     endwhile
   endfor
@@ -191,11 +191,11 @@ function! pum#map#cancel() abort
 endfunction
 
 function! pum#map#select_relative_page(delta) abort
-  call pum#map#select_relative(float2nr(a:delta * pum#_get().height))
+  call pum#map#select_relative((a:delta * pum#_get().height)->float2nr())
   return ''
 endfunction
 function! pum#map#insert_relative_page(delta) abort
-  call pum#map#insert_relative(float2nr(a:delta * pum#_get().height))
+  call pum#map#insert_relative((a:delta * pum#_get().height)->float2nr())
   return ''
 endfunction
 
@@ -214,7 +214,7 @@ function! s:skip_next_complete() abort
 
   " Note: s:check_user_input() does not work well in terminal mode
   if mode() ==# 't'
-    if exists('##TextChangedT')
+    if '##TextChangedT'->exists()
       autocmd pum-temp TextChangedT * call pum#_reset_skip_complete()
     endif
   else
@@ -283,7 +283,7 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp CmdlineLeave *
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
-    if exists('##TextChangedT')
+    if '##TextChangedT'->exists()
       autocmd pum-temp TextChangedT *
             \ if s:check_text_changed_terminal() | call pum#close() | endif
     endif
@@ -304,9 +304,8 @@ function! s:check_text_changed() abort
 
   " NOTE: Check "current_word" is one of the items.
   let current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
-  let check_item = index(map(copy(pum.items), { _, val -> val.word }),
-        \ current_word) < 0
-
+  let check_item = pum.items->copy()->map(
+        \ { _, val -> val.word })->index(current_word) < 0
   return check_item || check_startcol_line
 endfunction
 function! s:check_text_changed_terminal() abort
@@ -337,7 +336,7 @@ function! s:cursor(col) abort
 endfunction
 
 function! s:setcmdline(text) abort
-  if exists('*setcmdline')
+  if '*setcmdline'->exists()
     " NOTE: skip_count is needed
     " CmdlineChanged is triggered after setcmdline() call
     let s:skip_count = 2
@@ -349,11 +348,11 @@ function! s:setcmdline(text) abort
     let chars = "\<C-e>\<C-u>"
 
     " NOTE: for control chars
-    let chars .= join(map(split(a:text, '\zs'),
-          \ { _, val -> val <# ' ' ? "\<C-q>" . val : val }), '')
+    let chars .= a:text->split('\zs')->map(
+          \ { _, val -> val <# ' ' ? "\<C-q>" . val : val })->join('')
 
     " NOTE: skip_count is needed to skip feedkeys()
-    let s:skip_count = strchars(chars)
+    let s:skip_count = chars->strchars()
 
     call feedkeys(chars, 'n')
   endif
@@ -374,7 +373,7 @@ function! s:insert_line_feedkeys(text, after_func) abort
     let chars .= "\<Cmd>set backspace=start\<CR>"
   endif
   let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars .= repeat("\<BS>", strchars(current_word)) . a:text
+  let chars .= "\<BS>"->repeat(current_word->strchars()) . a:text
   if mode() ==# 'i'
     let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
   endif
@@ -382,7 +381,7 @@ function! s:insert_line_feedkeys(text, after_func) abort
     let g:PumCallback = function(a:after_func)
     let chars .= "\<Cmd>call call(g:PumCallback, [])\<CR>"
   endif
-  let s:skip_count = strchars(mode() ==# 't' ? chars : a:text) + 1
+  let s:skip_count = (mode() ==# 't' ? chars : a:text)->strchars() + 1
 
   call feedkeys(chars, 'n')
 endfunction
@@ -406,7 +405,7 @@ endfunction
 
 function! s:insert_line_jobsend(text) abort
   let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars = repeat("\<C-h>", strchars(current_word)) . a:text
+  let chars = "\<C-h>"->repeat(current_word->strchars()) . a:text
 
   if has('nvim')
     call chansend(b:terminal_job_id, chars)
@@ -418,5 +417,5 @@ function! s:insert_line_jobsend(text) abort
     call term_wait(bufnr())
   endif
 
-  let s:skip_count = strchars(chars) + 1
+  let s:skip_count = chars->strchars() + 1
 endfunction

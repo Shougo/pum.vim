@@ -64,8 +64,3 @@ inoremap <PageUp>   <Cmd>call pum#map#insert_relative_page(-1)<CR>
 
 ## Plans
 
-- [x] PumCompleteDone autocmd
-- [x] PumCompleteChanged autocmd
-- [x] Highlight options
-- [x] Scroll support
-- [x] Highlight match the input

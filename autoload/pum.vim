@@ -4,13 +4,13 @@ let s:pum_cursor_id = 50
 
 
 function! pum#_get() abort
-  if !exists('s:pum')
+  if !('s:pum'->exists())
     call pum#_init()
   endif
   return s:pum
 endfunction
 function! pum#_init() abort
-  if exists('s:pum')
+  if 's:pum'->exists()
     call pum#close()
   endif
 
@@ -38,7 +38,7 @@ function! pum#_init() abort
         \ }
 endfunction
 function! pum#_options() abort
-  if !exists('s:options')
+  if !('s:options'->exists())
     let s:options = #{
           \   auto_confirm_time: 0,
           \   auto_select: &completeopt =~# 'noinsert',
@@ -80,7 +80,7 @@ function! pum#open(startcol, items, mode = mode(), insert = v:false) abort
     return -1
   endif
 
-  if empty(a:items)
+  if a:items->empty()
     call pum#close()
     return
   endif
@@ -106,14 +106,14 @@ function! pum#close() abort
   call pum#_reset_skip_complete()
 
   if pum.cursor >= 0 && pum.current_word !=# ''
-        \ && len(pum.items) >= pum.cursor
+        \ && pum.items->len() >= pum.cursor
     " Call the event later
     " NOTE: It may be failed when inside autocmd
     let completed_item = pum.items[pum.cursor - 1]
     call timer_start(1, { -> s:complete_done(completed_item) })
   endif
 
-  if exists('#User#PumClose')
+  if '#User#PumClose'->exists()
     silent! doautocmd <nomodeline> User PumClose
   endif
 
@@ -135,7 +135,8 @@ endfunction
 
 function! pum#entered() abort
   let info = pum#complete_info()
-  return s:to_bool(info.pum_visible && (info.selected >= 0 || info.inserted != ''))
+  return s:to_bool(info.pum_visible
+        \ && (info.selected >= 0 || info.inserted != ''))
 endfunction
 
 function! pum#complete_info(...) abort
@@ -153,7 +154,7 @@ function! pum#complete_info(...) abort
   endif
 
   let ret = {}
-  for what in filter(copy(a:1), { _, val -> has_key(info, val) })
+  for what in a:1->copy()->filter({ _, val -> info->has_key(val) })
     let ret[what] = info[what]
   endfor
 
@@ -161,7 +162,7 @@ function! pum#complete_info(...) abort
 endfunction
 function! pum#current_item() abort
   let info = pum#complete_info()
-  return get(info.items, info.selected, {})
+  return info.items->get(info.selected, {})
 endfunction
 
 function! pum#get_pos() abort
@@ -186,20 +187,20 @@ endfunction
 
 function! pum#_getline() abort
   return mode() ==# 'c' ? getcmdline() :
-        \ mode() ==# 't' && !has('nvim') ? term_getline('', '.') :
-        \ getline('.')
+        \ mode() ==# 't' && !has('nvim') ? ''->term_getline('.') :
+        \ '.'->getline()
 endfunction
 function! pum#_row() abort
   let row = mode() ==# 't' && !has('nvim') ?
-        \ term_getcursor(bufnr('%'))[0] :
-        \ line('.')
+        \ '%'->bufnr()->term_getcursor()[0] :
+        \ '.'->line()
   return row
 endfunction
 function! pum#_col() abort
   let col = mode() ==# 't' && !has('nvim') ?
-        \ term_getcursor(bufnr('%'))[1] :
+        \ bufnr('%')->term_getcursor()[1] :
         \ mode() ==# 'c' ? getcmdpos() :
-        \ mode() ==# 't' ? col('.') : col('.')
+        \ mode() ==# 't' ? '.'->col() : '.'->col()
   return col
 endfunction
 
@@ -210,12 +211,12 @@ endfunction
 function! pum#_redraw_horizontal_menu() abort
   let pum = pum#_get()
 
-  if empty(pum.items)
+  if pum.items->empty()
     return
   endif
 
   if pum.cursor == 0
-    let items = copy(pum.items)
+    let items = pum.items->copy()
   else
     let cursor = pum.cursor - 1
     let items = [pum.items[cursor]]
@@ -227,14 +228,14 @@ function! pum#_redraw_horizontal_menu() abort
 
   let max_items = pum#_options().max_horizontal_items
 
-  if len(pum.items) > max_items
+  if pum.items->len() > max_items
     let items = items[: max_items - 1]
   endif
 
   let word = printf('{ %s%s%s}',
         \ pum.cursor == 0 ? '' : '> ',
-        \ join(map(items, { _, val -> get(val, 'abbr', val.word) })),
-        \ len(pum.items) <= max_items ? '' : ' ... ',
+        \ items->map({ _, val -> get(val, 'abbr', val.word) })->join(),
+        \ pum.items->len() <= max_items ? '' : ' ... ',
         \ )
 
   let options = pum#_options()
@@ -243,7 +244,7 @@ function! pum#_redraw_horizontal_menu() abort
     call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
 
     call nvim_buf_set_extmark(
-          \ 0, g:pum#_namespace, line('.') - 1, 0,
+          \ 0, g:pum#_namespace, '.'->line() - 1, 0,
           \ #{
           \   virt_text: [[word, options.highlight_horizontal_menu]],
           \   hl_mode: 'combine',
@@ -255,8 +256,8 @@ function! pum#_redraw_horizontal_menu() abort
   else
     let winopts = #{
           \ pos: 'topleft',
-          \ line: line('.'),
-          \ col: col('.') + 3,
+          \ line: '.'->line(),
+          \ col: '.'->col() + 3,
           \ highlight: options.highlight_horizontal_menu,
           \ }
     let lines = [word]
@@ -266,13 +267,13 @@ function! pum#_redraw_horizontal_menu() abort
       call popup_settext(pum.id, lines)
     else
       let pum.id = popup_create(lines, winopts)
-      let pum.buf = winbufnr(pum.id)
+      let pum.buf = pum.id->winbufnr()
     endif
   endif
 endfunction
 
 function! pum#_format_item(item, options, mode, startcol, max_columns) abort
-  let columns = extend(copy(get(a:item, 'columns', {})), #{
+  let columns = a:item->get('columns', {})->copy()->extend(#{
         \   abbr: get(a:item, 'abbr', a:item.word),
         \   kind: get(a:item, 'kind', ''),
         \   menu: get(a:item, 'menu', ''),
@@ -280,7 +281,7 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
 
   let str = ''
   for order in a:options.item_orders
-    if get(a:max_columns, order, 0) <= 0
+    if a:max_columns->get(order, 0) <= 0
       continue
     endif
 
@@ -288,12 +289,12 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
       let str .= ' '
     endif
 
-    let column = substitute(get(columns, order, ''), '[[:cntrl:]]', '?', 'g')
+    let column = columns->get(order, '')->substitute('[[:cntrl:]]', '?', 'g')
     if order ==# 'abbr' && column ==# ''
       " Fallback to "word"
       let column = a:item.word
     endif
-    let column .= repeat(' ' , a:max_columns[order] - strdisplaywidth(column))
+    let column .= ' '->repeat(a:max_columns[order] - strdisplaywidth(column))
 
     let str .= column
   endfor

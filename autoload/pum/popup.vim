@@ -1,7 +1,7 @@
 let s:pum_matched_id = 70
 
 function! pum#popup#_open(startcol, items, mode, insert) abort
-  if a:mode !~# '[ict]' || bufname('%') ==# '[Command Line]'
+  if a:mode !~# '[ict]' || '%'->bufname() ==# '[Command Line]'
     " Invalid mode
     return -1
   endif
@@ -22,22 +22,22 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   " Calc max columns
   let max_columns = {}
   for column in options.item_orders
-    let max_columns[column] = max(map(copy(items), { _, val ->
+    let max_columns[column] = items->copy()->map({ _, val ->
           \ strdisplaywidth(get(get(val, 'columns', {}), column, ''))
-          \ }))
+          \ })->max()
   endfor
-  let max_columns.abbr = max(map(copy(items), { _, val ->
+  let max_columns.abbr = items->copy()->map({ _, val ->
         \ strdisplaywidth(get(val, 'abbr', val.word))
-        \ }))
-  let max_columns.kind = max(map(copy(items), { _, val ->
+        \ })->max()
+  let max_columns.kind = items->copy()->map({ _, val ->
         \ strdisplaywidth(get(val, 'kind', ''))
-        \ }))
-  let max_columns.menu = max(map(copy(items), { _, val ->
+        \ })->max()
+  let max_columns.menu = items->copy()->map({ _, val ->
         \ strdisplaywidth(get(val, 'menu', ''))
-        \ }))
+        \ })->max()
   call filter(max_columns, { _, val -> val != 0 })
 
-  let lines = map(copy(items), { _, val ->
+  let lines = items->copy()->map({ _, val ->
         \   pum#_format_item(val, options, a:mode, a:startcol, max_columns)
         \ })
 
@@ -45,27 +45,27 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
 
   " Calc width
   let width = 0
-  for max_column in values(max_columns)
+  for max_column in max_columns->values()
     let width += max_column
   endfor
 
   " Padding
-  let width += len(max_columns) - 1
+  let width += max_columns->len() - 1
   if options.padding && a:startcol != 1
     let width += 2
   endif
   if options.min_width > 0
-    let width = max([width, options.min_width])
+    let width = [width, options.min_width]->max()
   endif
   if options.max_width > 0
-    let width = min([width, options.max_width])
+    let width = [width, options.max_width]->min()
   endif
 
   if !has('nvim') && a:mode ==# 't'
-    let cursor = term_getcursor(bufnr('%'))
+    let cursor = bufnr('%')->term_getcursor()
     let spos = #{ row: cursor[0], col: a:startcol }
   else
-    let spos = screenpos(0, line('.'), a:startcol)
+    let spos = screenpos(0, '.'->line(), a:startcol)
   endif
 
   let [border_left, border_top, border_right, border_bottom] =
@@ -78,15 +78,15 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     let padding_left += 1
   endif
 
-  let height = len(items)
+  let height = items->len()
   if options.max_height > 0
-    let height = min([height, options.max_height])
+    let height = [height, options.max_height]->min()
   endif
 
   if a:mode !=# 'c'
     " Adjust to screen row
-    let minheight_below = min([height, &lines - spos.row - padding_height])
-    let minheight_above = min([height, spos.row - padding_height])
+    let minheight_below = [height, &lines - spos.row - padding_height]->min()
+    let minheight_above = [height, spos.row - padding_height]->min()
     if minheight_below < minheight_above ||
           \ (minheight_above >= 1 && options.reversed)
       " Use above window
@@ -100,15 +100,15 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     endif
   else
     let direction = 'above'
-    let height = min([height, &lines - max([&cmdheight, 1])])
+    let height = [height, &lines - [&cmdheight, 1]->max()]->min()
   endif
-  let height = max([height, 1])
+  let height = [height, 1]->max()
 
   " Reversed
   let reversed = direction ==# 'above' && options.reversed
   if reversed
-    let lines = reverse(lines)
-    let items = reverse(items)
+    let lines = lines->reverse()
+    let items = items->reverse()
   endif
 
   " Adjust to screen col
@@ -126,7 +126,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
 
   " NOTE: In Vim8, floating window must above of status line
   let pos = a:mode ==# 'c' ?
-        \ [&lines - height - max([1, &cmdheight]) - options.offset_row,
+        \ [&lines - height - [1, &cmdheight]->max() - options.offset_row,
         \  a:startcol - padding_left] :
         \ [spos.row, spos.col - 1]
 
@@ -143,7 +143,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
       endif
 
       let pos[1] += noice_pos.col - 1
-    elseif exists('*getcmdscreenpos')
+    elseif '*getcmdscreenpos'->exists()
       " Use getcmdscreenpos() for adjustment
       let pos[1] += (getcmdscreenpos() - 1) - getcmdpos()
     endif
@@ -164,7 +164,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
 
     call nvim_buf_set_lines(pum.buf, 0, -1, v:true, lines)
 
-    let scroll_lines = map(copy(lines), { _ -> options.scrollbar_char })
+    let scroll_lines = lines->copy()->map({ _ -> options.scrollbar_char })
     call nvim_buf_set_lines(pum.scroll_buf, 0, -1, v:true, scroll_lines)
 
     let winopts = #{
@@ -179,16 +179,16 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
           \   zindex: options.zindex,
           \ }
 
-    let scroll_height = float2nr(
-          \ floor(height * ((height + 0.0) / len(lines)) + 0.5))
+    let scroll_height = (height * ((height + 0.0) / lines->len()) + 0.5
+          \ )->floor()->float2nr()
     " NOTE: scroll_height must be positive
-    let scroll_height = max([scroll_height, 1])
+    let scroll_height = [scroll_height, 1]->max()
 
     let scroll_row = pos[0]
     let scroll_col = pos[1] + width
     let scroll_winopts = #{
           \   relative: 'editor',
-          \   width: strwidth(options.scrollbar_char),
+          \   width: options.scrollbar_char->strwidth(),
           \   height: scroll_height,
           \   row: scroll_row,
           \   col: scroll_col,
@@ -277,8 +277,8 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
         call popup_settext(pum.scroll_id, scroll_lines)
       endif
     else
-      let pum.id = popup_create(lines, winopts)
-      let pum.buf = winbufnr(pum.id)
+      let pum.id = lines->popup_create(winopts)
+      let pum.buf = pum.id->winbufnr()
     endif
 
     let pum.pos = pos
@@ -290,21 +290,21 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     call win_execute(pum.id, 'call cursor("$", 0) | redraw')
   endif
 
-  let pum.items = copy(items)
+  let pum.items = items->copy()
   let pum.cursor = 0
   let pum.direction = direction
   let pum.height = height
   let pum.width = width
   let pum.border_width = border_left + border_right
   let pum.border_height = border_top + border_bottom
-  let pum.len = len(items)
+  let pum.len = items->len()
   let pum.reversed = reversed
   let pum.startcol = a:startcol
   let pum.startrow = pum#_row()
-  let pum.current_line = getline('.')
+  let pum.current_line = '.'->getline()
   let pum.col = pum#_col()
   let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
-  let pum.orig_line = getline('.')
+  let pum.orig_line = '.'->getline()
 
   " Clear current highlight
   silent! call matchdelete(pum#_cursor_id(), pum.id)
@@ -317,7 +317,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     " Simple highlight matches
     silent! call matchdelete(s:pum_matched_id, pum.id)
     if options.highlight_matches !=# ''
-      let pattern = substitute(escape(pum.orig_input, '~"*\.^$[]'),
+      let pattern = pum.orig_input->escape('~"*\.^$[]')->substitute(
             \ '\w\ze.', '\0[^\0]\\{-}', 'g')
       call matchadd(
             \ options.highlight_matches, pattern, 0, s:pum_matched_id,
@@ -343,17 +343,17 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   " Close popup automatically
-  if exists('##ModeChanged')
+  if '##ModeChanged'->exists()
     autocmd pum ModeChanged i:[^i]* ++once call pum#close()
     autocmd pum ModeChanged [ct]:* ++once call pum#close()
   elseif a:mode ==# 'i'
     autocmd pum InsertLeave * ++once call pum#close()
     autocmd pum CursorMovedI *
-          \ if pum#_get().current_line ==# getline('.')
+          \ if pum#_get().current_line ==# '.'->getline()
           \    && pum#_get().col !=# pum#_col() | call pum#close() | endif
   elseif a:mode ==# 'c'
     autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()
-  elseif a:mode ==# 't' && exists('##TermEnter')
+  elseif a:mode ==# 't' && '##TermEnter'->exists()
     autocmd pum TermEnter,TermLeave * ++once call pum#close()
   endif
   autocmd pum CursorHold * ++once call pum#close()
@@ -427,7 +427,7 @@ function! s:uniq_by_word_or_dup(items) abort
   let seen = {}
   for item in a:items
     let key = item.word
-    if !has_key(seen, key) || get(item, 'dup', 0)
+    if !(seen->has_key(key)) || item->get('dup', 0)
       let seen[key] = v:true
       call add(ret, item)
     endif
@@ -440,9 +440,9 @@ function! s:get_border_size(border) abort
   if !has('nvim')
     " NOTE: Vim is not supported
     return [0, 0, 0, 0]
-  elseif type(a:border) == v:t_string
+  elseif a:border->type() == v:t_string
     return a:border ==# 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
-  elseif type(a:border) == v:t_list && !empty(a:border)
+  elseif a:border->type() == v:t_list && !(a:border->empty())
     return [
           \ s:get_borderchar_width(a:border[3 % len(a:border)]),
           \ s:get_borderchar_height(a:border[1 % len(a:border)]),
@@ -455,12 +455,13 @@ function! s:get_border_size(border) abort
 endfunction
 
 function! s:get_borderchar_height(ch) abort
-  if type(a:ch) == v:t_string
+  if a:ch->type() == v:t_string
     " character
-    return empty(a:ch) ? 0 : 1
-  elseif type(a:ch) == v:t_list && !empty(a:ch) && type(a:ch[0]) == v:t_string
+    return a:ch->empty() ? 0 : 1
+  elseif a:ch->type() == v:t_list &&
+        \ !(a:ch->empty()) && a:ch[0]->type() == v:t_string
     " character with highlight: [ch, highlight]
-    return empty(a:ch[0]) ? 0 : 1
+    return a:ch[0]->empty() ? 0 : 1
   else
     call pum#util#_print_error('invalid border character: %s', a:ch)
     return 0
@@ -468,10 +469,11 @@ function! s:get_borderchar_height(ch) abort
 endfunction
 
 function! s:get_borderchar_width(ch) abort
-  if type(a:ch) == v:t_string
+  if a:ch->type() == v:t_string
     " character
     return strdisplaywidth(a:ch)
-  elseif type(a:ch) == v:t_list && !empty(a:ch) && type(a:ch[0]) == v:t_string
+  elseif a:ch->type() == v:t_list &&
+        \ !(a:ch->empty()) && a:ch[0]->type() == v:t_string
     " character with highlight: [ch, highlight]
     return strdisplaywidth(a:ch[0])
   else
@@ -484,28 +486,28 @@ function! s:highlight_items(items, orders, max_columns) abort
   let pum = pum#_get()
   let options = pum#_options()
 
-  for row in range(1, len(a:items))
+  for row in range(1, a:items->len())
     " Default highlights
 
     let item = a:items[row - 1]
-    let item_highlights = get(item, 'highlights', [])
+    let item_highlights = item->get('highlights', [])
 
     let start = 1
     for order in a:orders
-      let max_column = get(a:max_columns, order, 0)
+      let max_column = a:max_columns->get(order, 0)
 
       if max_column <= 0
         continue
       endif
 
-      let highlight_column = get(options.highlight_columns, order, '')
+      let highlight_column = options.highlight_columns->get(order, '')
       if highlight_column !=# ''
         call s:highlight(
               \ highlight_column, 'pum_' . order, 0,
               \ g:pum#_namespace, row, start, max_column + 1)
       endif
 
-      for hl in filter(copy(item_highlights),
+      for hl in item_highlights->copy()->filter(
             \ {_, val -> val.type ==# order})
         call s:highlight(
               \ hl.hl_group, hl.name, 1,
@@ -527,7 +529,7 @@ function! s:highlight(highlight, prop_type, priority, id, row, col, length) abor
 
   if !has('nvim')
     " Add prop_type
-    if empty(prop_type_get(a:prop_type))
+    if a:prop_type->prop_type_get()->empty()
       call prop_type_add(a:prop_type, #{
             \   highlight: a:highlight,
             \   priority: a:priority,
@@ -574,7 +576,7 @@ function! pum#popup#_reset_auto_confirm(mode) abort
   elseif a:mode ==# 'c'
     autocmd pum CmdlineChanged * ++once
           \ call pum#popup#_reset_auto_confirm(mode())
-  elseif a:mode ==# 't' && exists('##TextChangedT')
+  elseif a:mode ==# 't' && '##TextChangedT'->exists()
     autocmd pum TextChangedT * ++once
           \ call pum#popup#_reset_auto_confirm(mode())
   endif

@@ -348,8 +348,8 @@ function! s:setcmdline(text) abort
     let chars = "\<C-e>\<C-u>"
 
     " NOTE: for control chars
-    let chars .= a:text->split('\zs')->map(
-          \ { _, val -> val <# ' ' ? "\<C-q>" . val : val })->join('')
+    let chars .= a:text->split('\zs')
+          \ ->map({ _, val -> val <# ' ' ? "\<C-q>" . val : val })->join('')
 
     " NOTE: skip_count is needed to skip feedkeys()
     let s:skip_count = chars->strchars()

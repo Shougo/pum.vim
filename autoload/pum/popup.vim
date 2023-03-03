@@ -22,19 +22,18 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   " Calc max columns
   let max_columns = {}
   for column in options.item_orders
-    let max_columns[column] = items->copy()->map({ _, val ->
-          \ strdisplaywidth(get(get(val, 'columns', {}), column, ''))
+    let max_columns[column] = items->copy()
+          \ ->map({ _, val ->
+          \   strdisplaywidth(get(get(val, 'columns', {}), column, ''))
           \ })->max()
   endfor
   let max_columns.abbr = items->copy()->map({ _, val ->
         \ strdisplaywidth(get(val, 'abbr', val.word))
         \ })->max()
-  let max_columns.kind = items->copy()->map({ _, val ->
-        \ strdisplaywidth(get(val, 'kind', ''))
-        \ })->max()
-  let max_columns.menu = items->copy()->map({ _, val ->
-        \ strdisplaywidth(get(val, 'menu', ''))
-        \ })->max()
+  let max_columns.kind = items->copy()
+        \ ->map({ _, val -> strdisplaywidth(get(val, 'kind', ''))})->max()
+  let max_columns.menu = items->copy()
+        \ ->map({ _, val -> strdisplaywidth(get(val, 'menu', ''))})->max()
   call filter(max_columns, { _, val -> val != 0 })
 
   let lines = items->copy()->map({ _, val ->
@@ -317,8 +316,8 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     " Simple highlight matches
     silent! call matchdelete(s:pum_matched_id, pum.id)
     if options.highlight_matches !=# ''
-      let pattern = pum.orig_input->escape('~"*\.^$[]')->substitute(
-            \ '\w\ze.', '\0[^\0]\\{-}', 'g')
+      let pattern = pum.orig_input->escape('~"*\.^$[]')
+            \ ->substitute('\w\ze.', '\0[^\0]\\{-}', 'g')
       call matchadd(
             \ options.highlight_matches, pattern, 0, s:pum_matched_id,
             \ #{ window: pum.id })

@@ -502,7 +502,7 @@ function! s:highlight_items(items, orders, max_columns) abort
       let highlight_column = options.highlight_columns->get(order, '')
       if highlight_column !=# ''
         call s:highlight(
-              \ highlight_column, 'pum_' . order, 0,
+              \ highlight_column, 'pum_' .. order, 0,
               \ g:pum#_namespace, row, start, max_column + 1)
       endif
 

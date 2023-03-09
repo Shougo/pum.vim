@@ -300,7 +300,7 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
   endfor
 
   if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)
-    let str = ' ' . str . ' '
+    let str = ' ' .. str .. ' '
   endif
 
   return str

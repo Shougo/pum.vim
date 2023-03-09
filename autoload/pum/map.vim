@@ -237,12 +237,12 @@ function! s:insert(word, prev_word, after_func) abort
   let pum.skip_complete = v:true
 
   if mode() ==# 'c'
-    call s:setcmdline(prev_input . a:word . next_input)
+    call s:setcmdline(prev_input .. a:word .. next_input)
     call s:cursor(pum.startcol + len(a:word))
   elseif mode() ==# 't'
     call s:insert_line_jobsend(a:word)
   elseif pum#_options().use_setline
-    call setline('.', prev_input . a:word . next_input)
+    call setline('.', prev_input .. a:word .. next_input)
     call s:cursor(pum.startcol + len(a:word))
   elseif a:word ==# '' || !pum#_options().use_complete
         \ || a:after_func != v:null
@@ -349,7 +349,7 @@ function! s:setcmdline(text) abort
 
     " NOTE: for control chars
     let chars .= a:text->split('\zs')
-          \ ->map({ _, val -> val <# ' ' ? "\<C-q>" . val : val })->join('')
+          \ ->map({ _, val -> val <# ' ' ? "\<C-q>" .. val : val })->join('')
 
     " NOTE: skip_count is needed to skip feedkeys()
     let s:skip_count = chars->strchars()
@@ -373,7 +373,7 @@ function! s:insert_line_feedkeys(text, after_func) abort
     let chars .= "\<Cmd>set backspace=start\<CR>"
   endif
   let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars .= "\<BS>"->repeat(current_word->strchars()) . a:text
+  let chars .= "\<BS>"->repeat(current_word->strchars()) .. a:text
   if mode() ==# 'i'
     let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
   endif
@@ -405,7 +405,7 @@ endfunction
 
 function! s:insert_line_jobsend(text) abort
   let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars = "\<C-h>"->repeat(current_word->strchars()) . a:text
+  let chars = "\<C-h>"->repeat(current_word->strchars()) .. a:text
 
   if has('nvim')
     call chansend(b:terminal_job_id, chars)

@@ -22,8 +22,8 @@ function! pum#util#_truncate(str, max, footer_width, separator) abort
     let ret = a:str
   else
     let header_width = a:max - a:separator->strwidth() - a:footer_width
-    let ret = s:strwidthpart(a:str, header_width) . a:separator
-         \ . s:strwidthpart_reverse(a:str, a:footer_width)
+    let ret = s:strwidthpart(a:str, header_width) .. a:separator
+         \ .. s:strwidthpart_reverse(a:str, a:footer_width)
   endif
   return s:truncate(ret, a:max)
 endfunction
@@ -33,7 +33,7 @@ function! s:truncate(str, width) abort
 
   if a:str =~# '^[\x00-\x7f]*$'
     return a:str->len() < a:width
-          \ ? printf('%-' . a:width . 's', a:str)
+          \ ? printf('%-' .. a:width .. 's', a:str)
           \ : a:str->strpart(0, a:width)
   endif
 
@@ -49,12 +49,12 @@ endfunction
 function! s:strwidthpart(str, width) abort
   let str = a:str->tr("\t", ' ')
   let vcol = a:width + 2
-  return str->matchstr('.*\%<' . (vcol < 0 ? 0 : vcol) . 'v')
+  return str->matchstr('.*\%<' .. (vcol < 0 ? 0 : vcol) .. 'v')
 endfunction
 function! s:strwidthpart_reverse(str, width) abort
   let str = a:str->tr("\t", ' ')
   let vcol = str->strwidth() - a:width
-  return str->matchstr('\%>' . (vcol < 0 ? 0 : vcol) . 'v.*')
+  return str->matchstr('\%>' .. (vcol < 0 ? 0 : vcol) .. 'v.*')
 endfunction
 
 function! pum#util#_luacheck(module) abort

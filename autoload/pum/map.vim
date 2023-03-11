@@ -24,7 +24,7 @@ function! pum#map#select_relative(delta) abort
 
     " Move real cursor
     if pum.horizontal_menu
-      call pum#_redraw_horizontal_menu()
+      call pum#popup#_redraw_horizontal_menu()
     else
       call win_execute(pum.id, 'call cursor(1, 0) | redraw')
     endif
@@ -49,7 +49,7 @@ function! pum#map#select_relative(delta) abort
   endif
 
   if pum.horizontal_menu
-    call pum#_redraw_horizontal_menu()
+    call pum#popup#_redraw_horizontal_menu()
   else
     " Move real cursor
     " NOTE: If up scroll, cursor must adjust...
@@ -112,7 +112,7 @@ function! pum#map#insert_relative(delta) abort
   call s:insert_current_word(prev_word, v:null)
 
   if pum.horizontal_menu
-    call pum#_redraw_horizontal_menu()
+    call pum#popup#_redraw_horizontal_menu()
   endif
 
   " Close popup menu and CompleteDone if user input

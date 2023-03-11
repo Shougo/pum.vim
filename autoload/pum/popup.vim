@@ -148,11 +148,11 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     endif
   endif
 
-  if options.horizontal_menu && a:mode ==# 'i'
+  if options.horizontal_menu
     let pum.horizontal_menu = v:true
     let pum.cursor = 0
 
-    call pum#_redraw_horizontal_menu()
+    call pum#popup#_redraw_horizontal_menu()
   elseif has('nvim')
     if pum.buf < 0
       let pum.buf = nvim_create_buf(v:false, v:true)
@@ -394,15 +394,8 @@ function! pum#popup#_close_id(id) abort
     " NOTE: popup may be already closed
     " Close popup and clear highlights
     if has('nvim')
-      let pum = pum#_get()
-
-      if pum.horizontal_menu
-        call nvim_buf_clear_namespace(0, g:pum#_namespace, 0, -1)
-      else
-        call nvim_buf_clear_namespace(pum.buf, g:pum#_namespace, 1, -1)
-
-        call nvim_win_close(a:id, v:true)
-      endif
+      call nvim_buf_clear_namespace(pum#_get().buf, g:pum#_namespace, 1, -1)
+      call nvim_win_close(a:id, v:true)
     else
       " NOTE: prop_remove() is not needed.
       " popup_close() removes the buffer.
@@ -552,6 +545,103 @@ function! s:highlight(highlight, prop_type, priority, id, row, col, length) abor
           \   bufnr: pum.buf,
           \   id: a:id,
           \ })
+  endif
+endfunction
+
+function! pum#popup#_redraw_horizontal_menu() abort
+  let pum = pum#_get()
+
+  if pum.items->empty()
+    return
+  endif
+
+  if pum.cursor == 0
+    let items = pum.items->copy()
+  else
+    let cursor = pum.cursor - 1
+    let items = [pum.items[cursor]]
+    let items += pum.items[cursor + 1:]
+    if cursor > 0
+      let items += pum.items[: cursor - 1]
+    endif
+  endif
+
+  let max_items = pum#_options().max_horizontal_items
+
+  if pum.items->len() > max_items
+    let items = items[: max_items - 1]
+  endif
+
+  let word = printf('{ %s%s%s }',
+        \ pum.cursor == 0 ? '' : '> ',
+        \ items->map({ _, val -> get(val, 'abbr', val.word) })->join(),
+        \ pum.items->len() <= max_items ? '' : ' ... ',
+        \ )
+
+  let options = pum#_options()
+  let lines = [word]
+
+  let row = mode() ==# 'c' ?
+        \ &lines - [1, &cmdheight]->max() - options.offset_row : '.'->line()
+  let col = mode() ==# 'c' ?
+        \ 1 : '.'->col() + 3
+
+  if has('nvim')
+    if pum.buf < 0
+      let pum.buf = nvim_create_buf(v:false, v:true)
+    endif
+    call nvim_buf_set_lines(pum.buf, 0, -1, v:true, lines)
+
+    let winopts = #{
+          \   border: options.border,
+          \   relative: 'editor',
+          \   width: strwidth(word),
+          \   height: 1,
+          \   row: row - 1,
+          \   col: col - 1,
+          \   anchor: 'NW',
+          \   style: 'minimal',
+          \   zindex: options.zindex,
+          \ }
+
+    if pum.id > 0
+      " Reuse window
+      call nvim_win_set_config(pum.id, winopts)
+    else
+      call pum#close()
+
+      " NOTE: It cannot set in nvim_win_set_config()
+      let winopts.noautocmd = v:true
+
+      " Create new window
+      let id = nvim_open_win(pum.buf, v:false, winopts)
+
+      " NOTE: nvim_win_set_option() causes title flicker...
+      " Disable 'hlsearch' highlight
+      call nvim_win_set_option(id, 'winhighlight',
+            \ printf('Normal:%s,Search:None', options.highlight_normal_menu))
+      call nvim_win_set_option(id, 'winblend', &l:pumblend)
+      call nvim_win_set_option(id, 'wrap', v:false)
+      call nvim_win_set_option(id, 'scrolloff', 0)
+      call nvim_win_set_option(id, 'statusline', &l:statusline)
+
+      let pum.id = id
+    endif
+  else
+    let winopts = #{
+          \   pos: 'topleft',
+          \   line: row,
+          \   col: col,
+          \   highlight: options.highlight_horizontal_menu,
+          \ }
+
+    if pum.id > 0
+      call popup_move(pum.id, winopts)
+      call popup_settext(pum.id, lines)
+    else
+      let pum.id = popup_create(lines, winopts)
+      let pum.buf = pum.id->winbufnr()
+    endif
   endif
 endfunction
 

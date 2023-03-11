@@ -574,7 +574,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
     let items = items[: max_items - 1]
   endif
 
-  let word = printf('{ %s%s%s }',
+  let word = printf('%s%s%s',
         \   pum.cursor == 0 ? '' : '> ',
         \   items->copy()
         \   ->map({ _, val -> val->get('abbr', val.word) })->join(),
@@ -587,7 +587,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
   let row = mode() ==# 'c' ?
         \ &lines - [1, &cmdheight]->max() - options.offset_row : '.'->line()
   let col = mode() ==# 'c' ?
-        \ 1 : '.'->col() + 3
+        \ 2 : '.'->col() + 3
 
   if has('nvim')
     if pum.buf < 0
@@ -650,7 +650,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
   " Highlight the first item
   call s:highlight(
         \ options.highlight_selected, 'pum_highlight_selected', 0,
-        \ g:pum#_namespace, 1, pum.cursor == 0 ? 3 : 5,
+        \ g:pum#_namespace, 1, pum.cursor == 0 ? 1 : 3,
         \ strwidth(items[0]->get('abbr', items[0].word)))
 
   " NOTE: redraw is needed for Vim8 or command line mode

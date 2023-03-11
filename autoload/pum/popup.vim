@@ -151,6 +151,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   if options.horizontal_menu
     let pum.horizontal_menu = v:true
     let pum.cursor = 0
+    let pum.items = items->copy()
 
     call pum#popup#_redraw_horizontal_menu()
   elseif has('nvim')
@@ -552,6 +553,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
   let pum = pum#_get()
 
   if pum.items->empty()
+    call pum#close()
     return
   endif
 
@@ -573,9 +575,10 @@ function! pum#popup#_redraw_horizontal_menu() abort
   endif
 
   let word = printf('{ %s%s%s }',
-        \ pum.cursor == 0 ? '' : '> ',
-        \ items->map({ _, val -> get(val, 'abbr', val.word) })->join(),
-        \ pum.items->len() <= max_items ? '' : ' ... ',
+        \   pum.cursor == 0 ? '' : '> ',
+        \   items->copy()
+        \   ->map({ _, val -> val->get('abbr', val.word) })->join(),
+        \   pum.items->len() <= max_items ? '' : ' ... ',
         \ )
 
   let options = pum#_options()
@@ -642,6 +645,17 @@ function! pum#popup#_redraw_horizontal_menu() abort
       let pum.id = popup_create(lines, winopts)
       let pum.buf = pum.id->winbufnr()
     endif
+  endif
+
+  " Highlight the first item
+  call s:highlight(
+        \ options.highlight_selected, 'pum_highlight_selected', 0,
+        \ g:pum#_namespace, 1, pum.cursor == 0 ? 3 : 5,
+        \ strwidth(items[0]->get('abbr', items[0].word)))
+
+  " NOTE: redraw is needed for Vim8 or command line mode
+  if !has('nvim') || mode() ==# 'c'
+    redraw
   endif
 endfunction
 

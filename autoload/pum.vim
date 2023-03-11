@@ -249,11 +249,12 @@ function! s:complete_done(completed_item) abort
   silent! let v:completed_item = g:pum#completed_item
 
   if mode() ==# 'i' && v:completed_item ==# g:pum#completed_item
+        \ && '#CompleteDone'->exists()
     " NOTE: Call CompleteDone when insert mode only
     doautocmd <nomodeline> CompleteDone
   endif
 
-  if exists('#User#PumCompleteDone')
+  if '#User#PumCompleteDone'->exists()
     doautocmd <nomodeline> User PumCompleteDone
   endif
 endfunction

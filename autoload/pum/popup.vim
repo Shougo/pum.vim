@@ -575,8 +575,8 @@ function! pum#popup#_redraw_horizontal_menu() abort
   endif
 
   let words = items->copy()->map({ _, val -> val->get('abbr', val.word) })
-  let word = printf('%s | %s%s',
-        \   words[0], words[1:]->join(),
+  let word = printf('%s%s%s%s',
+        \   words[0], words->len() > 1 ? ' | ' : '', words[1:]->join(),
         \   pum.items->len() <= max_items ? '' : ' ... ',
         \ )
 
@@ -594,7 +594,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
 
   let row = mode() ==# 'c' ?
         \ &lines - [1, &cmdheight]->max() - options.offset_row :
-        \ rest_width < strwidth(word) ?
+        \ rest_width < word->strwidth() || mode() ==# 't' ?
         \ (&lines - [1, &cmdheight]->max() <= spos.row + 1 ?
         \  spos.row - 1 : spos.row + 1) :
         \ spos.row
@@ -610,7 +610,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
     let winopts = #{
           \   border: options.border,
           \   relative: 'editor',
-          \   width: strwidth(word),
+          \   width: word->strwidth(),
           \   height: 1,
           \   row: row - 1,
           \   col: col - 1,
@@ -664,7 +664,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
     call s:highlight(
           \ options.highlight_selected, 'pum_highlight_selected', 0,
           \ g:pum#_namespace, 1, 1,
-          \ strwidth(items[0]->get('abbr', items[0].word)))
+          \ items[0]->get('abbr', items[0].word)->strwidth())
   endif
 
   " NOTE: redraw is needed for Vim8 or command line mode

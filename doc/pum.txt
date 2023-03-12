@@ -127,6 +127,8 @@ highlight_selected
 						*pum-options-horizontal_menu*
 horizontal_menu
 		Use horizontal menu instead of vertical popup menu.
+		Note: The feature does not support custom highlights and
+		columns.
 
 		Default: v:false
 

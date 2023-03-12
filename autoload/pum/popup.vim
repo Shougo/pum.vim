@@ -634,7 +634,8 @@ function! pum#popup#_redraw_horizontal_menu() abort
       " NOTE: nvim_win_set_option() causes title flicker...
       " Disable 'hlsearch' highlight
       call nvim_win_set_option(id, 'winhighlight',
-            \ printf('Normal:%s,Search:None', options.highlight_normal_menu))
+            \ printf('Normal:%s,Search:None',
+            \        options.highlight_horizontal_menu))
       call nvim_win_set_option(id, 'winblend', &l:pumblend)
       call nvim_win_set_option(id, 'wrap', v:false)
       call nvim_win_set_option(id, 'scrolloff', 0)

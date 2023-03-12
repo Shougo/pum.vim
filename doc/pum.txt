@@ -92,6 +92,13 @@ highlight_horizontal_menu
 
 		Default: ""
 
+				*pum-options-highlight_horizontal_separator*
+highlight_horizontal_separator
+		The highlight of the horizontal menu separator.
+		|pum-options-horizontal_menu|
+
+		Default: "PmenuSbar"
+
 					*pum-options-highlight_matches*
 highlight_matches
 		The input matches highlight of candidates.

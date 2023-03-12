@@ -45,6 +45,7 @@ function! pum#_options() abort
           \   border: 'none',
           \   highlight_columns: {},
           \   highlight_horizontal_menu: '',
+          \   highlight_horizontal_separator: 'PmenuSbar',
           \   highlight_matches: '',
           \   highlight_normal_menu: 'Pmenu',
           \   highlight_scroll_bar: 'PmenuSbar',

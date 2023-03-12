@@ -576,7 +576,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
 
   let words = items->copy()->map({ _, val -> val->get('abbr', val.word) })
   let word = printf('%s%s%s%s',
-        \   words[0], words->len() > 1 ? ' | ' : '', words[1:]->join(),
+        \   words[0], words->len() > 1 ? '   ' : '', words[1:]->join(),
         \   pum.items->len() <= max_items ? '' : ' ... ',
         \ )
 
@@ -659,12 +659,18 @@ function! pum#popup#_redraw_horizontal_menu() abort
     endif
   endif
 
-  " Highlight the first item
   if pum.cursor > 0
+    " Highlight the first item
     call s:highlight(
-          \ options.highlight_selected, 'pum_highlight_selected', 0,
-          \ g:pum#_namespace, 1, 1,
-          \ items[0]->get('abbr', items[0].word)->strwidth())
+          \ options.highlight_selected,
+          \ 'pum_highlight_selected', 0, g:pum#_namespace,
+          \ 1, 1, items[0]->get('abbr', items[0].word)->strwidth())
+  endif
+  if words->len() > 1
+    call s:highlight(
+          \ options.highlight_horizontal_separator,
+          \ 'pum_highlight_separator',
+          \ 0, g:pum#_namespace, 1, strwidth(words[0]) + 2, 1)
   endif
 
   " NOTE: redraw is needed for Vim8 or command line mode

@@ -157,6 +157,12 @@ min_width
 
 		Default: 'pumwidth' value
 
+						*pum-options-offset_col*
+offset_col
+		Popup column offset in |pum-options-horizontal_menu|.
+
+		Default: 3
+
 						*pum-options-offset_row*
 offset_row
 		Popup row offset in the command line mode.

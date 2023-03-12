@@ -574,10 +574,9 @@ function! pum#popup#_redraw_horizontal_menu() abort
     let items = items[: max_items - 1]
   endif
 
-  let word = printf('%s%s%s',
-        \   pum.cursor == 0 ? '' : '> ',
-        \   items->copy()
-        \   ->map({ _, val -> val->get('abbr', val.word) })->join(),
+  let words = items->copy()->map({ _, val -> val->get('abbr', val.word) })
+  let word = printf('%s | %s%s',
+        \   words[0], words[1:]->join(),
         \   pum.items->len() <= max_items ? '' : ' ... ',
         \ )
 
@@ -591,10 +590,16 @@ function! pum#popup#_redraw_horizontal_menu() abort
     let spos = screenpos(0, '.'->line(), '.'->col())
   endif
 
+  let rest_width = &columns - spos.col - options.offset_col
+
   let row = mode() ==# 'c' ?
-        \ &lines - [1, &cmdheight]->max() - options.offset_row : spos.row
+        \ &lines - [1, &cmdheight]->max() - options.offset_row :
+        \ rest_width < strwidth(word) ?
+        \ (&lines - [1, &cmdheight]->max() <= spos.row + 1 ?
+        \  spos.row - 1 : spos.row + 1) :
+        \ spos.row
   let col = mode() ==# 'c' ?
-        \ 2 : spos.col + 3
+        \ 2 : spos.col + options.offset_col
 
   if has('nvim')
     if pum.buf < 0
@@ -655,10 +660,12 @@ function! pum#popup#_redraw_horizontal_menu() abort
   endif
 
   " Highlight the first item
-  call s:highlight(
-        \ options.highlight_selected, 'pum_highlight_selected', 0,
-        \ g:pum#_namespace, 1, pum.cursor == 0 ? 1 : 3,
-        \ strwidth(items[0]->get('abbr', items[0].word)))
+  if pum.cursor > 0
+    call s:highlight(
+          \ options.highlight_selected, 'pum_highlight_selected', 0,
+          \ g:pum#_namespace, 1, 1,
+          \ strwidth(items[0]->get('abbr', items[0].word)))
+  endif
 
   " NOTE: redraw is needed for Vim8 or command line mode
   if !has('nvim') || mode() ==# 'c'

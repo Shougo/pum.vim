@@ -55,6 +55,7 @@ function! pum#_options() abort
           \   max_height: &pumheight,
           \   max_width: 0,
           \   min_width: &pumwidth,
+          \   offset_col: 3,
           \   offset_row: has('nvim') || v:version >= 900 ? 0 : 1,
           \   padding: v:false,
           \   reversed: v:false,

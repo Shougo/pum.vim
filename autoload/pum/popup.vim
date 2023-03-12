@@ -584,10 +584,17 @@ function! pum#popup#_redraw_horizontal_menu() abort
   let options = pum#_options()
   let lines = [word]
 
+  if !has('nvim') && mode() ==# 't'
+    let cursor = bufnr('%')->term_getcursor()
+    let spos = #{ row: cursor[0], col: '.'->col() }
+  else
+    let spos = screenpos(0, '.'->line(), '.'->col())
+  endif
+
   let row = mode() ==# 'c' ?
-        \ &lines - [1, &cmdheight]->max() - options.offset_row : '.'->line()
+        \ &lines - [1, &cmdheight]->max() - options.offset_row : spos.row
   let col = mode() ==# 'c' ?
-        \ 2 : '.'->col() + 3
+        \ 2 : spos.col + 3
 
   if has('nvim')
     if pum.buf < 0

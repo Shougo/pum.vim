@@ -576,7 +576,8 @@ function! pum#popup#_redraw_horizontal_menu() abort
 
   let words = items->copy()->map({ _, val -> val->get('abbr', val.word) })
   let word = printf('%s%s%s%s',
-        \   words[0], words->len() > 1 ? '   ' : '', words[1:]->join(),
+        \   words[0], words->len() > 1 ? '   ' : '',
+        \   words[1:]->join(' | '),
         \   pum.items->len() <= max_items ? '' : ' ... ',
         \ )
 

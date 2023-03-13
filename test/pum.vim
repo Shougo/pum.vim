@@ -4,6 +4,7 @@ let s:assert = themis#helper('assert')
 
 function! s:suite.before_each() abort
   call pum#_init()
+  call pum#_init_options()
   normal! ggVGd
 endfunction
 

@@ -37,42 +37,49 @@ function! pum#_init() abort
         \   border_height: 0,
         \ }
 endfunction
+function! pum#_init_options() abort
+  let s:options = #{
+        \   auto_confirm_time: 0,
+        \   auto_select: &completeopt =~# 'noinsert',
+        \   border: 'none',
+        \   highlight_columns: {},
+        \   highlight_horizontal_menu: '',
+        \   highlight_horizontal_separator: 'PmenuSbar',
+        \   highlight_matches: '',
+        \   highlight_normal_menu: 'Pmenu',
+        \   highlight_scroll_bar: 'PmenuSbar',
+        \   highlight_selected: 'PmenuSel',
+        \   horizontal_menu: v:false,
+        \   item_orders: ['abbr', 'kind', 'menu'],
+        \   max_horizontal_items: 3,
+        \   max_height: &pumheight,
+        \   max_width: 0,
+        \   min_width: &pumwidth,
+        \   offset_col: 3,
+        \   offset_row: has('nvim') || v:version >= 900 ? 0 : 1,
+        \   padding: v:false,
+        \   reversed: v:false,
+        \   scrollbar_char: '|',
+        \   use_complete: v:false,
+        \   use_setline: v:false,
+        \   zindex: 1000,
+        \ }
+endfunction
 function! pum#_options() abort
   if !('s:options'->exists())
-    let s:options = #{
-          \   auto_confirm_time: 0,
-          \   auto_select: &completeopt =~# 'noinsert',
-          \   border: 'none',
-          \   highlight_columns: {},
-          \   highlight_horizontal_menu: '',
-          \   highlight_horizontal_separator: 'PmenuSbar',
-          \   highlight_matches: '',
-          \   highlight_normal_menu: 'Pmenu',
-          \   highlight_scroll_bar: 'PmenuSbar',
-          \   highlight_selected: 'PmenuSel',
-          \   horizontal_menu: v:false,
-          \   item_orders: ['abbr', 'kind', 'menu'],
-          \   max_horizontal_items: 3,
-          \   max_height: &pumheight,
-          \   max_width: 0,
-          \   min_width: &pumwidth,
-          \   offset_col: 3,
-          \   offset_row: has('nvim') || v:version >= 900 ? 0 : 1,
-          \   padding: v:false,
-          \   reversed: v:false,
-          \   scrollbar_char: '|',
-          \   use_complete: v:false,
-          \   use_setline: v:false,
-          \   zindex: 1000,
-          \ }
+    return pum#_init_options()
   endif
 
   return s:options
 endfunction
 
 function! pum#set_option(key_or_dict, value = '') abort
+  if !('s:options'->exists())
+    return pum#_init_options()
+  endif
+
   let dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
-  call extend(pum#_options(), dict)
+  call extend(s:options, dict)
 endfunction
 
 function! pum#open(startcol, items, mode = mode(), insert = v:false) abort

@@ -223,6 +223,10 @@ function! s:skip_next_complete() abort
 endfunction
 
 function! s:insert(word, prev_word, after_func) abort
+  augroup pum-temp
+    autocmd!
+  augroup END
+
   let pum = pum#_get()
 
   " Convert to 0 origin
@@ -290,8 +294,8 @@ function! s:check_user_input(callback) abort
             \   end
             \ end)
     elseif '##TextChangedT'->exists()
-      autocmd pum-temp TextChangedT *
-            \ if s:check_text_changed_terminal() | call pum#close() | endif
+      let s:prev_line = pum#_getline()
+      autocmd pum-temp TextChangedT * call s:check_text_changed_terminal()
     endif
   else
     autocmd pum-temp InsertCharPre *
@@ -317,7 +321,16 @@ endfunction
 function! s:check_text_changed_terminal() abort
   " Check pum.items is inserted
   let pum = pum#_get()
-  return pum#_row() != pum.startrow
+  if pum#_row() != pum.startrow
+    call pum#close()
+    return
+  endif
+
+  let current_line = pum#_getline()
+  if current_line !=# s:prev_line
+    call pum#close()
+  endif
+  let s:prev_line = current_line
 endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1
@@ -415,9 +428,6 @@ function! s:insert_line_jobsend(text) abort
     call chansend(b:terminal_job_id, chars)
   else
     call term_sendkeys(bufnr(), chars)
-
     call term_wait(bufnr())
   endif
-
-  let s:skip_count = chars->strchars() + 1
 endfunction

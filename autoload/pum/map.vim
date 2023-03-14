@@ -283,7 +283,13 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp CmdlineLeave *
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
-    if '##TextChangedT'->exists()
+    if has('nvim')
+      lua vim.on_key(function(key)
+            \   if string.match(key, '^%C$') then
+            \     vim.fn['pum#close']()
+            \   end
+            \ end)
+    elseif '##TextChangedT'->exists()
       autocmd pum-temp TextChangedT *
             \ if s:check_text_changed_terminal() | call pum#close() | endif
     endif
@@ -311,9 +317,7 @@ endfunction
 function! s:check_text_changed_terminal() abort
   " Check pum.items is inserted
   let pum = pum#_get()
-  let current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
   return pum#_row() != pum.startrow
-        \ || (has('nvim') && current_word =~# '\s$')
 endfunction
 function! s:check_skip_count(callback) abort
   let s:skip_count -= 1

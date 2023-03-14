@@ -412,8 +412,6 @@ function! s:insert_line_jobsend(text) abort
   else
     call term_sendkeys(bufnr(), chars)
 
-    call term_redraw(bufnr())
-
     call term_wait(bufnr())
   endif
 

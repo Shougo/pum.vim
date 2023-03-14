@@ -67,7 +67,7 @@ function! pum#_init_options() abort
 endfunction
 function! pum#_options() abort
   if !('s:options'->exists())
-    return pum#_init_options()
+    call pum#_init_options()
   endif
 
   return s:options
@@ -75,7 +75,7 @@ endfunction
 
 function! pum#set_option(key_or_dict, value = '') abort
   if !('s:options'->exists())
-    return pum#_init_options()
+    call pum#_init_options()
   endif
 
   let dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)

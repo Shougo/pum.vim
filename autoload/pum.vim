@@ -75,8 +75,12 @@ function! pum#_options() abort
   let options = s:options->copy()
 
   let mode = mode()
-  let local_options = s:local_options->get(mode, {})
-  call extend(options, local_options)
+  call extend(options, s:local_options->get(mode, {}))
+
+  if mode ==# 'c'
+    " Use getcmdtype()
+    call extend(options, s:local_options->get(getcmdtype(), {}))
+  endif
 
   return options
 endfunction

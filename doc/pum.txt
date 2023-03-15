@@ -283,6 +283,7 @@ pum#open({startcol}, {items})
 pum#set_local_option({mode}, {option-name}, {value})
 pum#set_local_option({mode}, {dict})
 		Set {option-name} option to {value} for {mode}.
+		You can specify {mode} from |mode()| or |getcmdtype()|.
 		If {dict} is available, the key is {option-name} and the value
 		is {value}. See |pum-options| for available {option-name}.
 

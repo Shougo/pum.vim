@@ -64,13 +64,21 @@ function! pum#_init_options() abort
         \   use_setline: v:false,
         \   zindex: 1000,
         \ }
+  let s:local_options = {
+        \ }
 endfunction
 function! pum#_options() abort
   if !('s:options'->exists())
     call pum#_init_options()
   endif
 
-  return s:options
+  let options = s:options->copy()
+
+  let mode = mode()
+  let local_options = s:local_options->get(mode, {})
+  call extend(options, local_options)
+
+  return options
 endfunction
 
 function! pum#set_option(key_or_dict, value = '') abort
@@ -80,6 +88,17 @@ function! pum#set_option(key_or_dict, value = '') abort
 
   let dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
   call extend(s:options, dict)
+endfunction
+function! pum#set_local_option(mode, key_or_dict, value = '') abort
+  if !('s:local_options'->exists())
+    call pum#_init_options()
+  endif
+
+  let dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
+  if !(s:local_options->has_key(a:mode))
+    let s:local_options[a:mode] = {}
+  endif
+  call extend(s:local_options[a:mode], dict)
 endfunction
 
 function! pum#open(startcol, items, mode = mode(), insert = v:false) abort

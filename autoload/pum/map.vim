@@ -72,9 +72,9 @@ function! pum#map#select_relative(delta) abort
 
   " Update scroll bar
   if pum.scroll_id > 0 && has('nvim') && pum.scroll_id->winbufnr() > 0
-    let head = 'w0'->line(pum.id)
-    let bottom = 'w$'->line(pum.id)
-    let offset =
+    const head = 'w0'->line(pum.id)
+    const bottom = 'w$'->line(pum.id)
+    const offset =
           \ head == 1 ? 0 :
           \ bottom == pum.len ? pum.height - pum.scroll_height :
           \ (pum.height * (head + 0.0) / pum.len + 0.5)->floor()->float2nr()
@@ -127,7 +127,7 @@ function! pum#map#longest_relative(delta) abort
     return ''
   endif
 
-  let complete_str = pum.orig_input
+  const complete_str = pum.orig_input
   let common_str = pum.items[0].word
   for item in pum.items[1:]
     while item.word->tolower()->stridx(common_str->tolower()) != 0
@@ -135,7 +135,7 @@ function! pum#map#longest_relative(delta) abort
     endwhile
   endfor
 
-  let prev_word = pum.cursor > 0 ?
+  const prev_word = pum.cursor > 0 ?
         \ pum.items[pum.cursor - 1].word :
         \ pum.orig_input
 
@@ -173,8 +173,8 @@ endfunction
 function! pum#map#cancel() abort
   let pum = pum#_get()
 
-  let current_word = pum.current_word
-  let current_cursor = pum.cursor
+  const current_word = pum.current_word
+  const current_cursor = pum.cursor
 
   " Disable current inserted text
   let pum.current_word = ''
@@ -230,9 +230,9 @@ function! s:insert(word, prev_word, after_func) abort
   let pum = pum#_get()
 
   " Convert to 0 origin
-  let startcol = pum.startcol - 1
-  let prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
-  let next_input = pum#_getline()[startcol :][len(a:prev_word):]
+  const startcol = pum.startcol - 1
+  const prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
+  const next_input = pum#_getline()[startcol :][len(a:prev_word):]
 
   " NOTE: current_word must be changed before call after_func
   let pum.current_word = a:word
@@ -265,7 +265,7 @@ endfunction
 function! s:insert_current_word(prev_word, after_func) abort
   let pum = pum#_get()
 
-  let word = pum.cursor > 0 ?
+  const word = pum.cursor > 0 ?
         \ pum.items[pum.cursor - 1].word :
         \ pum.orig_input
   call s:insert(word, a:prev_word, a:after_func)
@@ -308,13 +308,13 @@ function! s:check_user_input(callback) abort
 endfunction
 function! s:check_text_changed() abort
   let pum = pum#_get()
-  let startcol_line = pum#_getline()[: pum.startcol]
-  let check_startcol_line = startcol_line !=# pum.orig_line &&
+  const startcol_line = pum#_getline()[: pum.startcol]
+  const check_startcol_line = startcol_line !=# pum.orig_line &&
         \ (strchars(pum.current_line) > strchars(startcol_line))
 
   " NOTE: Check "current_word" is one of the items.
-  let current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
-  let check_item = pum.items->copy()->map(
+  const current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
+  const check_item = pum.items->copy()->map(
         \ { _, val -> val.word })->index(current_word) < 0
   return check_item || check_startcol_line
 endfunction
@@ -326,7 +326,7 @@ function! s:check_text_changed_terminal() abort
     return
   endif
 
-  let current_line = pum#_getline()
+  const current_line = pum#_getline()
   if current_line !=# s:prev_line
     call pum#close()
   endif
@@ -379,7 +379,7 @@ function! s:insert_line_feedkeys(text, after_func) abort
   " feedkeys() implementation
 
   " NOTE: ":undojoin" is needed to prevent undo breakage
-  let tree = undotree()
+  const tree = undotree()
   if tree.seq_cur == tree.seq_last
     undojoin
   endif
@@ -389,7 +389,7 @@ function! s:insert_line_feedkeys(text, after_func) abort
   if mode() ==# 'i'
     let chars .= "\<Cmd>set backspace=start\<CR>"
   endif
-  let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
+  const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
   let chars .= "\<BS>"->repeat(current_word->strchars()) .. a:text
   if mode() ==# 'i'
     let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
@@ -421,8 +421,9 @@ function! s:insert_line_complete(text) abort
 endfunction
 
 function! s:insert_line_jobsend(text) abort
-  let current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars = "\<C-h>"->repeat(current_word->strchars()) .. a:text
+  const current_word = pum#_getline()[
+        \ pum#_get().startcol - 1 : pum#_col() - 2]
+  const chars = "\<C-h>"->repeat(current_word->strchars()) .. a:text
 
   if has('nvim')
     call chansend(b:terminal_job_id, chars)

@@ -17,12 +17,12 @@ function! pum#util#_normalize_key_or_dict(key_or_dict, value) abort
 endfunction
 
 function! pum#util#_truncate(str, max, footer_width, separator) abort
-  let width = a:str->strwidth()
+  const width = a:str->strwidth()
   if width <= a:max
-    let ret = a:str
+    const ret = a:str
   else
-    let header_width = a:max - a:separator->strwidth() - a:footer_width
-    let ret = s:strwidthpart(a:str, header_width) .. a:separator
+    const header_width = a:max - a:separator->strwidth() - a:footer_width
+    const ret = s:strwidthpart(a:str, header_width) .. a:separator
          \ .. s:strwidthpart_reverse(a:str, a:footer_width)
   endif
   return s:truncate(ret, a:max)
@@ -47,13 +47,13 @@ function! s:truncate(str, width) abort
   return ret
 endfunction
 function! s:strwidthpart(str, width) abort
-  let str = a:str->tr("\t", ' ')
-  let vcol = a:width + 2
+  const str = a:str->tr("\t", ' ')
+  const vcol = a:width + 2
   return str->matchstr('.*\%<' .. (vcol < 0 ? 0 : vcol) .. 'v')
 endfunction
 function! s:strwidthpart_reverse(str, width) abort
-  let str = a:str->tr("\t", ' ')
-  let vcol = str->strwidth() - a:width
+  const str = a:str->tr("\t", ' ')
+  const vcol = str->strwidth() - a:width
   return str->matchstr('\%>' .. (vcol < 0 ? 0 : vcol) .. 'v.*')
 endfunction
 

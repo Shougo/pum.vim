@@ -74,7 +74,7 @@ function! pum#_options() abort
 
   let options = s:options->copy()
 
-  let mode = mode()
+  const mode = mode()
   call extend(options, s:local_options->get(mode, {}))
 
   if mode ==# 'c'
@@ -90,7 +90,7 @@ function! pum#set_option(key_or_dict, value = '') abort
     call pum#_init_options()
   endif
 
-  let dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
+  const dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
   call extend(s:options, dict)
 endfunction
 function! pum#set_local_option(mode, key_or_dict, value = '') abort
@@ -98,7 +98,7 @@ function! pum#set_local_option(mode, key_or_dict, value = '') abort
     call pum#_init_options()
   endif
 
-  let dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
+  const dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
   if !(s:local_options->has_key(a:mode))
     let s:local_options[a:mode] = {}
   endif
@@ -150,8 +150,8 @@ function! pum#close() abort
   endif
 
   " NOTE: pum.scroll_id is broken after pum#popup#_close()
-  let id = pum.id
-  let scroll_id = pum.scroll_id
+  const id = pum.id
+  const scroll_id = pum.scroll_id
 
   call pum#popup#_close(id)
   call pum#popup#_close(scroll_id)
@@ -223,13 +223,13 @@ function! pum#_getline() abort
         \ '.'->getline()
 endfunction
 function! pum#_row() abort
-  let row = mode() ==# 't' && !has('nvim') ?
+  const row = mode() ==# 't' && !has('nvim') ?
         \ '%'->bufnr()->term_getcursor()[0] :
         \ '.'->line()
   return row
 endfunction
 function! pum#_col() abort
-  let col = mode() ==# 't' && !has('nvim') ?
+  const col = mode() ==# 't' && !has('nvim') ?
         \ bufnr('%')->term_getcursor()[1] :
         \ mode() ==# 'c' ? getcmdpos() :
         \ mode() ==# 't' ? '.'->col() : '.'->col()
@@ -241,7 +241,7 @@ function! pum#_cursor_id() abort
 endfunction
 
 function! pum#_format_item(item, options, mode, startcol, max_columns) abort
-  let columns = a:item->get('columns', {})->copy()->extend(#{
+  const columns = a:item->get('columns', {})->copy()->extend(#{
         \   abbr: get(a:item, 'abbr', a:item.word),
         \   kind: get(a:item, 'kind', ''),
         \   menu: get(a:item, 'menu', ''),

@@ -61,13 +61,13 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   if !has('nvim') && a:mode ==# 't'
-    let cursor = bufnr('%')->term_getcursor()
+    const cursor = bufnr('%')->term_getcursor()
     let spos = #{ row: cursor[0], col: a:startcol }
   else
     let spos = screenpos(0, '.'->line(), a:startcol)
   endif
 
-  let [border_left, border_top, border_right, border_bottom] =
+  const [border_left, border_top, border_right, border_bottom] =
         \ s:get_border_size(options.border)
   let padding_height = 1 + border_top + border_bottom
   let padding_width = 1 + border_left + border_right
@@ -91,27 +91,27 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
       " Use above window
       let spos.row -= height + padding_height
       let height = minheight_above
-      let direction = 'above'
+      const direction = 'above'
     else
       " Use below window
       let height = minheight_below
-      let direction = 'below'
+      const direction = 'below'
     endif
   else
-    let direction = 'above'
+    const direction = 'above'
     let height = [height, &lines - [&cmdheight, 1]->max()]->min()
   endif
   let height = [height, 1]->max()
 
   " Reversed
-  let reversed = direction ==# 'above' && options.reversed
+  const reversed = direction ==# 'above' && options.reversed
   if reversed
     let lines = lines->reverse()
     let items = items->reverse()
   endif
 
   " Adjust to screen col
-  let rest_width = &columns - spos.col - padding_width
+  const rest_width = &columns - spos.col - padding_width
   if rest_width < width
     let spos.col -= width - rest_width
   endif
@@ -179,13 +179,13 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
           \   zindex: options.zindex,
           \ }
 
-    let scroll_height = (height * ((height + 0.0) / lines->len()) + 0.5
-          \ )->floor()->float2nr()
     " NOTE: scroll_height must be positive
-    let scroll_height = [scroll_height, 1]->max()
+    const scroll_height = [
+          \ (height * ((height + 0.0) / lines->len()) + 0.5
+          \ )->floor()->float2nr(), 1]->max()
 
-    let scroll_row = pos[0]
-    let scroll_col = pos[1] + width
+    const scroll_row = pos[0]
+    const scroll_col = pos[1] + width
     let scroll_winopts = #{
           \   relative: 'editor',
           \   width: options.scrollbar_char->strwidth(),
@@ -216,7 +216,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
       let winopts.noautocmd = v:true
 
       " Create new window
-      let id = nvim_open_win(pum.buf, v:false, winopts)
+      const id = nvim_open_win(pum.buf, v:false, winopts)
 
       " NOTE: nvim_win_set_option() causes title flicker...
       " Disable 'hlsearch' highlight
@@ -560,7 +560,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
   if pum.cursor == 0
     let items = pum.items->copy()
   else
-    let cursor = pum.cursor - 1
+    const cursor = pum.cursor - 1
     let items = [pum.items[cursor]]
     let items += pum.items[cursor + 1:]
     if cursor > 0
@@ -568,38 +568,38 @@ function! pum#popup#_redraw_horizontal_menu() abort
     endif
   endif
 
-  let max_items = pum#_options().max_horizontal_items
+  const max_items = pum#_options().max_horizontal_items
 
   if pum.items->len() > max_items
     let items = items[: max_items - 1]
   endif
 
-  let words = items->copy()->map({ _, val -> val->get('abbr', val.word) })
-  let word = printf('%s%s%s%s',
+  const words = items->copy()->map({ _, val -> val->get('abbr', val.word) })
+  const word = printf('%s%s%s%s',
         \   words[0], words->len() > 1 ? '   ' : '',
         \   words[1:]->join(' | '),
         \   pum.items->len() <= max_items ? '' : ' ... ',
         \ )
 
   let options = pum#_options()
-  let lines = [word]
+  const lines = [word]
 
   if !has('nvim') && mode() ==# 't'
-    let cursor = bufnr('%')->term_getcursor()
+    const cursor = bufnr('%')->term_getcursor()
     let spos = #{ row: cursor[0], col: '.'->col() }
   else
     let spos = screenpos(0, '.'->line(), '.'->col())
   endif
 
-  let rest_width = &columns - spos.col - options.offset_col
+  const rest_width = &columns - spos.col - options.offset_col
 
-  let row = mode() ==# 'c' ?
+  const row = mode() ==# 'c' ?
         \ &lines - [1, &cmdheight]->max() - options.offset_row :
         \ rest_width < word->strwidth() || mode() ==# 't' ?
         \ (&lines - [1, &cmdheight]->max() <= spos.row + 1 ?
         \  spos.row - 1 : spos.row + 1) :
         \ spos.row
-  let col = mode() ==# 'c' ?
+  const col = mode() ==# 'c' ?
         \ 2 : spos.col + options.offset_col
 
   if has('nvim')
@@ -630,7 +630,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
       let winopts.noautocmd = v:true
 
       " Create new window
-      let id = nvim_open_win(pum.buf, v:false, winopts)
+      const id = nvim_open_win(pum.buf, v:false, winopts)
 
       " NOTE: nvim_win_set_option() causes title flicker...
       " Disable 'hlsearch' highlight

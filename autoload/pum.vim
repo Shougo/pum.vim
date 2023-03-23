@@ -254,7 +254,7 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
     endif
 
     if str !=# ''
-      let str .= ' '
+      let str ..= ' '
     endif
 
     let column = columns->get(order, '')->substitute('[[:cntrl:]]', '?', 'g')
@@ -262,9 +262,9 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
       " Fallback to "word"
       let column = a:item.word
     endif
-    let column .= ' '->repeat(a:max_columns[order] - strdisplaywidth(column))
+    let column ..= ' '->repeat(a:max_columns[order] - strdisplaywidth(column))
 
-    let str .= column
+    let str ..= column
   endfor
 
   if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)

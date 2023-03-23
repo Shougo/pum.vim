@@ -57,16 +57,16 @@ function! pum#map#select_relative(delta) abort
     " Because the highlight conflicts with other highlights
     if delta < 0
       call win_execute(pum.id, '
-            \ call cursor(pum#_get().cursor, 0) |
-            \ call matchaddpos(pum#_options().highlight_selected,
-            \                  [pum#_get().cursor], 0, pum#_cursor_id()) |
-            \ redraw')
+            \ call cursor(pum#_get().cursor, 0)
+            \ | call matchaddpos(pum#_options().highlight_selected,
+            \                    [pum#_get().cursor], 0, pum#_cursor_id())
+            \ | redraw')
     else
       call win_execute(pum.id, '
-            \ call cursor(pum#_get().cursor + 1, 0) |
-            \ call matchaddpos(pum#_options().highlight_selected,
-            \                  [pum#_get().cursor], 0, pum#_cursor_id()) |
-            \ redraw')
+            \ call cursor(pum#_get().cursor + 1, 0)
+            \ | call matchaddpos(pum#_options().highlight_selected,
+            \                    [pum#_get().cursor], 0, pum#_cursor_id())
+            \ | redraw')
     endif
   endif
 
@@ -365,7 +365,7 @@ function! s:setcmdline(text) abort
     let chars = "\<C-e>\<C-u>"
 
     " NOTE: for control chars
-    let chars .= a:text->split('\zs')
+    let chars ..= a:text->split('\zs')
           \ ->map({ _, val -> val <# ' ' ? "\<C-q>" .. val : val })->join('')
 
     " NOTE: skip_count is needed to skip feedkeys()
@@ -387,16 +387,16 @@ function! s:insert_line_feedkeys(text, after_func) abort
   let chars = ''
   " NOTE: Change backspace option to work <BS> correctly
   if mode() ==# 'i'
-    let chars .= "\<Cmd>set backspace=start\<CR>"
+    let chars ..= "\<Cmd>set backspace=start\<CR>"
   endif
   const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars .= "\<BS>"->repeat(current_word->strchars()) .. a:text
+  let chars ..= "\<BS>"->repeat(current_word->strchars()) .. a:text
   if mode() ==# 'i'
-    let chars .= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
+    let chars ..= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
   endif
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)
-    let chars .= "\<Cmd>call call(g:PumCallback, [])\<CR>"
+    let chars ..= "\<Cmd>call call(g:PumCallback, [])\<CR>"
   endif
   let s:skip_count = (mode() ==# 't' ? chars : a:text)->strchars() + 1
 

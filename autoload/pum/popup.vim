@@ -67,8 +67,8 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     let spos = screenpos(0, '.'->line(), a:startcol)
   endif
 
-  const [border_left, border_top, border_right, border_bottom] =
-        \ s:get_border_size(options.border)
+  const [border_left, border_top, border_right, border_bottom]
+        \ = s:get_border_size(options.border)
   let padding_height = 1 + border_top + border_bottom
   let padding_width = 1 + border_left + border_right
   let padding_left = border_left
@@ -86,8 +86,8 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     " Adjust to screen row
     let minheight_below = [height, &lines - spos.row - padding_height]->min()
     let minheight_above = [height, spos.row - padding_height]->min()
-    if minheight_below < minheight_above ||
-          \ (minheight_above >= 1 && options.reversed)
+    if minheight_below < minheight_above
+          \ || (minheight_above >= 1 && options.reversed)
       " Use above window
       let spos.row -= height + padding_height
       let height = minheight_above
@@ -451,8 +451,8 @@ function! s:get_borderchar_height(ch) abort
   if a:ch->type() == v:t_string
     " character
     return a:ch->empty() ? 0 : 1
-  elseif a:ch->type() == v:t_list &&
-        \ !(a:ch->empty()) && a:ch[0]->type() == v:t_string
+  elseif a:ch->type() == v:t_list
+        \ && !(a:ch->empty()) && a:ch[0]->type() == v:t_string
     " character with highlight: [ch, highlight]
     return a:ch[0]->empty() ? 0 : 1
   else
@@ -465,8 +465,8 @@ function! s:get_borderchar_width(ch) abort
   if a:ch->type() == v:t_string
     " character
     return strdisplaywidth(a:ch)
-  elseif a:ch->type() == v:t_list &&
-        \ !(a:ch->empty()) && a:ch[0]->type() == v:t_string
+  elseif a:ch->type() == v:t_list
+        \ && !(a:ch->empty()) && a:ch[0]->type() == v:t_string
     " character with highlight: [ch, highlight]
     return strdisplaywidth(a:ch[0])
   else

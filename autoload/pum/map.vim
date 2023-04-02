@@ -356,7 +356,7 @@ function! s:setcmdline(text) abort
   if '*setcmdline'->exists()
     " NOTE: skip_count is needed
     " CmdlineChanged is triggered after setcmdline() call
-    let s:skip_count = 2
+    let s:skip_count = 1
 
     " NOTE: CmdlineChanged autocmd must be disabled
     call setcmdline(a:text)

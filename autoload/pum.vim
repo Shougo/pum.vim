@@ -112,7 +112,7 @@ function! pum#open(startcol, items, mode = mode(), insert = v:false) abort
     return -1
   endif
 
-  if a:items->empty()
+  if a:items->empty() || pumvisible()
     call pum#close()
     return
   endif

@@ -303,7 +303,9 @@ function! s:check_user_input(callback) abort
     autocmd pum-temp InsertLeave *
           \ call pum#_reset_skip_complete()
     autocmd pum-temp TextChangedI *
-          \ if s:check_text_changed() | call pum#close() | endif
+          \ : if s:check_text_changed()
+          \ |   call pum#close()
+          \ | endif
   endif
 endfunction
 function! s:check_text_changed() abort

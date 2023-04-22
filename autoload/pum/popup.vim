@@ -349,8 +349,10 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   elseif a:mode ==# 'i'
     autocmd pum InsertLeave * ++once call pum#close()
     autocmd pum CursorMovedI *
-          \ if pum#_get().current_line ==# '.'->getline()
-          \    && pum#_get().col !=# pum#_col() | call pum#close() | endif
+          \ : if pum#_get().current_line ==# '.'->getline()
+          \       && pum#_get().col !=# pum#_col()
+          \ |   call pum#close()
+          \ | endif
   elseif a:mode ==# 'c'
     autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()
   elseif a:mode ==# 't' && '##TermEnter'->exists()

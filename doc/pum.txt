@@ -318,6 +318,13 @@ pum#map#confirm()
 		Insert the select and close the popup.
 		Note: It must not be called in |:map-<expr>|.
 
+						*pum#map#confirm_word()*
+pum#map#confirm_word()
+		Insert the select word and close the popup.
+		The word means non spaces charaters.
+		It is useful if you want to complete word by word.
+		Note: It must not be called in |:map-<expr>|.
+
 						*pum#map#insert_relative()*
 pum#map#insert_relative({delta})
 		Move forward or backward {delta} number and insert the

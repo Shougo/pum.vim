@@ -169,6 +169,23 @@ function! pum#map#confirm() abort
 
   return ''
 endfunction
+function! pum#map#confirm_word() abort
+  let pum = pum#_get()
+
+  if pum.cursor > 0
+    " Get non space characters
+    const word = pum.items[pum.cursor - 1].word->matchstr('^\S\+')
+    call s:insert(word, pum.orig_input, { -> s:skip_next_complete() })
+  else
+    call s:skip_next_complete()
+  endif
+
+  " Reset v:completed_item to prevent CompleteDone is twice
+  autocmd pum-temp TextChangedI,TextChangedP * ++once
+        \ silent! let v:completed_item = {}
+
+  return ''
+endfunction
 
 function! pum#map#cancel() abort
   let pum = pum#_get()

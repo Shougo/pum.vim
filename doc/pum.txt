@@ -42,7 +42,7 @@ https://github.com/folke/noice.nvim
 INTERFACE						*pum-interface*
 
 ------------------------------------------------------------------------------
-VARIABLES	 					*pum-variables*
+VARIABLES						*pum-variables*
 
 						*g:pum#completed_item*
 g:pum#completed_item
@@ -50,7 +50,7 @@ g:pum#completed_item
 		It is used in |PumCompleteDone| event.
 
 ------------------------------------------------------------------------------
-OPTIONS	 						*pum-options*
+OPTIONS							*pum-options*
 
 Options can be toggled through the use of |pum#set_option()|.
 Note: The options must be set before call of |pum#open()|.
@@ -148,19 +148,19 @@ max_horizontal_items
 
 		Default: 3
 
-			    			*pum-options-max_height*
+						*pum-options-max_height*
 max_height
 		The maximum height of the popup menu.
 
 		Default: 'pumheight' value
 
-			    			*pum-options-max_width*
+						*pum-options-max_width*
 max_width
 		The maximum width of the popup menu.
 
 		Default: 0
 
-			    			*pum-options-min_width*
+						*pum-options-min_width*
 min_width
 		The minimum width of the popup menu.
 
@@ -229,7 +229,7 @@ zindex
 		Default: 1000
 
 ------------------------------------------------------------------------------
-FUNCTIONS 						*pum-functions*
+FUNCTIONS						*pum-functions*
 
 							*pum#close()*
 pum#close()
@@ -306,7 +306,7 @@ pum#visible()
 
 
 ------------------------------------------------------------------------------
-KEY MAPPINGS 						*pum-key-mappings*
+KEY MAPPINGS						*pum-key-mappings*
 
 							*pum#map#cancel()*
 pum#map#cancel()
@@ -359,7 +359,7 @@ pum#map#select_relative_page({delta})
 
 
 ------------------------------------------------------------------------------
-AUTOCMDS	 					*pum-autocmds*
+AUTOCMDS						*pum-autocmds*
 
 							*PumClose*
 PumClose

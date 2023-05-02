@@ -57,13 +57,13 @@ function! pum#map#select_relative(delta) abort
     " Because the highlight conflicts with other highlights
     if delta < 0
       call win_execute(pum.id, '
-            \ call cursor(pum#_get().cursor, 0)
+            \   call cursor(pum#_get().cursor, 0)
             \ | call matchaddpos(pum#_options().highlight_selected,
             \                    [pum#_get().cursor], 0, pum#_cursor_id())
             \ | redraw')
     else
       call win_execute(pum.id, '
-            \ call cursor(pum#_get().cursor + 1, 0)
+            \   call cursor(pum#_get().cursor + 1, 0)
             \ | call matchaddpos(pum#_options().highlight_selected,
             \                    [pum#_get().cursor], 0, pum#_cursor_id())
             \ | redraw')

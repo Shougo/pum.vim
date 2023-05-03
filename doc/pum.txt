@@ -84,8 +84,9 @@ direction
 
 		"above":  Above menu direction.
 		"below":  Below menu dicrection.
+		"auto":   Wider menu dicrection is used.
 
-		Default: "below"
+		Default: "auto"
 
 					*pum-options-highlight_columns*
 highlight_columns

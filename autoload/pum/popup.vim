@@ -86,8 +86,8 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
     " Adjust to screen row
     let minheight_below = [height, &lines - spos.row - padding_height]->min()
     let minheight_above = [height, spos.row - padding_height]->min()
-    if (minheight_above >= 1 && options.direction ==# 'above')
-          \ || minheight_below < minheight_above
+    if (minheight_below < minheight_above && options.direction ==# 'auto')
+          \ || (minheight_above >= 1 && options.direction ==# 'above')
       " Use above window
       let spos.row -= height + padding_height
       let height = minheight_above

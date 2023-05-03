@@ -77,6 +77,16 @@ border
 
 		Default: "none"
 
+						*pum-options-direction*
+direction
+		The popup menu direction if possible.
+		Note: It does not work for command line mode.
+
+		"above":  Above menu direction.
+		"below":  Below menu dicrection.
+
+		Default: "below"
+
 					*pum-options-highlight_columns*
 highlight_columns
 		The columns highlights of candidates.
@@ -188,9 +198,7 @@ padding
 
 							*pum-options-reversed*
 reversed
-		Enable reversed mode.
-		The popup menu is above the cursor if possible.
-		And the items order is reversed.
+		Enable reversed mode.  The items order is reversed.
 
 		Default: v:false
 

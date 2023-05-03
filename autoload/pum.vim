@@ -42,6 +42,7 @@ function! pum#_init_options() abort
         \   auto_confirm_time: 0,
         \   auto_select: &completeopt =~# 'noinsert',
         \   border: 'none',
+        \   direction: 'below',
         \   highlight_columns: {},
         \   highlight_horizontal_menu: '',
         \   highlight_horizontal_separator: 'PmenuSbar',

@@ -354,9 +354,11 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
           \ |   call pum#close()
           \ | endif
   elseif a:mode ==# 'c'
-    autocmd pum WinEnter,CmdlineLeave * ++once call pum#close()
+    autocmd pum WinEnter,CmdlineLeave,CmdWinEnter * ++once
+          \ call pum#close()
   elseif a:mode ==# 't' && '##TermEnter'->exists()
-    autocmd pum TermEnter,TermLeave * ++once call pum#close()
+    autocmd pum TermEnter,TermLeave * ++once
+          \ call pum#close()
   endif
   autocmd pum CursorHold * ++once call pum#close()
 
@@ -408,7 +410,7 @@ function! pum#popup#_close_id(id) abort
     " Ignore "Not allowed here"
 
     " Close the popup window later
-    call timer_start(10, { -> pum#popup#_close_id(a:id) })
+    call timer_start(100, { -> pum#popup#_close_id(a:id) })
   endtry
 
   " NOTE: redraw is needed for Vim8 or command line mode

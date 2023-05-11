@@ -441,6 +441,12 @@ A: >
 	inoremap <expr> k   pum#entered() ?
 	      \ '<Cmd> call pum#map#insert_relative(-1)<CR>' : 'k'
 
+Q: The popup window does not close when enter |command-line-window|.
+
+A: In |command-line-window|, the popup window cannot be closed.  It is
+Vim/neovim's feature.  The window is closed after you have leaved
+|command-line-window|.
+
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*
 

@@ -715,6 +715,10 @@ function! s:stop_auto_confirm() abort
   endif
 endfunction
 function! s:auto_confirm() abort
+  if pum#_get().current_word ==# ''
+    return
+  endif
+
   call pum#map#confirm()
   call pum#close()
 endfunction

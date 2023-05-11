@@ -57,8 +57,8 @@ Note: The options must be set before call of |pum#open()|.
 
 					*pum-options-auto_confirm_time*
 auto_confirm_time
-		If it is positive value, the item is auto confirmed after you
-		don't input.
+		If it is positive value, the inserted item is auto confirmed
+		after you don't input.
 
 		Default: 0
 
@@ -253,6 +253,7 @@ pum#complete_info([{what}])
 							*pum#entered()*
 pum#entered()
 		Returns |v:true| if you have selected or inserted popup menu.
+		Note: It does not work for auto selection feature.
 
 							*pum#get_pos()*
 pum#get_pos()

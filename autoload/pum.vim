@@ -167,9 +167,10 @@ function! pum#visible() abort
 endfunction
 
 function! pum#entered() abort
-  let info = pum#complete_info()
-  return s:to_bool(info.pum_visible
-        \ && (info.selected >= 0 || info.inserted != ''))
+  const info = pum#complete_info()
+  const selected = (!pum#_options().auto_select && info.selected == 1)
+        \ || info.selected > 1
+  return s:to_bool(info.pum_visible && (selected || info.inserted != ''))
 endfunction
 
 function! pum#complete_info(...) abort

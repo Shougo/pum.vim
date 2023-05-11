@@ -1,5 +1,3 @@
-let s:skip_count = -1
-
 function! pum#map#select_relative(delta) abort
   let pum = pum#_get()
   if pum.id <= 0
@@ -18,6 +16,8 @@ function! pum#map#select_relative(delta) abort
 
   let pum.cursor += delta
 
+  const redraw_cmd = (mode() ==# 'c' ? '| redraw' : '')
+
   if pum.cursor > pum.len || pum.cursor == 0
     " Reset
     let pum.cursor = 0
@@ -26,7 +26,7 @@ function! pum#map#select_relative(delta) abort
     if pum.horizontal_menu
       call pum#popup#_redraw_horizontal_menu()
     else
-      call win_execute(pum.id, 'call cursor(1, 0) | redraw')
+      call win_execute(pum.id, 'call cursor(1, 0)' .. redraw_cmd)
     endif
 
     " Reset scroll bar
@@ -60,13 +60,13 @@ function! pum#map#select_relative(delta) abort
             \   call cursor(pum#_get().cursor, 0)
             \ | call matchaddpos(pum#_options().highlight_selected,
             \                    [pum#_get().cursor], 0, pum#_cursor_id())
-            \ | redraw')
+            \' .. redraw_cmd)
     else
       call win_execute(pum.id, '
             \   call cursor(pum#_get().cursor + 1, 0)
             \ | call matchaddpos(pum#_options().highlight_selected,
             \                    [pum#_get().cursor], 0, pum#_cursor_id())
-            \ | redraw')
+            \' .. redraw_cmd)
     endif
   endif
 
@@ -216,10 +216,6 @@ function! pum#map#insert_relative_page(delta) abort
   return ''
 endfunction
 
-function! pum#map#_skip_count() abort
-  return s:skip_count
-endfunction
-
 function! s:skip_next_complete() abort
   " Skip completion until next input
 
@@ -227,7 +223,6 @@ function! s:skip_next_complete() abort
 
   let pum = pum#_get()
   let pum.skip_complete = v:true
-  let s:skip_count = 1
 
   " Note: s:check_user_input() does not work well in terminal mode
   if mode() ==# 't'
@@ -299,8 +294,6 @@ function! s:check_user_input(callback) abort
   let pum.current_line = pum#_getline()[: pum.startcol]
 
   if mode() ==# 'c'
-    autocmd pum-temp CmdlineChanged *
-          \ call s:check_skip_count(g:PumCallback)
     autocmd pum-temp CmdlineLeave *
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
@@ -315,27 +308,9 @@ function! s:check_user_input(callback) abort
       autocmd pum-temp TextChangedT * call s:check_text_changed_terminal()
     endif
   else
-    autocmd pum-temp InsertCharPre *
-          \ call s:check_skip_count(g:PumCallback)
     autocmd pum-temp InsertLeave *
           \ call pum#_reset_skip_complete()
-    autocmd pum-temp TextChangedI *
-          \ : if s:check_text_changed()
-          \ |   call pum#close()
-          \ | endif
   endif
-endfunction
-function! s:check_text_changed() abort
-  let pum = pum#_get()
-  const startcol_line = pum#_getline()[: pum.startcol]
-  const check_startcol_line = startcol_line !=# pum.orig_line &&
-        \ (strchars(pum.current_line) > strchars(startcol_line))
-
-  " NOTE: Check "current_word" is one of the items.
-  const current_word = pum#_getline()[pum.startcol-1 : pum#_col()-2]
-  const check_item = pum.items->copy()->map(
-        \ { _, val -> val.word })->index(current_word) < 0
-  return check_item || check_startcol_line
 endfunction
 function! s:check_text_changed_terminal() abort
   " Check pum.items is inserted
@@ -351,21 +326,6 @@ function! s:check_text_changed_terminal() abort
   endif
   let s:prev_line = current_line
 endfunction
-function! s:check_skip_count(callback) abort
-  let s:skip_count -= 1
-
-  if s:skip_count > 0
-    return
-  endif
-
-  " It should be user input
-
-  augroup pum-temp
-    autocmd!
-  augroup END
-
-  call call(a:callback, [])
-endfunction
 
 function! s:cursor(col) abort
   return mode() ==# 'c' ? setcmdpos(a:col) : cursor(0, a:col)
@@ -373,10 +333,6 @@ endfunction
 
 function! s:setcmdline(text) abort
   if '*setcmdline'->exists()
-    " NOTE: skip_count is needed
-    " CmdlineChanged is triggered after setcmdline() call
-    let s:skip_count = 1
-
     " NOTE: CmdlineChanged autocmd must be disabled
     call setcmdline(a:text)
   else
@@ -386,9 +342,6 @@ function! s:setcmdline(text) abort
     " NOTE: for control chars
     let chars ..= a:text->split('\zs')
           \ ->map({ _, val -> val <# ' ' ? "\<C-q>" .. val : val })->join('')
-
-    " NOTE: skip_count is needed to skip feedkeys()
-    let s:skip_count = chars->strchars()
 
     call feedkeys(chars, 'n')
   endif
@@ -417,7 +370,6 @@ function! s:insert_line_feedkeys(text, after_func) abort
     let g:PumCallback = function(a:after_func)
     let chars ..= "\<Cmd>call call(g:PumCallback, [])\<CR>"
   endif
-  let s:skip_count = (mode() ==# 't' ? chars : a:text)->strchars() + 1
 
   call feedkeys(chars, 'n')
 endfunction

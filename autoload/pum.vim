@@ -216,7 +216,9 @@ function! pum#get_pos() abort
 endfunction
 
 function! pum#skip_complete() abort
-  return pum#_get().skip_complete
+  let skip = pum#_get().skip_complete
+  call pum#_reset_skip_complete()
+  return skip
 endfunction
 
 function! pum#_getline() abort

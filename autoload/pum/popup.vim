@@ -36,12 +36,6 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
         \ ->map({ _, val -> strdisplaywidth(get(val, 'menu', ''))})->max()
   call filter(max_columns, { _, val -> val != 0 })
 
-  let lines = items->copy()->map({ _, val ->
-        \   pum#_format_item(val, options, a:mode, a:startcol, max_columns)
-        \ })
-
-  let pum = pum#_get()
-
   " Calc width
   let width = 0
   for max_column in max_columns->values()
@@ -59,6 +53,14 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   if options.max_width > 0
     let width = [width, options.max_width]->min()
   endif
+
+  let lines = items->copy()->map({ _, val ->
+        \   pum#util#_truncate(
+        \     pum#_format_item(val, options, a:mode, a:startcol, max_columns),
+        \     width, width / 3, '...')
+        \ })
+
+  let pum = pum#_get()
 
   if !has('nvim') && a:mode ==# 't'
     const cursor = bufnr('%')->term_getcursor()
@@ -516,7 +518,8 @@ function! s:highlight_items(items, orders, max_columns) abort
   endfor
 endfunction
 
-function! s:highlight(highlight, prop_type, priority, id, row, col, length) abort
+function! s:highlight(
+      \ highlight, prop_type, priority, id, row, col, length) abort
   let pum = pum#_get()
 
   let col = a:col

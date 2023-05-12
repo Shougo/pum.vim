@@ -30,6 +30,7 @@ function! pum#_init() abort
         \   scroll_buf: -1,
         \   scroll_id: -1,
         \   skip_complete: v:false,
+        \   skip_count: 0,
         \   startcol: -1,
         \   startrow: -1,
         \   width: -1,
@@ -216,9 +217,21 @@ function! pum#get_pos() abort
 endfunction
 
 function! pum#skip_complete() abort
-  let skip = pum#_get().skip_complete
-  call pum#_reset_skip_complete()
+  let pum = pum#_get()
+
+  let skip = pum.skip_complete
+
+  let pum.skip_count -= 1
+  if pum.skip_count <= 0
+    call pum#_reset_skip_complete()
+  endif
+
   return skip
+endfunction
+function! pum#_inc_skip_complete() abort
+  let pum = pum#_get()
+  let pum.skip_complete = v:true
+  let pum.skip_count += 1
 endfunction
 
 function! pum#_getline() abort
@@ -298,4 +311,5 @@ endfunction
 function! pum#_reset_skip_complete() abort
   let pum = pum#_get()
   let pum.skip_complete = v:false
+  let pum.skip_count = 0
 endfunction

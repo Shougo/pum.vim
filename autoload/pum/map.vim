@@ -108,7 +108,6 @@ function! pum#map#insert_relative(delta) abort
     return ''
   endif
 
-  let g:inserted = v:false
   call s:insert_current_word(prev_word, v:null)
 
   if pum.horizontal_menu
@@ -157,8 +156,7 @@ function! pum#map#confirm() abort
   let pum = pum#_get()
 
   if pum.cursor > 0 && pum.current_word ==# ''
-    call s:insert_current_word(pum.orig_input,
-          \ { -> s:skip_next_complete() })
+    call s:insert_current_word(pum.orig_input, { -> s:skip_next_complete() })
   else
     call s:skip_next_complete()
   endif
@@ -250,7 +248,7 @@ function! s:insert(word, prev_word, after_func) abort
   let pum.current_word = a:word
 
   " NOTE: The text changes fires TextChanged events.  It must be ignored.
-  let pum.skip_complete = v:true
+  call pum#_inc_skip_complete()
 
   if mode() ==# 'c'
     call s:setcmdline(prev_input .. a:word .. next_input)

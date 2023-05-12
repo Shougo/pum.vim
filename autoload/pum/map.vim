@@ -317,11 +317,7 @@ function! s:check_user_input(callback) abort
   endif
 endfunction
 function! s:check_text_changed() abort
-  let pum = pum#_get()
-  const startcol_line = pum#_getline()[: pum.startcol]
-  const check_startcol_line = startcol_line !=# pum.orig_line &&
-        \ (strchars(pum.current_line) > strchars(startcol_line))
-  return check_startcol_line
+  return pum#_row() != pum#_get().startrow
 endfunction
 function! s:check_text_changed_terminal() abort
   " Check pum.items is inserted

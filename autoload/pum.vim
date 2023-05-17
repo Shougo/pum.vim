@@ -259,9 +259,9 @@ endfunction
 
 function! pum#_format_item(item, options, mode, startcol, max_columns) abort
   const columns = a:item->get('columns', {})->copy()->extend(#{
-        \   abbr: get(a:item, 'abbr', a:item.word),
-        \   kind: get(a:item, 'kind', ''),
-        \   menu: get(a:item, 'menu', ''),
+        \   abbr: a:item->get('abbr', a:item.word),
+        \   kind: a:item->get('kind', ''),
+        \   menu: a:item->get('menu', ''),
         \ })
 
   let str = ''
@@ -279,7 +279,9 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
       " Fallback to "word"
       let column = a:item.word
     endif
-    let column ..= ' '->repeat(a:max_columns[order] - strdisplaywidth(column))
+    " Padding
+    let column ..= ' '
+          \ ->repeat(a:max_columns[order] - column->strdisplaywidth())
 
     let str ..= column
   endfor

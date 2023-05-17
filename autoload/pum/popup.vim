@@ -22,24 +22,30 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   " Calc max columns
   let max_columns = {}
   for column in options.item_orders
-    let max_columns[column] = items->copy()
-          \ ->map({ _, val ->
-          \   strdisplaywidth(get(get(val, 'columns', {}), column, ''))
-          \ })->max()
+    let max_column =
+          \   column ==# 'abbr' ? items->copy()->map({ _, val ->
+          \     val->get('abbr', val.word)->strdisplaywidth()})->max() :
+          \   column ==# 'kind' ? items->copy()->map({ _, val ->
+          \     val->get('kind', '')->strdisplaywidth()})->max() :
+          \   column ==# 'menu' ? items->copy()->map({ _, val ->
+          \     val->get('menu', '')->strdisplaywidth()})->max() :
+          \   items->copy()->map({ _, val ->
+          \     val->get('columns', {})->get(column, '')->strdisplaywidth()})
+          \   ->max()
+
+    if max_column > 0
+      let max_columns[column] = max_column
+    endif
   endfor
-  let max_columns.abbr = items->copy()->map({ _, val ->
-        \ strdisplaywidth(get(val, 'abbr', val.word))
-        \ })->max()
-  let max_columns.kind = items->copy()
-        \ ->map({ _, val -> strdisplaywidth(get(val, 'kind', ''))})->max()
-  let max_columns.menu = items->copy()
-        \ ->map({ _, val -> strdisplaywidth(get(val, 'menu', ''))})->max()
-  call filter(max_columns, { _, val -> val != 0 })
 
   " Calc width
   let width = 0
-  for max_column in max_columns->values()
+  let column_length = 0
+  for [column, max_column] in max_columns->items()
     let width += max_column
+    if column !=# 'abbr'
+      let column_length += max_column + 1
+    endif
   endfor
 
   " Padding
@@ -53,6 +59,8 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   if options.max_width > 0
     let width = [width, options.max_width]->min()
   endif
+  " NOTE: abbr is the rest column
+  let max_columns.abbr = width - column_length
 
   let lines = items->copy()->map({ _, val ->
         \   pum#util#_truncate(

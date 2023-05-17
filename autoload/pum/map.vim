@@ -223,7 +223,7 @@ function! s:skip_next_complete() abort
   let pum.skip_complete = v:true
 
   " Note: s:check_user_input() does not work well in terminal mode
-  if mode() ==# 't'
+  if mode() ==# 't' && !has('nvim')
     if '##TextChangedT'->exists()
       autocmd pum-temp TextChangedT * call pum#_reset_skip_complete()
     endif

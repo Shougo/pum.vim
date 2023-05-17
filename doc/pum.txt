@@ -340,12 +340,14 @@ pum#map#insert_relative({delta})
 		Move forward or backward {delta} number and insert the
 		candidate.
 		Note: It must not be called in |:map-<expr>|.
+		Note: It does not work well in |:terminal|.
 
 					*pum#map#insert_relative_page()*
 pum#map#insert_relative_page({delta})
 		Move forward or backward "{delta} * page height" number and
 		insert the candidate.
 		Note: It must not be called in |:map-<expr>|.
+		Note: It does not work well in |:terminal|.
 
 						*pum#map#longest_relative()*
 pum#map#longest_relative({delta})

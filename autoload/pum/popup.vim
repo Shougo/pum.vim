@@ -59,8 +59,12 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   if options.max_width > 0
     let width = [width, options.max_width]->min()
   endif
+
   " NOTE: abbr is the rest column
   let max_columns.abbr = width - column_length
+  if options.padding
+    let max_columns.abbr -= 2
+  endif
 
   let lines = items->copy()->map({ _, val ->
         \   pum#util#_truncate(

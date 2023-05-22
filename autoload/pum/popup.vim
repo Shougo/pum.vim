@@ -98,8 +98,12 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
 
   if a:mode !=# 'c'
     " Adjust to screen row
-    let minheight_below = [height, &lines - spos.row - padding_height]->min()
-    let minheight_above = [height, spos.row - padding_height]->min()
+    let minheight_below = [
+          \ height, &lines - spos.row - padding_height - options.offset_row
+          \ ]->min()
+    let minheight_above = [
+          \ height, spos.row - padding_height - options.offset_row
+          \ ]->min()
     if (minheight_below < minheight_above && options.direction ==# 'auto')
           \ || (minheight_above >= 1 && options.direction ==# 'above')
       " Use above window
@@ -139,9 +143,11 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
 
   " NOTE: In Vim8, floating window must above of status line
   let pos = a:mode ==# 'c' ?
-        \ [&lines - height - [1, &cmdheight]->max() - options.offset_row,
-        \  a:startcol - padding_left] :
-        \ [spos.row, spos.col - 1]
+        \ [&lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
+        \  a:startcol - padding_left + options.offset_cmdcol] :
+        \ [spos.row + (direction ==# 'above' ?
+        \              -options.offset_row : options.offset_row),
+        \  spos.col - 1]
 
   if a:mode ==# 'c'
     if has('nvim') && pum#util#_luacheck('noice')
@@ -152,7 +158,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
       let noice_view = luaeval('require("noice.config").options.cmdline.view')
       if noice_view !=# 'cmdline'
         let pos[0] = noice_pos.row
-        let pos[0] += options.offset_row
+        let pos[0] += options.offset_cmdrow
       endif
 
       let pos[1] += noice_pos.col - 1
@@ -613,13 +619,13 @@ function! pum#popup#_redraw_horizontal_menu() abort
   const rest_width = &columns - spos.col - options.offset_col
 
   const row = mode() ==# 'c' ?
-        \ &lines - [1, &cmdheight]->max() - options.offset_row :
+        \ &lines - [1, &cmdheight]->max() - options.offset_cmdrow :
         \ rest_width < word->strwidth() || mode() ==# 't' ?
         \ (&lines - [1, &cmdheight]->max() <= spos.row + 1 ?
         \  spos.row - 1 : spos.row + 1) :
         \ spos.row
   const col = mode() ==# 'c' ?
-        \ 2 : spos.col + options.offset_col
+        \ options.offset_cmdcol : spos.col + options.offset_col
 
   if has('nvim')
     if pum.buf < 0

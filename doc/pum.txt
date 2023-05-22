@@ -177,19 +177,31 @@ min_width
 
 		Default: 'pumwidth' value
 
-						*pum-options-offset_col*
-offset_col
-		Popup column offset in |pum-options-horizontal_menu|.
+						*pum-options-offset_cmdcol*
+offset_cmdcol
+		Popup col offset in the command line mode.
 
-		Default: 3
+		Default: 0
 
-						*pum-options-offset_row*
-offset_row
+						*pum-options-offset_cmdrow*
+offset_cmdrow
 		Popup row offset in the command line mode.
 
 		Default:
 			0 (neovim / Vim9+)
 			1 (Vim8)
+
+						*pum-options-offset_col*
+offset_col
+		Popup column offset if |pum-options-horizontal_menu|.
+
+		Default: 3
+
+						*pum-options-offset_row*
+offset_row
+		Popup row offset.
+
+		Default: 0
 
 							*pum-options-padding*
 padding
@@ -451,6 +463,9 @@ Vim/neovim's feature.  The window is closed after you have leaved
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*
+
+2023.05.22
+* Rename "offset_row" option to "offset_cmdrow".
 
 2022.11.18
 * neovim 0.8 is required.

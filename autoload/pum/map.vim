@@ -103,6 +103,11 @@ function! pum#map#select_relative(delta, overflow='loop') abort
 endfunction
 
 function! pum#map#insert_relative(delta, overflow='empty') abort
+  if mode() ==# 't'
+    " It does not work well in terminal mode.
+    return ''
+  endif
+
   let pum = pum#_get()
 
   let prev_word = pum.cursor > 0 ?

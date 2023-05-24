@@ -361,7 +361,7 @@ pum#map#insert_relative({delta}[, {overflow}])
 			Default: "empty"
 
 		Note: It must not be called in |:map-<expr>|.
-		Note: It does not work well in |:terminal|.
+		Note: It does not work in |:terminal|.
 
 					*pum#map#insert_relative_page()*
 pum#map#insert_relative_page({delta}[, {overflow}])
@@ -369,7 +369,7 @@ pum#map#insert_relative_page({delta}[, {overflow}])
 		insert the candidate.
 		{overflow} is same with |pum#map#insert_relative()|.
 		Note: It must not be called in |:map-<expr>|.
-		Note: It does not work well in |:terminal|.
+		Note: It does not work in |:terminal|.
 
 						*pum#map#longest_relative()*
 pum#map#longest_relative({delta}[, {overflow}])

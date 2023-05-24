@@ -1,4 +1,4 @@
-function! pum#map#select_relative(delta) abort
+function! pum#map#select_relative(delta, overflow='loop') abort
   let pum = pum#_get()
   if pum.id <= 0
     return ''
@@ -18,30 +18,38 @@ function! pum#map#select_relative(delta) abort
 
   const redraw_cmd = (mode() ==# 'c' ? '| redraw' : '')
 
-  if pum.cursor > pum.len || pum.cursor == 0
-    " Reset
-    let pum.cursor = 0
+  if pum.cursor > pum.len || pum.cursor <= 0
+    if a:overflow ==# 'empty'
+      " Select empty text
 
-    " Move real cursor
-    if pum.horizontal_menu
-      call pum#popup#_redraw_horizontal_menu()
+      " Reset
+      let pum.cursor = 0
+
+      " Move real cursor
+      if pum.horizontal_menu
+        call pum#popup#_redraw_horizontal_menu()
+      else
+        call win_execute(pum.id,
+              \ 'call cursor(pum#_get().cursor, 0)' .. redraw_cmd)
+      endif
+
+      " Reset scroll bar
+      if pum.scroll_id > 0 && has('nvim') && pum.scroll_id->winbufnr() > 0
+        call nvim_win_set_config(pum.scroll_id, #{
+              \   relative: 'editor',
+              \   row: pum.scroll_row,
+              \   col: pum.scroll_col,
+              \ })
+      endif
+
+      return ''
+    endif
+
+    if a:overflow ==# 'loop'
+      let pum.cursor = pum.cursor > pum.len ? 1 : pum.len
     else
-      call win_execute(pum.id, 'call cursor(1, 0)' .. redraw_cmd)
+      let pum.cursor = pum.cursor > pum.len ? pum.len : 1
     endif
-
-    " Reset scroll bar
-    if pum.scroll_id > 0 && has('nvim') && pum.scroll_id->winbufnr() > 0
-      call nvim_win_set_config(pum.scroll_id, #{
-            \   relative: 'editor',
-            \   row: pum.scroll_row,
-            \   col: pum.scroll_col,
-            \ })
-    endif
-
-    return ''
-  elseif pum.cursor < 0
-    " Reset
-    let pum.cursor = pum.len
   endif
 
   if '#User#PumCompleteChanged'->exists()
@@ -94,14 +102,14 @@ function! pum#map#select_relative(delta) abort
   return ''
 endfunction
 
-function! pum#map#insert_relative(delta) abort
+function! pum#map#insert_relative(delta, overflow='empty') abort
   let pum = pum#_get()
 
   let prev_word = pum.cursor > 0 ?
         \ pum.items[pum.cursor - 1].word :
         \ pum.orig_input
 
-  call pum#map#select_relative(a:delta)
+  call pum#map#select_relative(a:delta, a:overflow)
 
   if pum.cursor < 0 || pum.id <= 0
     let pum.current_word = ''
@@ -120,7 +128,7 @@ function! pum#map#insert_relative(delta) abort
   return ''
 endfunction
 
-function! pum#map#longest_relative(delta) abort
+function! pum#map#longest_relative(delta, overflow='empty') abort
   let pum = pum#_get()
   if pum.items->empty()
     return ''
@@ -140,7 +148,7 @@ function! pum#map#longest_relative(delta) abort
 
   if common_str ==# '' || complete_str ==? common_str
         \ || common_str ==# prev_word
-    return pum#map#insert_relative(a:delta)
+    return pum#map#insert_relative(a:delta, a:overflow)
   endif
 
   " Insert the longest word.
@@ -205,12 +213,14 @@ function! pum#map#cancel() abort
   return ''
 endfunction
 
-function! pum#map#select_relative_page(delta) abort
-  call pum#map#select_relative((a:delta * pum#_get().height)->float2nr())
+function! pum#map#select_relative_page(delta, overflow='empty') abort
+  call pum#map#select_relative(
+        \ (a:delta * pum#_get().height)->float2nr(), a:overflow)
   return ''
 endfunction
-function! pum#map#insert_relative_page(delta) abort
-  call pum#map#insert_relative((a:delta * pum#_get().height)->float2nr())
+function! pum#map#insert_relative_page(delta, overflow='empty') abort
+  call pum#map#insert_relative(
+        \ (a:delta * pum#_get().height)->float2nr(), a:overflow)
   return ''
 endfunction
 
@@ -248,7 +258,9 @@ function! s:insert(word, prev_word, after_func) abort
   let pum.current_word = a:word
 
   " NOTE: The text changes fires TextChanged events.  It must be ignored.
-  call pum#_inc_skip_complete()
+  if a:word !=# a:prev_word
+    call pum#_inc_skip_complete()
+  endif
 
   if mode() ==# 'c'
     call s:setcmdline(prev_input .. a:word .. next_input)

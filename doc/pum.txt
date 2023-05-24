@@ -348,21 +348,31 @@ pum#map#confirm_word()
 		Note: It must not be called in |:map-<expr>|.
 
 						*pum#map#insert_relative()*
-pum#map#insert_relative({delta})
+pum#map#insert_relative({delta}[, {overflow}])
 		Move forward or backward {delta} number and insert the
 		candidate.
+		{overflow} is loop behavior when the cursor is overflowed.
+
+			"empty": Insert empty text.  It is same with native
+				completion behavior.
+			"ignore": Ignore the cursor move.
+			"loop": Move to the opposite item.  It is same with
+				VSCode behavior.
+			Default: "empty"
+
 		Note: It must not be called in |:map-<expr>|.
 		Note: It does not work well in |:terminal|.
 
 					*pum#map#insert_relative_page()*
-pum#map#insert_relative_page({delta})
+pum#map#insert_relative_page({delta}[, {overflow}])
 		Move forward or backward "{delta} * page height" number and
 		insert the candidate.
+		{overflow} is same with |pum#map#insert_relative()|.
 		Note: It must not be called in |:map-<expr>|.
 		Note: It does not work well in |:terminal|.
 
 						*pum#map#longest_relative()*
-pum#map#longest_relative({delta})
+pum#map#longest_relative({delta}[, {overflow}])
 		Insert the longest word.
 		If the longest word is not found, it is same with
 		|pum#map#insert_relative()|.
@@ -370,15 +380,17 @@ pum#map#longest_relative({delta})
 		Note: It must not be called in |:map-<expr>|.
 
 						*pum#map#select_relative()*
-pum#map#select_relative({delta})
+pum#map#select_relative({delta}[, {overflow}])
 		Move forward or backward {delta} number and select the
 		candidate.
+		{overflow} is same with |pum#map#insert_relative()|.
 		Note: It must not be called in |:map-<expr>|.
 
 					*pum#map#select_relative_page()*
-pum#map#select_relative_page({delta})
+pum#map#select_relative_page({delta}[, {overflow}])
 		Move forward or backward "{delta} * page height" number and
 		select the candidate.
+		{overflow} is same with |pum#map#insert_relative()|.
 		Note: It must not be called in |:map-<expr>|.
 
 
@@ -460,6 +472,14 @@ Q: The popup window does not close when enter |command-line-window|.
 A: In |command-line-window|, the popup window cannot be closed.  It is
 Vim/neovim's feature.  The window is closed after you have leaved
 |command-line-window|.
+
+Q: I want to move to the first/last item by Home/End keys.
+
+A: >
+	inoremap <Home>
+	\ <Cmd>call pum#map#insert_relative(-9999, 'ignore')<CR>
+	inoremap <End>
+	\ <Cmd>call pum#map#insert_relative(+9999, 'ignore')<CR>
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*

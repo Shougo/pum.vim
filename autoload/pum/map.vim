@@ -240,7 +240,8 @@ function! s:skip_next_complete() abort
   " Note: s:check_user_input() does not work well in terminal mode
   if mode() ==# 't' && !has('nvim')
     if '##TextChangedT'->exists()
-      autocmd pum-temp TextChangedT * call pum#_reset_skip_complete()
+      autocmd pum-temp TextChangedT * ++once
+            \ call pum#_reset_skip_complete()
     endif
   else
     call s:check_user_input({ -> pum#_reset_skip_complete() })
@@ -309,7 +310,7 @@ function! s:check_user_input(callback) abort
   let pum.current_line = pum#_getline()[: pum.startcol]
 
   if mode() ==# 'c'
-    autocmd pum-temp CmdlineLeave *
+    autocmd pum-temp CmdlineLeave * ++once
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
     if has('nvim')
@@ -323,7 +324,7 @@ function! s:check_user_input(callback) abort
       autocmd pum-temp TextChangedT * call s:check_text_changed_terminal()
     endif
   else
-    autocmd pum-temp InsertLeave *
+    autocmd pum-temp InsertLeave * ++once
           \ call pum#_reset_skip_complete()
    autocmd pum-temp TextChangedI *
           \ : if s:check_text_changed()

@@ -16,7 +16,7 @@ function! pum#map#select_relative(delta, overflow='loop') abort
 
   let pum.cursor += delta
 
-  const redraw_cmd = (mode() ==# 'c' ? '| redraw' : '')
+  const redraw_cmd = index(['i', 'c'], mode()) >= 0 ? '| redraw' : ''
 
   if pum.cursor > pum.len || pum.cursor <= 0
     if a:overflow ==# 'empty'

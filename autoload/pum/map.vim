@@ -16,7 +16,8 @@ function! pum#map#select_relative(delta, overflow='loop') abort
 
   let pum.cursor += delta
 
-  const redraw_cmd = (mode() ==# 'c' ? '| redraw' : '')
+  " NOTE: redraw is needed if it is Vim or in command line mode.
+  const redraw_cmd = (!has('nvim') || mode() ==# 'c' ? '| redraw' : '')
 
   if pum.cursor > pum.len || pum.cursor <= 0
     if a:overflow ==# 'empty'

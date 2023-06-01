@@ -34,7 +34,9 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
           \   ->max()
 
     if max_column > 0
-      let max_columns[column] = max_column
+      let max_columns[column] =
+            \ [max_column, options.max_columns->get(column, max_column)]
+            \ ->min()
     endif
   endfor
 

@@ -53,6 +53,10 @@ function! pum#_init_options() abort
         \   highlight_selected: 'PmenuSel',
         \   horizontal_menu: v:false,
         \   item_orders: ['abbr', 'kind', 'menu'],
+        \   max_columns: #{
+        \     kind: 10,
+        \     menu: 20,
+        \   },
         \   max_horizontal_items: 3,
         \   max_height: &pumheight,
         \   max_width: 0,

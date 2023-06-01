@@ -152,6 +152,12 @@ item_orders
 
 		Default: ["abbr", "kind", "menu"]
 
+						*pum-options-max_columns*
+max_columns
+		The column maximum width of the item.
+
+		Default: #{ kind: 10, menu: 20 }
+
 					*pum-options-max_horizontal_items*
 max_horizontal_items
 		The max items of the horizontal menu.

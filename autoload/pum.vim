@@ -49,7 +49,7 @@ function! pum#_init_options() abort
         \   highlight_horizontal_separator: 'PmenuSbar',
         \   highlight_matches: '',
         \   highlight_normal_menu: 'Pmenu',
-        \   highlight_scroll_bar: 'PmenuSbar',
+        \   highlight_scrollbar: 'PmenuSbar',
         \   highlight_selected: 'PmenuSel',
         \   horizontal_menu: v:false,
         \   item_orders: ['abbr', 'kind', 'menu'],

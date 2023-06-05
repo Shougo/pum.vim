@@ -17,7 +17,7 @@ function! pum#map#select_relative(delta, overflow='loop') abort
   let pum.cursor += delta
 
   " NOTE: ":redraw" is needed if it is Vim or in command line mode or
-  " scroll_bar is disabled.
+  " scrollbar is disabled.
   const redraw_cmd = (!has('nvim') || mode() ==# 'c' || pum.scroll_id < 0) ?
         \ '| redraw' : ''
 

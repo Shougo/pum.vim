@@ -264,7 +264,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
               \ pum.scroll_buf, v:false, scroll_winopts)
         call nvim_win_set_option(scroll_id, 'winhighlight',
               \ printf('Normal:%s,NormalFloat:None',
-              \        options.highlight_scroll_bar))
+              \        options.highlight_scrollbar))
         call nvim_win_set_option(scroll_id, 'winblend', &l:pumblend)
         call nvim_win_set_option(scroll_id, 'statusline', &l:statusline)
 

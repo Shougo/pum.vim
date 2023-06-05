@@ -122,8 +122,8 @@ highlight_normal_menu
 
 		Default: "Pmenu"
 
-					*pum-options-highlight_scrollbar*
-highlight_scrollbar
+					*pum-options-highlight_scroll_bar*
+highlight_scroll_bar
 		The scrollbar highlight.
 		Note: neovim only feature.
 

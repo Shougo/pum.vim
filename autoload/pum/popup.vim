@@ -52,7 +52,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
 
   " Padding
   let width += max_columns->len() - 1
-  if options.padding && a:startcol != 1
+  if options.padding && (a:mode ==# 'c' || a:startcol != 1)
     let width += 2
   endif
   if options.min_width > 0
@@ -543,7 +543,7 @@ function! s:highlight(
   let pum = pum#_get()
 
   let col = a:col
-  if pum#_options().padding && pum.startcol != 1
+  if pum#_options().padding && (mode() ==# 'c' || pum.startcol != 1)
     let col += 1
   endif
 

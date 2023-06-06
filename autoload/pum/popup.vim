@@ -543,7 +543,7 @@ function! s:highlight(
   let pum = pum#_get()
 
   let col = a:col
-  if pum#_options().padding && pum.startcol != 1
+  if pum#_options().padding && (mode() ==# 'c' || pum.startcol != 1)
     let col += 1
   endif
 

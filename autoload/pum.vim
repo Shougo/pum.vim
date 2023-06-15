@@ -72,8 +72,7 @@ function! pum#_init_options() abort
         \   use_setline: v:false,
         \   zindex: 1000,
         \ }
-  let s:local_options = {
-        \ }
+  let s:local_options = {}
 endfunction
 function! pum#_options() abort
   if !('s:options'->exists())
@@ -83,11 +82,15 @@ function! pum#_options() abort
   let options = s:options->copy()
 
   const mode = mode()
-  call extend(options, s:local_options->get(mode, {}))
 
+  call extend(options, s:local_options->get(mode, {}))
   if mode ==# 'c'
     " Use getcmdtype()
     call extend(options, s:local_options->get(getcmdtype(), {}))
+  endif
+
+  if 'b:buffer_options'->exists()
+    call extend(options, b:buffer_options)
   endif
 
   return options
@@ -111,6 +114,14 @@ function! pum#set_local_option(mode, key_or_dict, value = '') abort
     let s:local_options[a:mode] = {}
   endif
   call extend(s:local_options[a:mode], dict)
+endfunction
+function! pum#set_buffer_option(key_or_dict, value = '') abort
+  if !('b:buffer_options'->exists())
+    let b:buffer_options = {}
+  endif
+
+  const dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
+  call extend(b:buffer_options, dict)
 endfunction
 
 function! pum#open(startcol, items, mode = mode(), insert = v:false) abort

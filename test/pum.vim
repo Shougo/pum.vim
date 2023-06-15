@@ -2,22 +2,22 @@ set verbose=1
 let s:suite = themis#suite('pum')
 let s:assert = themis#helper('assert')
 
-function! s:suite.before_each() abort
+function s:suite.before_each() abort
   call pum#_init()
   call pum#_init_options()
   normal! ggVGd
 endfunction
 
-function! s:suite.after_each() abort
+function s:suite.after_each() abort
 endfunction
 
-function! s:suite.open() abort
+function s:suite.open() abort
   call s:assert.equals(pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }]), -1)
   call s:assert.not_equals(pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i'), -1)
   call s:assert.not_equals(pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'c'), -1)
 endfunction
 
-function! s:suite.highlight() abort
+function s:suite.highlight() abort
   call pum#open(1, [
         \ #{ word: 'foo bar', highlights: [
         \   #{ type: 'abbr', name: 'abbr_foo', hl_group: 'Function', col: 0, width: 3 },
@@ -32,7 +32,7 @@ function! s:suite.highlight() abort
         \ ], 'i')
 endfunction
 
-function! s:suite.select_relative() abort
+function s:suite.select_relative() abort
   call pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }])
 
   call pum#map#select_relative(1)
@@ -48,26 +48,25 @@ function! s:suite.select_relative() abort
   call s:assert.equals(pum#_get().cursor, 2)
 
   call pum#map#select_relative(-1)
-  call pum#map#select_relative(-1)
 
-  call s:assert.equals(pum#_get().cursor, 0)
+  call s:assert.equals(pum#_get().cursor, 1)
 endfunction
 
-function! s:suite.insert_relative() abort
+function s:suite.insert_relative() abort
   call pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i')
 
-  call pum#map#select_relative(1)
-  call pum#map#select_relative(1)
+  call pum#map#insert_relative(1)
+  call pum#map#insert_relative(1)
 
   call s:assert.equals(pum#_get().cursor, 2)
 
-  call pum#map#select_relative(-1)
-  call pum#map#select_relative(-1)
+  call pum#map#insert_relative(-1)
+  call pum#map#insert_relative(-1)
 
   call s:assert.equals(pum#_get().cursor, 0)
 endfunction
 
-function! s:suite.format_item() abort
+function s:suite.format_item() abort
   let item = #{ word: 'foo', kind: 'bar', menu: 'baz' }
 
   call s:assert.equals(

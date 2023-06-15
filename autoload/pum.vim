@@ -3,13 +3,13 @@ let g:pum#completed_item = {}
 let s:pum_cursor_id = 50
 
 
-function! pum#_get() abort
+function pum#_get() abort
   if !('s:pum'->exists())
     call pum#_init()
   endif
   return s:pum
 endfunction
-function! pum#_init() abort
+function pum#_init() abort
   if 's:pum'->exists()
     call pum#close()
   endif
@@ -38,7 +38,7 @@ function! pum#_init() abort
         \   border_height: 0,
         \ }
 endfunction
-function! pum#_init_options() abort
+function pum#_init_options() abort
   let s:options = #{
         \   auto_confirm_time: 0,
         \   auto_select: &completeopt =~# 'noinsert',
@@ -74,7 +74,7 @@ function! pum#_init_options() abort
         \ }
   let s:local_options = {}
 endfunction
-function! pum#_options() abort
+function pum#_options() abort
   if !('s:options'->exists())
     call pum#_init_options()
   endif
@@ -96,7 +96,7 @@ function! pum#_options() abort
   return options
 endfunction
 
-function! pum#set_option(key_or_dict, value = '') abort
+function pum#set_option(key_or_dict, value = '') abort
   if !('s:options'->exists())
     call pum#_init_options()
   endif
@@ -104,7 +104,7 @@ function! pum#set_option(key_or_dict, value = '') abort
   const dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
   call extend(s:options, dict)
 endfunction
-function! pum#set_local_option(mode, key_or_dict, value = '') abort
+function pum#set_local_option(mode, key_or_dict, value = '') abort
   if !('s:local_options'->exists())
     call pum#_init_options()
   endif
@@ -115,7 +115,7 @@ function! pum#set_local_option(mode, key_or_dict, value = '') abort
   endif
   call extend(s:local_options[a:mode], dict)
 endfunction
-function! pum#set_buffer_option(key_or_dict, value = '') abort
+function pum#set_buffer_option(key_or_dict, value = '') abort
   if !('b:buffer_options'->exists())
     let b:buffer_options = {}
   endif
@@ -124,7 +124,7 @@ function! pum#set_buffer_option(key_or_dict, value = '') abort
   call extend(b:buffer_options, dict)
 endfunction
 
-function! pum#open(startcol, items, mode = mode(), insert = v:false) abort
+function pum#open(startcol, items, mode = mode(), insert = v:false) abort
   if !has('patch-8.2.1978') && !has('nvim-0.8')
     call pum#util#_print_error(
           \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.8.0+.')
@@ -144,7 +144,7 @@ function! pum#open(startcol, items, mode = mode(), insert = v:false) abort
   endtry
 endfunction
 
-function! pum#close() abort
+function pum#close() abort
   if !pum#visible()
     return
   endif
@@ -176,22 +176,22 @@ function! pum#close() abort
   call pum#popup#_close(scroll_id)
 endfunction
 
-function! s:to_bool(int_boolean_value) abort
+function s:to_bool(int_boolean_value) abort
   return a:int_boolean_value ==# 1 ? v:true : v:false
 endfunction
 
-function! pum#visible() abort
+function pum#visible() abort
   return s:to_bool(pum#_get().id > 0)
 endfunction
 
-function! pum#entered() abort
+function pum#entered() abort
   const info = pum#complete_info()
   const selected = (!pum#_options().auto_select && info.selected == 0)
         \ || info.selected > 0
   return s:to_bool(info.pum_visible && (selected || info.inserted != ''))
 endfunction
 
-function! pum#complete_info(...) abort
+function pum#complete_info(...) abort
   let pum = pum#_get()
   let info = #{
         \ mode: '',
@@ -212,12 +212,12 @@ function! pum#complete_info(...) abort
 
   return ret
 endfunction
-function! pum#current_item() abort
+function pum#current_item() abort
   let info = pum#complete_info()
   return info.items->get(info.selected, {})
 endfunction
 
-function! pum#get_pos() abort
+function pum#get_pos() abort
   if !pum#visible()
     return {}
   endif
@@ -233,7 +233,7 @@ function! pum#get_pos() abort
         \ }
 endfunction
 
-function! pum#skip_complete() abort
+function pum#skip_complete() abort
   let pum = pum#_get()
 
   let skip = pum.skip_complete
@@ -245,24 +245,24 @@ function! pum#skip_complete() abort
 
   return skip
 endfunction
-function! pum#_inc_skip_complete() abort
+function pum#_inc_skip_complete() abort
   let pum = pum#_get()
   let pum.skip_complete = v:true
   let pum.skip_count += 1
 endfunction
 
-function! pum#_getline() abort
+function pum#_getline() abort
   return mode() ==# 'c' ? getcmdline() :
         \ mode() ==# 't' && !has('nvim') ? ''->term_getline('.') :
         \ '.'->getline()
 endfunction
-function! pum#_row() abort
+function pum#_row() abort
   const row = mode() ==# 't' && !has('nvim') ?
         \ '%'->bufnr()->term_getcursor()[0] :
         \ '.'->line()
   return row
 endfunction
-function! pum#_col() abort
+function pum#_col() abort
   const col = mode() ==# 't' && !has('nvim') ?
         \ bufnr('%')->term_getcursor()[1] :
         \ mode() ==# 'c' ? getcmdpos() :
@@ -270,11 +270,11 @@ function! pum#_col() abort
   return col
 endfunction
 
-function! pum#_cursor_id() abort
+function pum#_cursor_id() abort
   return s:pum_cursor_id
 endfunction
 
-function! pum#_format_item(item, options, mode, startcol, max_columns) abort
+function pum#_format_item(item, options, mode, startcol, max_columns) abort
   const columns = a:item->get('columns', {})->copy()->extend(#{
         \   abbr: a:item->get('abbr', a:item.word),
         \   kind: a:item->get('kind', ''),
@@ -310,7 +310,7 @@ function! pum#_format_item(item, options, mode, startcol, max_columns) abort
   return str
 endfunction
 
-function! s:complete_done(completed_item) abort
+function s:complete_done(completed_item) abort
   let g:pum#completed_item = a:completed_item
 
   " NOTE: Old Vim/neovim does not support v:completed_item changes
@@ -327,7 +327,7 @@ function! s:complete_done(completed_item) abort
   endif
 endfunction
 
-function! pum#_reset_skip_complete() abort
+function pum#_reset_skip_complete() abort
   let pum = pum#_get()
   let pum.skip_complete = v:false
   let pum.skip_count = 0

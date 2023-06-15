@@ -1,6 +1,6 @@
 let s:pum_matched_id = 70
 
-function! pum#popup#_open(startcol, items, mode, insert) abort
+function pum#popup#_open(startcol, items, mode, insert) abort
   if a:mode !~# '[ict]' || '%'->bufname() ==# '[Command Line]'
     " Invalid mode
     return -1
@@ -389,7 +389,7 @@ function! pum#popup#_open(startcol, items, mode, insert) abort
   return pum.id
 endfunction
 
-function! pum#popup#_close(id) abort
+function pum#popup#_close(id) abort
   if a:id <= 0
     return
   endif
@@ -413,7 +413,7 @@ function! pum#popup#_close(id) abort
   call pum#popup#_close_id(a:id)
   call s:stop_auto_confirm()
 endfunction
-function! pum#popup#_close_id(id) abort
+function pum#popup#_close_id(id) abort
   try
     " Move cursor
     call win_execute(a:id, 'call cursor(1, 0)')
@@ -441,7 +441,7 @@ function! pum#popup#_close_id(id) abort
   endif
 endfunction
 
-function! s:uniq_by_word_or_dup(items) abort
+function s:uniq_by_word_or_dup(items) abort
   let ret = []
   let seen = {}
   for item in a:items
@@ -455,7 +455,7 @@ function! s:uniq_by_word_or_dup(items) abort
 endfunction
 
 " returns [border_left, border_top, border_right, border_bottom]
-function! s:get_border_size(border) abort
+function s:get_border_size(border) abort
   if !has('nvim')
     " NOTE: Vim is not supported
     return [0, 0, 0, 0]
@@ -473,7 +473,7 @@ function! s:get_border_size(border) abort
   endif
 endfunction
 
-function! s:get_borderchar_height(ch) abort
+function s:get_borderchar_height(ch) abort
   if a:ch->type() == v:t_string
     " character
     return a:ch->empty() ? 0 : 1
@@ -487,7 +487,7 @@ function! s:get_borderchar_height(ch) abort
   endif
 endfunction
 
-function! s:get_borderchar_width(ch) abort
+function s:get_borderchar_width(ch) abort
   if a:ch->type() == v:t_string
     " character
     return strdisplaywidth(a:ch)
@@ -501,7 +501,7 @@ function! s:get_borderchar_width(ch) abort
   endif
 endfunction
 
-function! s:highlight_items(items, orders, max_columns) abort
+function s:highlight_items(items, orders, max_columns) abort
   let pum = pum#_get()
   let options = pum#_options()
 
@@ -538,7 +538,7 @@ function! s:highlight_items(items, orders, max_columns) abort
   endfor
 endfunction
 
-function! s:highlight(
+function s:highlight(
       \ highlight, prop_type, priority, id, row, col, length) abort
   let pum = pum#_get()
 
@@ -576,7 +576,7 @@ function! s:highlight(
   endif
 endfunction
 
-function! pum#popup#_redraw_horizontal_menu() abort
+function pum#popup#_redraw_horizontal_menu() abort
   let pum = pum#_get()
 
   if pum.items->empty()
@@ -708,7 +708,7 @@ function! pum#popup#_redraw_horizontal_menu() abort
   endif
 endfunction
 
-function! pum#popup#_reset_auto_confirm(mode) abort
+function pum#popup#_reset_auto_confirm(mode) abort
   call s:stop_auto_confirm()
 
   let options = pum#_options()
@@ -733,13 +733,13 @@ function! pum#popup#_reset_auto_confirm(mode) abort
           \ call pum#popup#_reset_auto_confirm(mode())
   endif
 endfunction
-function! s:stop_auto_confirm() abort
+function s:stop_auto_confirm() abort
   let pum = pum#_get()
   if pum.auto_confirm_timer > 0
     call timer_stop(pum.auto_confirm_timer)
   endif
 endfunction
-function! s:auto_confirm() abort
+function s:auto_confirm() abort
   if pum#_get().current_word ==# ''
     return
   endif

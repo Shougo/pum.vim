@@ -1,11 +1,11 @@
-function! pum#util#_print_error(string) abort
+function pum#util#_print_error(string) abort
   echohl Error
   echomsg printf('[pum] %s', a:string->type() ==# v:t_string ?
         \ a:string : a:string->string())
   echohl None
 endfunction
 
-function! pum#util#_normalize_key_or_dict(key_or_dict, value) abort
+function pum#util#_normalize_key_or_dict(key_or_dict, value) abort
   if a:key_or_dict->type() == v:t_dict
     return a:key_or_dict
   elseif a:key_or_dict->type() == v:t_string
@@ -16,7 +16,7 @@ function! pum#util#_normalize_key_or_dict(key_or_dict, value) abort
   return {}
 endfunction
 
-function! pum#util#_truncate(str, max, footer_width, separator) abort
+function pum#util#_truncate(str, max, footer_width, separator) abort
   const width = a:str->strwidth()
   if width <= a:max
     const ret = a:str
@@ -27,7 +27,7 @@ function! pum#util#_truncate(str, max, footer_width, separator) abort
   endif
   return s:truncate(ret, a:max)
 endfunction
-function! s:truncate(str, width) abort
+function s:truncate(str, width) abort
   " Original function is from mattn.
   " http://github.com/mattn/googlereader-vim/tree/master
 
@@ -46,18 +46,18 @@ function! s:truncate(str, width) abort
 
   return ret
 endfunction
-function! s:strwidthpart(str, width) abort
+function s:strwidthpart(str, width) abort
   const str = a:str->tr("\t", ' ')
   const vcol = a:width + 2
   return str->matchstr('.*\%<' .. (vcol < 0 ? 0 : vcol) .. 'v')
 endfunction
-function! s:strwidthpart_reverse(str, width) abort
+function s:strwidthpart_reverse(str, width) abort
   const str = a:str->tr("\t", ' ')
   const vcol = str->strwidth() - a:width
   return str->matchstr('\%>' .. (vcol < 0 ? 0 : vcol) .. 'v.*')
 endfunction
 
-function! pum#util#_luacheck(module) abort
+function pum#util#_luacheck(module) abort
   return has('nvim') && luaeval(
         \ 'type(select(2, pcall(require, _A.module))) == "table"',
         \ #{ module: a:module })

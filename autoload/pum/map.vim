@@ -1,4 +1,4 @@
-function! pum#map#select_relative(delta, overflow='loop') abort
+function pum#map#select_relative(delta, overflow='loop') abort
   let pum = pum#_get()
   if pum.id <= 0
     return ''
@@ -105,7 +105,7 @@ function! pum#map#select_relative(delta, overflow='loop') abort
   return ''
 endfunction
 
-function! pum#map#insert_relative(delta, overflow='empty') abort
+function pum#map#insert_relative(delta, overflow='empty') abort
   if mode() ==# 't'
     " It does not work well in terminal mode.
     return ''
@@ -136,7 +136,7 @@ function! pum#map#insert_relative(delta, overflow='empty') abort
   return ''
 endfunction
 
-function! pum#map#longest_relative(delta, overflow='empty') abort
+function pum#map#longest_relative(delta, overflow='empty') abort
   let pum = pum#_get()
   if pum.items->empty()
     return ''
@@ -168,7 +168,7 @@ function! pum#map#longest_relative(delta, overflow='empty') abort
   return ''
 endfunction
 
-function! pum#map#confirm() abort
+function pum#map#confirm() abort
   let pum = pum#_get()
 
   if pum.cursor > 0 && pum.current_word ==# ''
@@ -183,7 +183,7 @@ function! pum#map#confirm() abort
 
   return ''
 endfunction
-function! pum#map#confirm_word() abort
+function pum#map#confirm_word() abort
   let pum = pum#_get()
 
   if pum.cursor > 0
@@ -201,7 +201,7 @@ function! pum#map#confirm_word() abort
   return ''
 endfunction
 
-function! pum#map#cancel() abort
+function pum#map#cancel() abort
   let pum = pum#_get()
 
   const current_word = pum.current_word
@@ -221,18 +221,18 @@ function! pum#map#cancel() abort
   return ''
 endfunction
 
-function! pum#map#select_relative_page(delta, overflow='empty') abort
+function pum#map#select_relative_page(delta, overflow='empty') abort
   call pum#map#select_relative(
         \ (a:delta * pum#_get().height)->float2nr(), a:overflow)
   return ''
 endfunction
-function! pum#map#insert_relative_page(delta, overflow='empty') abort
+function pum#map#insert_relative_page(delta, overflow='empty') abort
   call pum#map#insert_relative(
         \ (a:delta * pum#_get().height)->float2nr(), a:overflow)
   return ''
 endfunction
 
-function! s:skip_next_complete() abort
+function s:skip_next_complete() abort
   " Skip completion until next input
 
   call pum#close()
@@ -251,7 +251,7 @@ function! s:skip_next_complete() abort
   endif
 endfunction
 
-function! s:insert(word, prev_word, after_func) abort
+function s:insert(word, prev_word, after_func) abort
   augroup pum-temp
     autocmd!
   augroup END
@@ -293,7 +293,7 @@ function! s:insert(word, prev_word, after_func) abort
     call call(a:after_func, [])
   endif
 endfunction
-function! s:insert_current_word(prev_word, after_func) abort
+function s:insert_current_word(prev_word, after_func) abort
   let pum = pum#_get()
 
   const word = pum.cursor > 0 ?
@@ -302,7 +302,7 @@ function! s:insert_current_word(prev_word, after_func) abort
   call s:insert(word, a:prev_word, a:after_func)
 endfunction
 
-function! s:check_user_input(callback) abort
+function s:check_user_input(callback) abort
   augroup pum-temp
     autocmd!
   augroup END
@@ -335,10 +335,10 @@ function! s:check_user_input(callback) abort
           \ | endif
   endif
 endfunction
-function! s:check_text_changed() abort
+function s:check_text_changed() abort
   return pum#_row() != pum#_get().startrow
 endfunction
-function! s:check_text_changed_terminal() abort
+function s:check_text_changed_terminal() abort
   " Check pum.items is inserted
   let pum = pum#_get()
   if pum#_row() != pum.startrow
@@ -353,11 +353,11 @@ function! s:check_text_changed_terminal() abort
   let s:prev_line = current_line
 endfunction
 
-function! s:cursor(col) abort
+function s:cursor(col) abort
   return mode() ==# 'c' ? setcmdpos(a:col) : cursor(0, a:col)
 endfunction
 
-function! s:setcmdline(text) abort
+function s:setcmdline(text) abort
   if '*setcmdline'->exists()
     " NOTE: CmdlineChanged autocmd must be disabled
     call setcmdline(a:text)
@@ -373,7 +373,7 @@ function! s:setcmdline(text) abort
   endif
 endfunction
 
-function! s:insert_line_feedkeys(text, after_func) abort
+function s:insert_line_feedkeys(text, after_func) abort
   " feedkeys() implementation
 
   " NOTE: ":undojoin" is needed to prevent undo breakage
@@ -400,7 +400,7 @@ function! s:insert_line_feedkeys(text, after_func) abort
   call feedkeys(chars, 'n')
 endfunction
 
-function! s:insert_line_complete(text) abort
+function s:insert_line_complete(text) abort
   " complete() implementation
 
   " NOTE: Restore completeopt is needed after complete()
@@ -417,7 +417,7 @@ function! s:insert_line_complete(text) abort
   call feedkeys("\<C-x>\<C-z>", 'in')
 endfunction
 
-function! s:insert_line_jobsend(text) abort
+function s:insert_line_jobsend(text) abort
   const current_word = pum#_getline()[
         \ pum#_get().startcol - 1 : pum#_col() - 2]
   const chars = "\<C-h>"->repeat(current_word->strchars()) .. a:text

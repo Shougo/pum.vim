@@ -530,7 +530,7 @@ function s:highlight_items(items, orders, max_columns) abort
             \ {_, val -> val.type ==# order})
         call s:highlight(
               \ hl.hl_group, hl.name, 1,
-              \ g:pum#_namespace, row, start + hl.col, hl.width)
+              \ g:pum#_namespace, row, start + hl.col - 1, hl.width)
       endfor
 
       let start += max_column + 1

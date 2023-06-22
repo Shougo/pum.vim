@@ -20,14 +20,14 @@ endfunction
 function s:suite.highlight() abort
   call pum#open(1, [
         \ #{ word: 'foo bar', highlights: [
-        \   #{ type: 'abbr', name: 'abbr_foo', hl_group: 'Function', col: 0, width: 3 },
-        \   #{ type: 'abbr', name: 'abbr_bar', hl_group: 'Underlined', col: 4, width: 3 },
+        \   #{ type: 'abbr', name: 'abbr_foo', hl_group: 'Function', col: 1, width: 3 },
+        \   #{ type: 'abbr', name: 'abbr_bar', hl_group: 'Underlined', col: 5, width: 3 },
         \ ]},
         \ #{ word: 'bar', kind: 'bar', highlights: [
-        \   #{ type: 'kind', name: 'kind_foo', hl_group: 'Error', col: 0, width: 3 },
+        \   #{ type: 'kind', name: 'kind_foo', hl_group: 'Error', col: 1, width: 3 },
         \ ]},
         \ #{ word: 'baz', menu: 'baz', highlights: [
-        \   #{ type: 'menu', name: 'menu_baz', hl_group: 'WarningMsg', col: 0, width: 3 },
+        \   #{ type: 'menu', name: 'menu_baz', hl_group: 'WarningMsg', col: 1, width: 3 },
         \ ]},
         \ ], 'i')
 endfunction

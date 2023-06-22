@@ -497,6 +497,9 @@ A: >
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*
 
+2023.06.23
+* Item highlight is 1 origin instead of 0 origin.
+
 2023.05.22
 * Rename "offset_row" option to "offset_cmdrow".
 

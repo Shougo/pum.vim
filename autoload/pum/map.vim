@@ -56,7 +56,7 @@ function pum#map#select_relative(delta, overflow='loop') abort
   endif
 
   if '#User#PumCompleteChanged'->exists()
-    silent! doautocmd <nomodeline> User PumCompleteChanged
+    doautocmd <nomodeline> User PumCompleteChanged
   endif
 
   if pum.horizontal_menu

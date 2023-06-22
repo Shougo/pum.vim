@@ -165,7 +165,7 @@ function pum#close() abort
   endif
 
   if '#User#PumClose'->exists()
-    silent! doautocmd <nomodeline> User PumClose
+    doautocmd <nomodeline> User PumClose
   endif
 
   " NOTE: pum.scroll_id is broken after pum#popup#_close()

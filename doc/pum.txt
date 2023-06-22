@@ -300,7 +300,7 @@ pum#open({startcol}, {items})
 					Note: It must be unique.
 				hl_group	highlight group
 				(|highlight-groups|)
-				col	highlight start column (0 origin)
+				col	highlight start column (1 origin)
 				width	highlight end column width
 			Note: It is experimental feature.
 

@@ -217,6 +217,14 @@ function pum#current_item() abort
   return info.items->get(info.selected, {})
 endfunction
 
+function pum#update_current_item(dict) abort
+  call extend(pum#current_item(), a:dict)
+
+  if '#User#PumCompleteChanged'->exists()
+    doautocmd <nomodeline> User PumCompleteChanged
+  endif
+endfunction
+
 function pum#get_pos() abort
   if !pum#visible()
     return {}

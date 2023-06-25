@@ -268,6 +268,10 @@ pum#complete_info([{what}])
 		If {what} is supplied, then only the items listed in {what}
 		are returned.
 
+							*pum#current_item()*
+pum#current_item()
+		Get current cursor item.
+
 							*pum#entered()*
 pum#entered()
 		Returns |v:true| if you have selected or inserted popup menu.
@@ -333,6 +337,12 @@ pum#set_option({dict})
 pum#skip_complete()
 		If it is |v:true|, auto completion plugin must be skipped auto
 		completion.
+
+						*pum#update_current_item()*
+pum#update_current_item({dict})
+		Update current cursor item by {dict}.
+		It executes |PumCompleteChanged| autocmd.
+		NOTE: It does not redraw current popup menu.
 
 							*pum#visible()*
 pum#visible()
@@ -427,6 +437,10 @@ PumCompleteDone
 		Note: When |v:completed_item| is not read only and insert
 		mode, |CompleteDone| is also called.
 
+							*PumCompleteDonePre*
+PumCompleteDonePre
+		It is called before |PumCompleteDone| like |CompleteDonePre|.
+		|g:pum#completed_item| gives the completed item.
 
 ==============================================================================
 EXAMPLES						*pum-examples*

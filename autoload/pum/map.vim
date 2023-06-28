@@ -336,7 +336,7 @@ function s:check_user_input(callback) abort
   endif
 endfunction
 function s:check_text_changed() abort
-  return pum#_row() != pum#_get().startrow
+  return !pum#_get().skip_complete
 endfunction
 function s:check_text_changed_terminal() abort
   " Check pum.items is inserted

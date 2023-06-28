@@ -237,7 +237,7 @@ function pum#get_pos() abort
         \ row: pum.pos[0],
         \ col: pum.pos[1],
         \ size: pum.len,
-        \ scrollbar: v:false,
+        \ scrollbar: pum.scroll_id > 0,
         \ }
 endfunction
 

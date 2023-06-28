@@ -286,7 +286,7 @@ pum#get_pos()
 			row		screen position row (0 origin)
 			col		screen position col (0 origin)
 			size		total number of items
-			scrollbar	v:false
+			scrollbar	|TRUE| if scrollbar is visible
 
 							*pum#open()*
 pum#open({startcol}, {items})

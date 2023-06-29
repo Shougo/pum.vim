@@ -321,22 +321,27 @@ endfunction
 function s:complete_done(completed_item) abort
   let g:pum#completed_item = a:completed_item
 
-  " NOTE: Old Vim/neovim does not support v:completed_item changes
-  silent! let v:completed_item = g:pum#completed_item
-
   if '#User#PumCompleteDonePre'->exists()
     doautocmd <nomodeline> User PumCompleteDonePre
   endif
 
+  " NOTE: Old Vim/neovim does not support v:completed_item changes
+  silent! let v:completed_item = g:pum#completed_item
+
   if mode() ==# 'i' && v:completed_item ==# g:pum#completed_item
+    " NOTE: The events are available for insert mode only
+
     if '#CompleteDonePre'->exists()
-      " NOTE: Call CompleteDone when insert mode only
       doautocmd <nomodeline> CompleteDonePre
     endif
 
     if '#CompleteDone'->exists()
-      " NOTE: Call CompleteDone when insert mode only
       doautocmd <nomodeline> CompleteDone
+    endif
+
+    " NOTE: v:completed_item may be changed
+    if v:completed_item !=# g:pum#completed_item
+      let g:pum#completed_item = v:completed_item
     endif
   endif
 

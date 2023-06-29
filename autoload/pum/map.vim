@@ -267,9 +267,7 @@ function s:insert(word, prev_word, after_func) abort
   let pum.current_word = a:word
 
   " NOTE: The text changes fires TextChanged events.  It must be ignored.
-  if a:word !=# a:prev_word
-    call pum#_inc_skip_complete()
-  endif
+  call pum#_inc_skip_complete()
 
   if mode() ==# 'c'
     call s:setcmdline(prev_input .. a:word .. next_input)

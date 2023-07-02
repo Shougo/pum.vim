@@ -533,7 +533,11 @@ function s:highlight_items(items, orders, max_columns) abort
               \ g:pum#_namespace, row, start + hl.col - 1, hl.width)
       endfor
 
-      let start += max_column + 1
+      let elem = ['abbr', 'kind', 'menu']->index(order) > -1
+            \ ? item->get(order, '')
+            \ : item->get("columns", {})->get(order, '')
+      let byte_length = elem->strlen() + max_column - elem->strdisplaywidth()
+      let start += [byte_length, max_column]->max() + 1
     endfor
   endfor
 endfunction

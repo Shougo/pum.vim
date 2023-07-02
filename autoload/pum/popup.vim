@@ -533,11 +533,12 @@ function s:highlight_items(items, orders, max_columns) abort
               \ g:pum#_namespace, row, start + hl.col - 1, hl.width)
       endfor
 
-      let elem = ['abbr', 'kind', 'menu']->index(order) > -1
+      " NOTE: The byte length of multibyte characters may be larger than
+      " max_column calculated by strdisplaywidth().
+      let elem = ['abbr', 'kind', 'menu']->index(order) >= 0
             \ ? item->get(order, '')
-            \ : item->get("columns", {})->get(order, '')
-      let byte_length = elem->strlen() + max_column - elem->strdisplaywidth()
-      let start += [byte_length, max_column]->max() + 1
+            \ : item->get('columns', {})->get(order, '')
+      let start += elem->strlen() + max_column - elem->strdisplaywidth() + 1
     endfor
   endfor
 endfunction

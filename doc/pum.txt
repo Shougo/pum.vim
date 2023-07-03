@@ -459,6 +459,32 @@ EXAMPLES						*pum-examples*
 ==============================================================================
 FREQUENTLY ASKED QUESTIONS (FAQ)			*pum-faq*
 
+
+FAQ 1:							|pum-faq-1|
+	How to donate money to you?
+
+FAQ 2:							|pum-faq-2|
+	The popup menu does not close immediately in Vim.
+
+FAQ 3:							|pum-faq-3|
+	The popup menu does not work in Command line window.
+
+FAQ 4:							|pum-faq-4|
+	Auto import or auto snippet expansion does not work in pum.vim.
+
+FAQ 5:							|pum-faq-5|
+	I want to use j/k keys to navigate popup menu when only entered popup
+	menu.
+
+FAQ 6:							|pum-faq-6|
+	The popup window does not close when enter |command-line-window|.
+
+FAQ 7:							|pum-faq-7|
+	I want to move to the first/last item by Home/End keys.
+
+
+------------------------------------------------------------------------------
+							*pum-faq-1*
 Q: How to donate money to you?
 
 A: I have started github sponsorship to spend more time for Vim/neovim
@@ -466,16 +492,17 @@ plugins.  You can donate money to help me!
 
    https://github.com/sponsors/Shougo
 
-
+							*pum-faq-2*
 Q: The popup menu does not close immediately in Vim.
 
 A: It is the known issue of Vim.  |popup_close()| does not work immediately.
 
-
+							*pum-faq-3*
 Q: The popup menu does not work in Command line window.
 
 A: It is the limitation of Command line window.
 
+							*pum-faq-4*
 Q: Auto import or auto snippet expansion does not work in pum.vim.
 
 A: pum.vim does not support |CompleteDone| autocmd.  You need to emulate the
@@ -484,11 +511,8 @@ event like this.
 Note: It is for ale plugin. >
 	 autocmd User PumCompleteDone
 	 \ call ale#completion#HandleUserData(g:pum#completed_item)
-
-For vsnip plugin, you need to install "vim-vsnip-integ" plugin and please read
-the documentation.
-	https://github.com/hrsh7th/vim-vsnip-integ
-
+<
+							*pum-faq-5*
 Q: I want to use j/k keys to navigate popup menu when only entered popup menu.
 
 A: >
@@ -496,13 +520,15 @@ A: >
 	      \ '<Cmd> call pum#map#insert_relative(+1)<CR>' : 'j'
 	inoremap <expr> k   pum#entered() ?
 	      \ '<Cmd> call pum#map#insert_relative(-1)<CR>' : 'k'
-
+<
+							*pum-faq-6*
 Q: The popup window does not close when enter |command-line-window|.
 
 A: In |command-line-window|, the popup window cannot be closed.  It is
 Vim/neovim's feature.  The window is closed after you have leaved
 |command-line-window|.
 
+							*pum-faq-7*
 Q: I want to move to the first/last item by Home/End keys.
 
 A: >
@@ -510,6 +536,7 @@ A: >
 	\ <Cmd>call pum#map#insert_relative(-9999, 'ignore')<CR>
 	inoremap <End>
 	\ <Cmd>call pum#map#insert_relative(+9999, 'ignore')<CR>
+<
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*

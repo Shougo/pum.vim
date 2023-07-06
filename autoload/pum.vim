@@ -194,11 +194,11 @@ endfunction
 function pum#complete_info(...) abort
   let pum = pum#_get()
   let info = #{
-        \ mode: '',
-        \ pum_visible: pum#visible(),
-        \ items: pum.items,
-        \ selected: pum.cursor - 1,
-        \ inserted: pum.current_word,
+        \   mode: '',
+        \   pum_visible: pum#visible(),
+        \   items: pum.items,
+        \   selected: pum.cursor > 0 ? pum.cursor - 1 : -1,
+        \   inserted: pum.current_word,
         \ }
 
   if a:0 == 0 || type(a:1) != v:t_list

@@ -270,13 +270,14 @@ function s:insert(word, prev_word, after_func) abort
   call pum#_inc_skip_complete()
 
   if mode() ==# 'c'
-    call s:setcmdline(prev_input .. a:word .. next_input)
-    call s:cursor(pum.startcol + len(a:word))
+    " NOTE: setcmdpos() does not work in command line mode!
+    call s:setcmdline(prev_input .. a:word .. next_input,
+          \ pum.startcol + len(a:word))
   elseif mode() ==# 't'
     call s:insert_line_jobsend(a:word)
   elseif pum#_options().use_setline
     call setline('.', prev_input .. a:word .. next_input)
-    call s:cursor(pum.startcol + len(a:word))
+    call cursor(0, pum.startcol + len(a:word))
   elseif a:word ==# '' || !pum#_options().use_complete
         \ || a:after_func != v:null
     " NOTE: complete() does not work for empty string
@@ -351,14 +352,10 @@ function s:check_text_changed_terminal() abort
   let s:prev_line = current_line
 endfunction
 
-function s:cursor(col) abort
-  return mode() ==# 'c' ? setcmdpos(a:col) : cursor(0, a:col)
-endfunction
-
-function s:setcmdline(text) abort
+function s:setcmdline(text, pos) abort
   if '*setcmdline'->exists()
     " NOTE: CmdlineChanged autocmd must be disabled
-    call setcmdline(a:text)
+    call setcmdline(a:text, a:pos)
   else
     " Clear cmdline
     let chars = "\<C-e>\<C-u>"

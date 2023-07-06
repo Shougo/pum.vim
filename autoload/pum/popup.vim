@@ -164,7 +164,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       endif
 
       let pos[1] += noice_pos.col - 1
-    elseif '*getcmdscreenpos'->exists()
+    else
       " Use getcmdscreenpos() for adjustment
       let pos[1] += (getcmdscreenpos() - 1) - getcmdpos()
     endif
@@ -365,23 +365,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   " Close popup automatically
-  if '##ModeChanged'->exists()
-    autocmd pum ModeChanged i:[^i]* ++once call pum#close()
-    autocmd pum ModeChanged [ct]:* ++once call pum#close()
-  elseif a:mode ==# 'i'
-    autocmd pum InsertLeave * ++once call pum#close()
-    autocmd pum CursorMovedI *
-          \ : if pum#_get().current_line ==# '.'->getline()
-          \       && pum#_get().col !=# pum#_col()
-          \ |   call pum#close()
-          \ | endif
-  elseif a:mode ==# 'c'
-    autocmd pum WinEnter,CmdlineLeave,CmdWinEnter * ++once
-          \ call pum#close()
-  elseif a:mode ==# 't' && '##TermEnter'->exists()
-    autocmd pum TermEnter,TermLeave * ++once
-          \ call pum#close()
-  endif
+  autocmd pum ModeChanged i:[^i]* ++once call pum#close()
+  autocmd pum ModeChanged [ct]:* ++once call pum#close()
   autocmd pum CursorHold * ++once call pum#close()
 
   call pum#popup#_reset_auto_confirm(a:mode)

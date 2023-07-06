@@ -62,7 +62,7 @@ function pum#_init_options() abort
         \   max_width: 0,
         \   min_width: &pumwidth,
         \   offset_cmdcol: 0,
-        \   offset_cmdrow: has('nvim') || v:version >= 900 ? 0 : 1,
+        \   offset_cmdrow: 0,
         \   offset_col: 3,
         \   offset_row: 0,
         \   padding: v:false,
@@ -125,9 +125,9 @@ function pum#set_buffer_option(key_or_dict, value = '') abort
 endfunction
 
 function pum#open(startcol, items, mode = mode(), insert = v:false) abort
-  if !has('patch-8.2.1978') && !has('nvim-0.8')
+  if v:version < 900 && !has('nvim-0.8')
     call pum#util#_print_error(
-          \ 'pum.vim requires Vim 8.2.1978+ or neovim 0.8.0+.')
+          \ 'pum.vim requires Vim 9.0+ or neovim 0.8.0+.')
     return -1
   endif
 

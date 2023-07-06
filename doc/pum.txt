@@ -539,6 +539,9 @@ A: >
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*
 
+2023.07.06
+* Vim 9.0+ or neovim 0.8+ is required.
+
 2023.06.23
 * Item highlight is 1 origin instead of 0 origin.
 

@@ -240,14 +240,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       " Create new window
       const id = nvim_open_win(pum.buf, v:false, winopts)
 
-      " NOTE: nvim_win_set_option() causes title flicker...
-      " Disable 'hlsearch' highlight
-      call nvim_win_set_option(id, 'winhighlight',
-            \ printf('Normal:%s,Search:None', options.highlight_normal_menu))
-      call nvim_win_set_option(id, 'winblend', &l:pumblend)
-      call nvim_win_set_option(id, 'wrap', v:false)
-      call nvim_win_set_option(id, 'scrolloff', 0)
-      call nvim_win_set_option(id, 'statusline', &l:statusline)
+      call s:set_window_options(id, options, v:false)
 
       let pum.id = id
     endif
@@ -649,15 +642,7 @@ function pum#popup#_redraw_horizontal_menu() abort
       " Create new window
       const id = nvim_open_win(pum.buf, v:false, winopts)
 
-      " NOTE: nvim_win_set_option() causes title flicker...
-      " Disable 'hlsearch' highlight
-      call nvim_win_set_option(id, 'winhighlight',
-            \ printf('Normal:%s,Search:None',
-            \        options.highlight_horizontal_menu))
-      call nvim_win_set_option(id, 'winblend', &l:pumblend)
-      call nvim_win_set_option(id, 'wrap', v:false)
-      call nvim_win_set_option(id, 'scrolloff', 0)
-      call nvim_win_set_option(id, 'statusline', &l:statusline)
+      call s:set_window_options(id, options, v:true)
 
       let pum.id = id
     endif
@@ -736,4 +721,21 @@ function s:auto_confirm() abort
 
   call pum#map#confirm()
   call pum#close()
+endfunction
+
+function s:set_window_options(id, options, is_horizontal) abort
+  " NOTE: nvim_win_set_option() causes title flicker...
+  let highlight = 'Normal:' .. (a:is_horizontal
+        \ ? a:options.highlight_horizontal_menu
+        \ : a:options.highlight_normal_menu
+        \ )
+  if &hlsearch
+    " Disable 'hlsearch' highlight
+    let highlight ..= ',Search:None,CurSearch:None'
+  endif
+  call nvim_win_set_option(a:id, 'winhighlight', highlight)
+  call nvim_win_set_option(a:id, 'winblend', &l:pumblend)
+  call nvim_win_set_option(a:id, 'wrap', v:false)
+  call nvim_win_set_option(a:id, 'scrolloff', 0)
+  call nvim_win_set_option(a:id, 'statusline', &l:statusline)
 endfunction

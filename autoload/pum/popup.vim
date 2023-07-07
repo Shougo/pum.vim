@@ -703,7 +703,7 @@ function pum#popup#_reset_auto_confirm(mode) abort
   elseif a:mode ==# 'c'
     autocmd pum CmdlineChanged * ++once
           \ call pum#popup#_reset_auto_confirm(mode())
-  elseif a:mode ==# 't' && '##TextChangedT'->exists()
+  elseif a:mode ==# 't'
     autocmd pum TextChangedT * ++once
           \ call pum#popup#_reset_auto_confirm(mode())
   endif

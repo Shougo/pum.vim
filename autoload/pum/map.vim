@@ -179,7 +179,7 @@ function pum#map#confirm() abort
 
   " Reset v:completed_item to prevent CompleteDone is twice
   autocmd pum-temp TextChangedI,TextChangedP * ++once
-        \ silent! let v:completed_item = {}
+        \ let v:completed_item = {}
 
   return ''
 endfunction
@@ -196,7 +196,7 @@ function pum#map#confirm_word() abort
 
   " Reset v:completed_item to prevent CompleteDone is twice
   autocmd pum-temp TextChangedI,TextChangedP * ++once
-        \ silent! let v:completed_item = {}
+        \ let v:completed_item = {}
 
   return ''
 endfunction
@@ -242,10 +242,7 @@ function s:skip_next_complete() abort
 
   " Note: s:check_user_input() does not work well in terminal mode
   if mode() ==# 't' && !has('nvim')
-    if '##TextChangedT'->exists()
-      autocmd pum-temp TextChangedT * ++once
-            \ call pum#_reset_skip_complete()
-    endif
+    autocmd pum-temp TextChangedT * ++once call pum#_reset_skip_complete()
   else
     call s:check_user_input({ -> pum#_reset_skip_complete() })
   endif
@@ -271,7 +268,7 @@ function s:insert(word, prev_word, after_func) abort
 
   if mode() ==# 'c'
     " NOTE: setcmdpos() does not work in command line mode!
-    call s:setcmdline(prev_input .. a:word .. next_input,
+    call setcmdline(prev_input .. a:word .. next_input,
           \ pum.startcol + len(a:word))
   elseif mode() ==# 't'
     call s:insert_line_jobsend(a:word)
@@ -321,7 +318,7 @@ function s:check_user_input(callback) abort
             \     vim.fn['pum#close']()
             \   end
             \ end)
-    elseif '##TextChangedT'->exists()
+    else
       let s:prev_line = pum#_getline()
       autocmd pum-temp TextChangedT * call s:check_text_changed_terminal()
     endif
@@ -350,22 +347,6 @@ function s:check_text_changed_terminal() abort
     call pum#close()
   endif
   let s:prev_line = current_line
-endfunction
-
-function s:setcmdline(text, pos) abort
-  if '*setcmdline'->exists()
-    " NOTE: CmdlineChanged autocmd must be disabled
-    call setcmdline(a:text, a:pos)
-  else
-    " Clear cmdline
-    let chars = "\<C-e>\<C-u>"
-
-    " NOTE: for control chars
-    let chars ..= a:text->split('\zs')
-          \ ->map({ _, val -> val <# ' ' ? "\<C-q>" .. val : val })->join('')
-
-    call feedkeys(chars, 'n')
-  endif
 endfunction
 
 function s:insert_line_feedkeys(text, after_func) abort

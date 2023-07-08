@@ -125,9 +125,9 @@ function pum#set_buffer_option(key_or_dict, value = '') abort
 endfunction
 
 function pum#open(startcol, items, mode = mode(), insert = v:false) abort
-  if !has('patch-9.0.1499') && !has('nvim-0.8')
+  if !has('patch-9.0.1276') && !has('nvim-0.8')
     call pum#util#_print_error(
-          \ 'pum.vim requires Vim 9.0.1499+ or neovim 0.8.0+.')
+          \ 'pum.vim requires Vim 9.0.1276+ or neovim 0.8.0+.')
     return -1
   endif
 

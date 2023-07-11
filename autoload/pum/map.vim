@@ -1,4 +1,4 @@
-function pum#map#select_relative(delta, overflow='loop') abort
+function pum#map#select_relative(delta, overflow='empty') abort
   let pum = pum#_get()
   if pum.id <= 0
     return ''

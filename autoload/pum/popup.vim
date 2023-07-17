@@ -143,7 +143,6 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     let spos.col = 1
   endif
 
-  " NOTE: In Vim8, floating window must above of status line
   let pos = a:mode ==# 'c' ?
         \ [&lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
         \  a:startcol - padding_left + options.offset_cmdcol] :

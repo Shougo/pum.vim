@@ -52,7 +52,7 @@ function pum#_init_options() abort
         \   highlight_scrollbar: 'PmenuSbar',
         \   highlight_selected: 'PmenuSel',
         \   horizontal_menu: v:false,
-        \   item_orders: ['abbr', 'kind', 'menu'],
+        \   item_orders: ['abbr', 'space', 'kind', 'space', 'menu'],
         \   max_columns: #{
         \     kind: 10,
         \     menu: 20,
@@ -293,10 +293,6 @@ function pum#_format_item(item, options, mode, startcol, max_columns) abort
   for order in a:options.item_orders
     if a:max_columns->get(order, 0) <= 0
       continue
-    endif
-
-    if str !=# ''
-      let str ..= ' '
     endif
 
     let column = columns->get(order, '')->substitute('[[:cntrl:]]', '?', 'g')

@@ -21,8 +21,10 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   " Calc max columns
   let max_columns = {}
+  let prev_column_name = ''
   for column in options.item_orders
     let max_column =
+          \   column ==# 'space' ? 0 :
           \   column ==# 'abbr' ? items->copy()->map({ _, val ->
           \     val->get('abbr', val.word)->strdisplaywidth()})->max() :
           \   column ==# 'kind' ? items->copy()->map({ _, val ->
@@ -33,25 +35,29 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \     val->get('columns', {})->get(column, '')->strdisplaywidth()})
           \   ->max()
 
-    if max_column > 0
+    if column ==# 'space' && prev_column_name !=# ''
+      " Padding
+      let max_columns[prev_column_name] += 1
+      let prev_column_name = ''
+    elseif max_column > 0
       let max_columns[column] =
             \ [max_column, options.max_columns->get(column, max_column)]
             \ ->min()
+      let prev_column_name = column
     endif
   endfor
 
   " Calc width
   let width = 0
-  let column_length = 0
+  let non_abbr_length = 0
   for [column, max_column] in max_columns->items()
     let width += max_column
     if column !=# 'abbr'
-      let column_length += max_column + 1
+      let non_abbr_length += max_column
     endif
   endfor
 
   " Padding
-  let width += max_columns->len() - 1
   if options.padding && (a:mode ==# 'c' || a:startcol != 1)
     let width += 2
   endif
@@ -63,7 +69,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   " NOTE: abbr is the rest column
-  let max_columns.abbr = width - column_length
+  let max_columns.abbr = width - non_abbr_length
   if options.padding
     let max_columns.abbr -= 2
   endif

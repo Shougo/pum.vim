@@ -30,7 +30,7 @@ It works both insert mode and command line mode.
 ==============================================================================
 INSTALL							*pum-install*
 
-Note: pum.vim requires Neovim (0.8.0+) or Vim 9.0.1276+ (latest is
+NOTE: pum.vim requires Neovim (0.8.0+) or Vim 9.0.1276+ (latest is
 recommended).
 
 pum.vim detects if "noice.nvim" is installed.
@@ -53,7 +53,7 @@ g:pum#completed_item
 OPTIONS							*pum-options*
 
 Options can be toggled through the use of |pum#set_option()|.
-Note: The options must be set before call of |pum#open()|.
+NOTE: The options must be set before call of |pum#open()|.
 
 					*pum-options-auto_confirm_time*
 auto_confirm_time
@@ -72,7 +72,7 @@ auto_select
 border
 		The completion window border.  You can specify border
 		|nvim_open_win()| border option.
-		Note: neovim only feature.  Vim's border feature is not
+		NOTE: neovim only feature.  Vim's border feature is not
 		stable.
 
 		Default: "none"
@@ -80,7 +80,7 @@ border
 						*pum-options-direction*
 direction
 		The popup menu direction if possible.
-		Note: It does not work for command line mode.
+		NOTE: It does not work for command line mode.
 
 		"above":  Above menu direction.
 		"below":  Below menu dicrection.
@@ -125,7 +125,7 @@ highlight_normal_menu
 					*pum-options-highlight_scrollbar*
 highlight_scrollbar
 		The scrollbar highlight.
-		Note: neovim only feature.
+		NOTE: neovim only feature.
 
 		Default: "PmenuSbar"
 
@@ -138,7 +138,7 @@ highlight_selected
 						*pum-options-horizontal_menu*
 horizontal_menu
 		Use horizontal menu instead of vertical popup menu.
-		Note: The feature does not support custom highlights and
+		NOTE: The feature does not support custom highlights and
 		columns.
 
 		Default: v:false
@@ -146,11 +146,12 @@ horizontal_menu
 						*pum-options-item_orders*
 item_orders
 		The column order of the item.
-		Note: "abbr", "kind" and "menu" columns are from the item
+		NOTE: "space" column means between items padding.
+		NOTE: "abbr", "kind" and "menu" columns are from the item
 		attribute.  Other columns are from the item's "columns"
 		attribute.
 
-		Default: ["abbr", "kind", "menu"]
+		Default: ["abbr", "space", "kind", "space", "menu"]
 
 						*pum-options-max_columns*
 max_columns
@@ -223,8 +224,8 @@ reversed
 						*pum-options-scrollbar_char*
 scrollbar_char
 		Specify scrollbar character.
-		Note: The scrollbar feature is disabled if it is empty string.
-		Note: neovim only feature.
+		NOTE: The scrollbar feature is disabled if it is empty string.
+		NOTE: neovim only feature.
 
 		Default: "|"
 
@@ -233,9 +234,9 @@ use_complete
 		Use |complete()| instead of |feedkeys()| when insertion.
 		It is faster and does not break undo state.
 
-		Note: If you insert the item, |CompleteDone| event is fired
+		NOTE: If you insert the item, |CompleteDone| event is fired
 		automatically.  It may break your plugins behavior.
-		Note: It is for insert mode only.
+		NOTE: It is for insert mode only.
 
 		Default: v:false
 
@@ -244,7 +245,7 @@ use_setline
 		Use |setline()| instead of |feedkeys()| when insertion.
 		It is faster but |.| repeat does not work.
 
-		Note: It is for insert mode only.
+		NOTE: It is for insert mode only.
 
 		Default: v:false
 
@@ -274,7 +275,7 @@ pum#current_item()
 							*pum#entered()*
 pum#entered()
 		Returns |v:true| if you have selected or inserted popup menu.
-		Note: It does not work for auto selection feature.
+		NOTE: It does not work for auto selection feature.
 
 							*pum#get_pos()*
 pum#get_pos()
@@ -292,7 +293,7 @@ pum#open({startcol}, {items})
 		Open popup menu like |complete()|.
 		{startcol} is the byte offset in the line where the completed
 		text start.
-		Note: {startcol} is 1 origin like |col()|.
+		NOTE: {startcol} is 1 origin like |col()|.
 		{items} must be a |List|.  See |complete-items| for the kind
 		of items.  You can use following special key.
 
@@ -300,14 +301,14 @@ pum#open({startcol}, {items})
 				type	 "abbr" or "kind" or "menu"
 				name	highlight name.  It is used for
 					|prop_type_add()| in Vim.
-					Note: It must be unique.
+					NOTE: It must be unique.
 				hl_group	highlight group
 				(|highlight-groups|)
 				col	highlight start column (1 origin)
 				width	highlight end column width
-			Note: It is experimental feature.
+			NOTE: It is experimental feature.
 
-		Note: If 'completeopt' contains "noinsert", the first item is
+		NOTE: If 'completeopt' contains "noinsert", the first item is
 		selected automatically, but it increases screen flicker.
 
 						*pum#set_buffer_option()*
@@ -355,19 +356,19 @@ KEY MAPPINGS						*pum-key-mappings*
 							*pum#map#cancel()*
 pum#map#cancel()
 		Cancel the select and close the popup.
-		Note: It must not be called in |:map-<expr>|.
+		NOTE: It must not be called in |:map-<expr>|.
 
 							*pum#map#confirm()*
 pum#map#confirm()
 		Insert the select and close the popup.
-		Note: It must not be called in |:map-<expr>|.
+		NOTE: It must not be called in |:map-<expr>|.
 
 						*pum#map#confirm_word()*
 pum#map#confirm_word()
 		Insert the select word and close the popup.
 		The word means non spaces charaters.
 		It is useful if you want to complete word by word.
-		Note: It must not be called in |:map-<expr>|.
+		NOTE: It must not be called in |:map-<expr>|.
 
 						*pum#map#insert_relative()*
 pum#map#insert_relative({delta}[, {overflow}])
@@ -382,16 +383,16 @@ pum#map#insert_relative({delta}[, {overflow}])
 				VSCode behavior.
 			Default: "empty"
 
-		Note: It must not be called in |:map-<expr>|.
-		Note: It does not work in |:terminal|.
+		NOTE: It must not be called in |:map-<expr>|.
+		NOTE: It does not work in |:terminal|.
 
 					*pum#map#insert_relative_page()*
 pum#map#insert_relative_page({delta}[, {overflow}])
 		Move forward or backward "{delta} * page height" number and
 		insert the candidate.
 		{overflow} is same with |pum#map#insert_relative()|.
-		Note: It must not be called in |:map-<expr>|.
-		Note: It does not work in |:terminal|.
+		NOTE: It must not be called in |:map-<expr>|.
+		NOTE: It does not work in |:terminal|.
 
 						*pum#map#longest_relative()*
 pum#map#longest_relative({delta}[, {overflow}])
@@ -399,21 +400,21 @@ pum#map#longest_relative({delta}[, {overflow}])
 		If the longest word is not found, it is same with
 		|pum#map#insert_relative()|.
 		The behavior is like "list:longest,full" in 'wildmode'.
-		Note: It must not be called in |:map-<expr>|.
+		NOTE: It must not be called in |:map-<expr>|.
 
 						*pum#map#select_relative()*
 pum#map#select_relative({delta}[, {overflow}])
 		Move forward or backward {delta} number and select the
 		candidate.
 		{overflow} is same with |pum#map#insert_relative()|.
-		Note: It must not be called in |:map-<expr>|.
+		NOTE: It must not be called in |:map-<expr>|.
 
 					*pum#map#select_relative_page()*
 pum#map#select_relative_page({delta}[, {overflow}])
 		Move forward or backward "{delta} * page height" number and
 		select the candidate.
 		{overflow} is same with |pum#map#insert_relative()|.
-		Note: It must not be called in |:map-<expr>|.
+		NOTE: It must not be called in |:map-<expr>|.
 
 
 ------------------------------------------------------------------------------
@@ -507,7 +508,7 @@ Q: Auto import or auto snippet expansion does not work in pum.vim.
 A: pum.vim does not support |CompleteDone| autocmd.  You need to emulate the
 event like this.
 
-Note: It is for ale plugin. >
+NOTE: It is for ale plugin. >
 	 autocmd User PumCompleteDone
 	 \ call ale#completion#HandleUserData(g:pum#completed_item)
 <
@@ -539,6 +540,9 @@ A: >
 
 ==============================================================================
 COMPATIBILITY						*pum-compatibility*
+
+2023.07.19
+* "item_orders" must include "space" item.
 
 2023.07.08
 * Vim 9.0.1276+ or neovim 0.8+ is required to support the latest MacVim.

@@ -1,4 +1,4 @@
-set verbose=1
+"set verbose=1
 let s:suite = themis#suite('pum')
 let s:assert = themis#helper('assert')
 
@@ -67,17 +67,17 @@ function s:suite.insert_relative() abort
 endfunction
 
 function s:suite.format_item() abort
-  let item = #{ word: 'foo', kind: 'bar', menu: 'baz' }
+  const item = #{ word: 'foo', kind: 'bar', menu: 'baz' }
 
   call s:assert.equals(
         \ pum#_format_item(item,
         \ #{
-        \   item_orders: ['abbr', 'kind', 'menu'],
+        \   item_orders: ['abbr', 'space', 'kind', 'space', 'menu'],
         \   padding: v:true,
         \ }, 'i', 2,
         \ #{
-        \   abbr: 3,
-        \   kind: 3,
+        \   abbr: 4,
+        \   kind: 4,
         \   menu: 3,
         \ }),
         \ ' foo bar baz ')
@@ -85,13 +85,13 @@ function s:suite.format_item() abort
   call s:assert.equals(
         \ pum#_format_item(item,
         \ #{
-        \   item_orders: ['menu', 'abbr', 'kind'],
+        \   item_orders: ['menu', 'space', 'abbr', 'space', 'kind'],
         \   padding: v:false,
         \ }, 'i', 1,
         \ #{
-        \   abbr: 3,
+        \   abbr: 4,
         \   kind: 3,
-        \   menu: 3,
+        \   menu: 4,
         \ }),
         \ 'baz foo bar')
 endfunction

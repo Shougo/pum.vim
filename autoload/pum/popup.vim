@@ -521,7 +521,7 @@ function s:highlight_items(items, orders, max_columns) abort
       let elem = ['abbr', 'kind', 'menu']->index(order) >= 0
             \ ? item->get(order, '')
             \ : item->get('columns', {})->get(order, '')
-      let start += elem->strlen() + max_column - elem->strdisplaywidth() + 1
+      let start += elem->strlen() + max_column - elem->strdisplaywidth()
     endfor
   endfor
 endfunction

@@ -22,7 +22,9 @@ function pum#map#select_relative(delta, overflow='empty') abort
         \ '| redraw' : ''
 
   if pum.cursor > pum.len || pum.cursor <= 0
-    if a:overflow ==# 'empty'
+    " Overflow
+
+    if a:overflow ==# 'empty' && (pum.cursor > pum.len || pum.cursor ==# 0)
       " Select empty text
 
       " Reset
@@ -48,10 +50,11 @@ function pum#map#select_relative(delta, overflow='empty') abort
       return ''
     endif
 
-    if a:overflow ==# 'loop'
-      let pum.cursor = pum.cursor > pum.len ? 1 : pum.len
-    else
+    if a:overflow ==# 'ignore'
       let pum.cursor = pum.cursor > pum.len ? pum.len : 1
+    else
+      " Loop
+      let pum.cursor = pum.cursor > pum.len ? 1 : pum.len
     endif
   endif
 

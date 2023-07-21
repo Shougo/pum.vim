@@ -4,7 +4,7 @@ Version: 0.0
 Author: Shougo <Shougo.Matsu at gmail.com>
 License: MIT license
 
-CONTENTS						*pum-contents*
+CONTENTS                                                        *pum-contents*
 
 Introduction		|pum-introduction|
 Install			|pum-install|
@@ -20,7 +20,7 @@ Compatibility		|pum-compatibility|
 
 
 ==============================================================================
-INTRODUCTION						*pum-introduction*
+INTRODUCTION                                                *pum-introduction*
 
 *pum* is the framework library to implement original popup menu completion.
 
@@ -28,7 +28,7 @@ It works both insert mode and command line mode.
 
 
 ==============================================================================
-INSTALL							*pum-install*
+INSTALL                                                          *pum-install*
 
 NOTE: pum.vim requires Neovim (0.8.0+) or Vim 9.0.1276+ (latest is
 recommended).
@@ -39,36 +39,36 @@ https://github.com/folke/noice.nvim
 
 
 ==============================================================================
-INTERFACE						*pum-interface*
+INTERFACE                                                      *pum-interface*
 
 ------------------------------------------------------------------------------
-VARIABLES						*pum-variables*
+VARIABLES                                                      *pum-variables*
 
-						*g:pum#completed_item*
+                                                        *g:pum#completed_item*
 g:pum#completed_item
 		It is inserted item like |v:completed_item|.
 		It is used in |PumCompleteDone| event.
 
 ------------------------------------------------------------------------------
-OPTIONS							*pum-options*
+OPTIONS                                                          *pum-options*
 
 Options can be toggled through the use of |pum#set_option()|.
 NOTE: The options must be set before call of |pum#open()|.
 
-					*pum-options-auto_confirm_time*
+                                               *pum-options-auto_confirm_time*
 auto_confirm_time
 		If it is positive value, the inserted item is auto confirmed
 		after you don't input.
 
 		Default: 0
 
-						*pum-options-auto_select*
+                                                     *pum-options-auto_select*
 auto_select
 		Enable the auto selection of the first item.
 
 		Default: v:true if 'completeopt' contains "noinsert"
 
-							*pum-options-border*
+                                                          *pum-options-border*
 border
 		The completion window border.  You can specify border
 		|nvim_open_win()| border option.
@@ -77,7 +77,7 @@ border
 
 		Default: "none"
 
-						*pum-options-direction*
+                                                       *pum-options-direction*
 direction
 		The popup menu direction if possible.
 		NOTE: It does not work for command line mode.
@@ -88,7 +88,7 @@ direction
 
 		Default: "auto"
 
-					*pum-options-highlight_columns*
+                                               *pum-options-highlight_columns*
 highlight_columns
 		The columns highlights of candidates.
 		The key is column name.
@@ -96,46 +96,46 @@ highlight_columns
 
 		Default: {}
 
-				*pum-options-highlight_horizontal_menu*
+                                       *pum-options-highlight_horizontal_menu*
 highlight_horizontal_menu
 		The highlight of the horizontal menu.
 		|pum-options-horizontal_menu|
 
 		Default: ""
 
-				*pum-options-highlight_horizontal_separator*
+                                  *pum-options-highlight_horizontal_separator*
 highlight_horizontal_separator
 		The highlight of the horizontal menu separator.
 		|pum-options-horizontal_menu|
 
 		Default: "PmenuSbar"
 
-					*pum-options-highlight_matches*
+                                               *pum-options-highlight_matches*
 highlight_matches
 		The input matches highlight of candidates.
 
 		Default: ""
 
-					*pum-options-highlight_normal_menu*
+                                           *pum-options-highlight_normal_menu*
 highlight_normal_menu
 		The highlight of the normal menu.
 
 		Default: "Pmenu"
 
-					*pum-options-highlight_scrollbar*
+                                             *pum-options-highlight_scrollbar*
 highlight_scrollbar
 		The scrollbar highlight.
 		NOTE: neovim only feature.
 
 		Default: "PmenuSbar"
 
-					*pum-options-highlight_selected*
+                                              *pum-options-highlight_selected*
 highlight_selected
 		The selected highlight of candidates.
 
 		Default: "PmenuSel"
 
-						*pum-options-horizontal_menu*
+                                                 *pum-options-horizontal_menu*
 horizontal_menu
 		Use horizontal menu instead of vertical popup menu.
 		NOTE: The feature does not support custom highlights and
@@ -143,7 +143,7 @@ horizontal_menu
 
 		Default: v:false
 
-						*pum-options-item_orders*
+                                                     *pum-options-item_orders*
 item_orders
 		The column order of the item.
 		NOTE: "space" column means between items padding.
@@ -153,75 +153,75 @@ item_orders
 
 		Default: ["abbr", "space", "kind", "space", "menu"]
 
-						*pum-options-max_columns*
+                                                     *pum-options-max_columns*
 max_columns
 		The column maximum width of the item.
 
 		Default: #{ kind: 10, menu: 20 }
 
-					*pum-options-max_horizontal_items*
+                                            *pum-options-max_horizontal_items*
 max_horizontal_items
 		The max items of the horizontal menu.
 		|pum-options-horizontal_menu|
 
 		Default: 3
 
-						*pum-options-max_height*
+                                                      *pum-options-max_height*
 max_height
 		The maximum height of the popup menu.
 
 		Default: 'pumheight' value
 
-						*pum-options-max_width*
+                                                       *pum-options-max_width*
 max_width
 		The maximum width of the popup menu.
 
 		Default: 0
 
-						*pum-options-min_width*
+                                                       *pum-options-min_width*
 min_width
 		The minimum width of the popup menu.
 
 		Default: 'pumwidth' value
 
-						*pum-options-offset_cmdcol*
+                                                   *pum-options-offset_cmdcol*
 offset_cmdcol
 		Popup col offset in the command line mode.
 
 		Default: 0
 
-						*pum-options-offset_cmdrow*
+                                                   *pum-options-offset_cmdrow*
 offset_cmdrow
 		Popup row offset in the command line mode.
 
 		Default:
 			0
 
-						*pum-options-offset_col*
+                                                      *pum-options-offset_col*
 offset_col
 		Popup column offset if |pum-options-horizontal_menu|.
 
 		Default: 3
 
-						*pum-options-offset_row*
+                                                      *pum-options-offset_row*
 offset_row
 		Popup row offset.
 
 		Default: 0
 
-							*pum-options-padding*
+                                                         *pum-options-padding*
 padding
 		Enable left/right padding like native completion menu.
 
 		Default: v:false
 
-							*pum-options-reversed*
+                                                        *pum-options-reversed*
 reversed
 		Enable reversed mode.  The items order is reversed.
 
 		Default: v:false
 
-						*pum-options-scrollbar_char*
+                                                  *pum-options-scrollbar_char*
 scrollbar_char
 		Specify scrollbar character.
 		NOTE: The scrollbar feature is disabled if it is empty string.
@@ -229,7 +229,7 @@ scrollbar_char
 
 		Default: "|"
 
-						*pum-options-use_complete*
+                                                    *pum-options-use_complete*
 use_complete
 		Use |complete()| instead of |feedkeys()| when insertion.
 		It is faster and does not break undo state.
@@ -240,7 +240,7 @@ use_complete
 
 		Default: v:false
 
-						*pum-options-use_setline*
+                                                     *pum-options-use_setline*
 use_setline
 		Use |setline()| instead of |feedkeys()| when insertion.
 		It is faster but |.| repeat does not work.
@@ -249,35 +249,35 @@ use_setline
 
 		Default: v:false
 
-					*pum-options-zindex*
+                                                          *pum-options-zindex*
 zindex
 		Popup window z-index.
 
 		Default: 1000
 
 ------------------------------------------------------------------------------
-FUNCTIONS						*pum-functions*
+FUNCTIONS                                                      *pum-functions*
 
-							*pum#close()*
+                                                                 *pum#close()*
 pum#close()
 		Close current popup menu.
 
-							*pum#complete_info()*
+                                                         *pum#complete_info()*
 pum#complete_info([{what}])
 		Returns |Dictionary| like |complete_info()|.
 		If {what} is supplied, then only the items listed in {what}
 		are returned.
 
-							*pum#current_item()*
+                                                          *pum#current_item()*
 pum#current_item()
 		Get current cursor item.
 
-							*pum#entered()*
+                                                               *pum#entered()*
 pum#entered()
 		Returns |v:true| if you have selected or inserted popup menu.
 		NOTE: It does not work for auto selection feature.
 
-							*pum#get_pos()*
+                                                               *pum#get_pos()*
 pum#get_pos()
 		Returns like |pum_getpos()| result.
 
@@ -288,7 +288,7 @@ pum#get_pos()
 			size		total number of items
 			scrollbar	|TRUE| if scrollbar is visible
 
-							*pum#open()*
+                                                                  *pum#open()*
 pum#open({startcol}, {items})
 		Open popup menu like |complete()|.
 		{startcol} is the byte offset in the line where the completed
@@ -311,14 +311,14 @@ pum#open({startcol}, {items})
 		NOTE: If 'completeopt' contains "noinsert", the first item is
 		selected automatically, but it increases screen flicker.
 
-						*pum#set_buffer_option()*
+                                                     *pum#set_buffer_option()*
 pum#set_buffer_option({option-name}, {value})
 pum#set_buffer_option({dict})
 		Set {option-name} option to {value} for current buffer.
 		If {dict} is available, the key is {option-name} and the value
 		is {value}. See |pum-options| for available {option-name}.
 
-						*pum#set_local_option()*
+                                                      *pum#set_local_option()*
 pum#set_local_option({mode}, {option-name}, {value})
 pum#set_local_option({mode}, {dict})
 		Set {option-name} option to {value} for {mode}.
@@ -326,25 +326,25 @@ pum#set_local_option({mode}, {dict})
 		If {dict} is available, the key is {option-name} and the value
 		is {value}. See |pum-options| for available {option-name}.
 
-							*pum#set_option()*
+                                                            *pum#set_option()*
 pum#set_option({option-name}, {value})
 pum#set_option({dict})
 		Set {option-name} option to {value}.
 		If {dict} is available, the key is {option-name} and the value
 		is {value}. See |pum-options| for available {option-name}.
 
-							*pum#skip_complete()*
+                                                         *pum#skip_complete()*
 pum#skip_complete()
 		If it is |v:true|, auto completion plugin must be skipped auto
 		completion.
 
-						*pum#update_current_item()*
+                                                   *pum#update_current_item()*
 pum#update_current_item({dict})
 		Update current cursor item by {dict}.
 		It executes |PumCompleteChanged| autocmd.
 		NOTE: It does not redraw current popup menu.
 
-							*pum#visible()*
+                                                               *pum#visible()*
 pum#visible()
 		Returns |v:true| if the popup menu is visible like
 		|pumvisible()|.
@@ -353,24 +353,24 @@ pum#visible()
 ------------------------------------------------------------------------------
 KEY MAPPINGS						*pum-key-mappings*
 
-							*pum#map#cancel()*
+                                                            *pum#map#cancel()*
 pum#map#cancel()
 		Cancel the select and close the popup.
 		NOTE: It must not be called in |:map-<expr>|.
 
-							*pum#map#confirm()*
+                                                           *pum#map#confirm()*
 pum#map#confirm()
 		Insert the select and close the popup.
 		NOTE: It must not be called in |:map-<expr>|.
 
-						*pum#map#confirm_word()*
+                                                      *pum#map#confirm_word()*
 pum#map#confirm_word()
 		Insert the select word and close the popup.
 		The word means non spaces charaters.
 		It is useful if you want to complete word by word.
 		NOTE: It must not be called in |:map-<expr>|.
 
-						*pum#map#insert_relative()*
+                                                   *pum#map#insert_relative()*
 pum#map#insert_relative({delta}[, {overflow}])
 		Move forward or backward {delta} number and insert the
 		candidate.
@@ -386,7 +386,7 @@ pum#map#insert_relative({delta}[, {overflow}])
 		NOTE: It must not be called in |:map-<expr>|.
 		NOTE: It does not work in |:terminal|.
 
-					*pum#map#insert_relative_page()*
+                                              *pum#map#insert_relative_page()*
 pum#map#insert_relative_page({delta}[, {overflow}])
 		Move forward or backward "{delta} * page height" number and
 		insert the candidate.
@@ -394,7 +394,7 @@ pum#map#insert_relative_page({delta}[, {overflow}])
 		NOTE: It must not be called in |:map-<expr>|.
 		NOTE: It does not work in |:terminal|.
 
-						*pum#map#longest_relative()*
+                                                  *pum#map#longest_relative()*
 pum#map#longest_relative({delta}[, {overflow}])
 		Insert the longest word.
 		If the longest word is not found, it is same with
@@ -402,14 +402,14 @@ pum#map#longest_relative({delta}[, {overflow}])
 		The behavior is like "list:longest,full" in 'wildmode'.
 		NOTE: It must not be called in |:map-<expr>|.
 
-						*pum#map#select_relative()*
+                                                   *pum#map#select_relative()*
 pum#map#select_relative({delta}[, {overflow}])
 		Move forward or backward {delta} number and select the
 		candidate.
 		{overflow} is same with |pum#map#insert_relative()|.
 		NOTE: It must not be called in |:map-<expr>|.
 
-					*pum#map#select_relative_page()*
+                                              *pum#map#select_relative_page()*
 pum#map#select_relative_page({delta}[, {overflow}])
 		Move forward or backward "{delta} * page height" number and
 		select the candidate.
@@ -418,18 +418,18 @@ pum#map#select_relative_page({delta}[, {overflow}])
 
 
 ------------------------------------------------------------------------------
-AUTOCMDS						*pum-autocmds*
+AUTOCMDS                                                        *pum-autocmds*
 
-							*PumClose*
+                                                                    *PumClose*
 PumClose
 		It is called before completion menu is closed.
 
-							*PumCompleteChanged*
+                                                          *PumCompleteChanged*
 PumCompleteChanged
 		After each time completion menu changed like
 		|CompleteChanged|. |complete_info()| gives the information.
 
-							*PumCompleteDone*
+                                                             *PumCompleteDone*
 PumCompleteDone
 		It is called after completion is done like |CompleteDone|.
 		|g:pum#completed_item| gives the completed item.
@@ -437,7 +437,7 @@ PumCompleteDone
 		NOTE: You must not use |v:completed_item| in the event.
 		Please use |g:pum#completed_item| instead.
 
-							*PumCompleteDonePre*
+                                                          *PumCompleteDonePre*
 PumCompleteDonePre
 		It is called before |PumCompleteDone| like |CompleteDonePre|.
 		|g:pum#completed_item| gives the completed item.
@@ -446,7 +446,7 @@ PumCompleteDonePre
 		Please use |g:pum#completed_item| instead.
 
 ==============================================================================
-EXAMPLES						*pum-examples*
+EXAMPLES                                                        *pum-examples*
 >
 	inoremap <C-n>   <Cmd>call pum#map#insert_relative(+1)<CR>
 	inoremap <C-p>   <Cmd>call pum#map#insert_relative(-1)<CR>
@@ -484,7 +484,7 @@ FAQ 7:							|pum-faq-7|
 
 
 ------------------------------------------------------------------------------
-							*pum-faq-1*
+                                                                   *pum-faq-1*
 Q: How to donate money to you?
 
 A: I have started github sponsorship to spend more time for Vim/neovim
@@ -492,17 +492,17 @@ plugins.  You can donate money to help me!
 
    https://github.com/sponsors/Shougo
 
-							*pum-faq-2*
+                                                                   *pum-faq-2*
 Q: The popup menu does not close immediately in Vim.
 
 A: It is the known issue of Vim.  |popup_close()| does not work immediately.
 
-							*pum-faq-3*
+                                                                   *pum-faq-3*
 Q: The popup menu does not work in Command line window.
 
 A: It is the limitation of Command line window.
 
-							*pum-faq-4*
+                                                                   *pum-faq-4*
 Q: Auto import or auto snippet expansion does not work in pum.vim.
 
 A: pum.vim does not support |CompleteDone| autocmd.  You need to emulate the
@@ -512,7 +512,7 @@ NOTE: It is for ale plugin. >
 	 autocmd User PumCompleteDone
 	 \ call ale#completion#HandleUserData(g:pum#completed_item)
 <
-							*pum-faq-5*
+                                                                   *pum-faq-5*
 Q: I want to use j/k keys to navigate popup menu when only entered popup menu.
 
 A: >
@@ -521,14 +521,14 @@ A: >
 	inoremap <expr> k   pum#entered() ?
 	      \ '<Cmd> call pum#map#insert_relative(-1)<CR>' : 'k'
 <
-							*pum-faq-6*
+                                                                   *pum-faq-6*
 Q: The popup window does not close when enter |command-line-window|.
 
 A: In |command-line-window|, the popup window cannot be closed.  It is
 Vim/neovim's feature.  The window is closed after you have leaved
 |command-line-window|.
 
-							*pum-faq-7*
+                                                                   *pum-faq-7*
 Q: I want to move to the first/last item by Home/End keys.
 
 A: >
@@ -539,7 +539,7 @@ A: >
 <
 
 ==============================================================================
-COMPATIBILITY						*pum-compatibility*
+COMPATIBILITY                                              *pum-compatibility*
 
 2023.07.19
 * "item_orders" must include "space" item.

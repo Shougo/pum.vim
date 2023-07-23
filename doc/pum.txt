@@ -224,6 +224,8 @@ padding
                                                         *pum-options-reversed*
 reversed
 		Enable reversed mode.  The items order is reversed.
+		NOTE: |pum-options-direction| must be "above" or command line
+		mode for the feature.
 
 		Default: v:false
 

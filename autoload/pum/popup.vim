@@ -103,6 +103,9 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   if options.max_height > 0
     let height = [height, options.max_height]->min()
   endif
+  if options.min_height > 0
+    let height = [height, options.min_height]->max()
+  endif
 
   if a:mode !=# 'c'
     " Adjust to screen row

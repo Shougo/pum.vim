@@ -178,6 +178,12 @@ max_width
 
 		Default: 0
 
+                                                      *pum-options-min_height*
+min_height
+		The minimum height of the popup menu.
+
+		Default: 0
+
                                                        *pum-options-min_width*
 min_width
 		The minimum width of the popup menu.
@@ -351,7 +357,7 @@ pum#visible()
 
 
 ------------------------------------------------------------------------------
-KEY MAPPINGS						*pum-key-mappings*
+KEY MAPPINGS                                                *pum-key-mappings*
 
                                                             *pum#map#cancel()*
 pum#map#cancel()

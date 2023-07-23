@@ -60,6 +60,7 @@ function pum#_init_options() abort
         \   max_horizontal_items: 3,
         \   max_height: &pumheight,
         \   max_width: 0,
+        \   min_height: 0,
         \   min_width: &pumwidth,
         \   offset_cmdcol: 0,
         \   offset_cmdrow: 0,

@@ -311,6 +311,14 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   if reversed
     " The cursor must be end
     call win_execute(pum.id, 'call cursor("$", 0) | redraw')
+
+    if pum.scroll_id > 0 && has('nvim')
+      call nvim_win_set_config(pum.scroll_id, #{
+            \   relative: 'editor',
+            \   row: pum.scroll_row + height - 1,
+            \   col: pum.scroll_col,
+            \ })
+    endif
   endif
 
   let pum.items = items->copy()

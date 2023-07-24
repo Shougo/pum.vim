@@ -511,13 +511,6 @@ function s:highlight_items(items, orders, max_columns) abort
         continue
       endif
 
-      let highlight_column = options.highlight_columns->get(order, '')
-      if highlight_column !=# ''
-        call s:highlight(
-              \ highlight_column, 'pum_' .. order, 0,
-              \ g:pum#_namespace, row, start, max_column + 1)
-      endif
-
       for hl in item_highlights->copy()->filter(
             \ {_, val -> val.type ==# order})
         call s:highlight(
@@ -530,7 +523,16 @@ function s:highlight_items(items, orders, max_columns) abort
       let elem = ['abbr', 'kind', 'menu']->index(order) >= 0
             \ ? item->get(order, '')
             \ : item->get('columns', {})->get(order, '')
-      let start += elem->strlen() + max_column - elem->strdisplaywidth()
+      let width = max_column - elem->strdisplaywidth() + elem->strlen()
+
+      let highlight_column = options.highlight_columns->get(order, '')
+      if highlight_column !=# ''
+        call s:highlight(
+              \ highlight_column, 'pum_' .. order, 0,
+              \ g:pum#_namespace, row, start, width)
+      endif
+
+      let start += width
     endfor
   endfor
 endfunction

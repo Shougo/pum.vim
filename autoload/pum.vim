@@ -301,9 +301,17 @@ function pum#_format_item(item, options, mode, startcol, max_columns) abort
       " Fallback to "word"
       let column = a:item.word
     endif
-    " Padding
-    let column ..= ' '
-          \ ->repeat(a:max_columns[order] - column->strdisplaywidth())
+
+    let max_column = a:max_columns[order]
+    if column->strdisplaywidth() > max_column
+      " Truncate
+      let column = pum#util#_truncate(
+            \ column, max_column - 1, max_column / 3, '...')
+    endif
+    if column->strdisplaywidth() < max_column
+      " Padding
+      let column ..= ' '->repeat(max_column - column->strdisplaywidth())
+    endif
 
     let str ..= column
   endfor

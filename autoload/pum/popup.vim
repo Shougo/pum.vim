@@ -75,9 +75,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   let lines = items->copy()->map({ _, val ->
-        \   pum#util#_truncate(
-        \     pum#_format_item(val, options, a:mode, a:startcol, max_columns),
-        \     width, width / 3, '...')
+        \     pum#_format_item(val, options, a:mode, a:startcol, max_columns)
         \ })
 
   let pum = pum#_get()

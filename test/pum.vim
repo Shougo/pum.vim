@@ -94,4 +94,19 @@ function s:suite.format_item() abort
         \   menu: 4,
         \ }),
         \ 'baz foo bar')
+
+  " truncate check
+  const item2 = #{ word: 'aaaaaaaaaaaaaaaaaa', kind: 'bbb', menu: 'ccc' }
+  call s:assert.equals(
+        \ pum#_format_item(item2,
+        \ #{
+        \   item_orders: ['menu', 'space', 'abbr', 'space', 'kind'],
+        \   padding: v:false,
+        \ }, 'i', 1,
+        \ #{
+        \   abbr: 10,
+        \   kind: 3,
+        \   menu: 4,
+        \ }),
+        \ 'ccc aaa...aaa bbb')
 endfunction

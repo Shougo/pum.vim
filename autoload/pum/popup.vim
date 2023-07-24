@@ -230,7 +230,9 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     let pum.scroll_col = scroll_col
     let pum.scroll_height = scroll_height
 
-    if pum.id > 0
+    if pum.id > 0 && !reversed
+      " NOTE: If reversed, reuse popup windows does not work well.
+
       if pos == pum.pos
         " Resize window
         call nvim_win_set_width(pum.id, width)
@@ -291,15 +293,13 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \   zindex: options.zindex,
           \ }
 
-    if pum.id > 0
+    if pum.id > 0 && !reversed
+      " NOTE: If reversed, reuse popup windows does not work well.
       call popup_move(pum.id, winopts)
       call popup_settext(pum.id, lines)
-
-      if pum.scroll_id > 0
-        call popup_move(pum.scroll_id, scroll_winopts)
-        call popup_settext(pum.scroll_id, scroll_lines)
-      endif
     else
+      call pum#close()
+
       let pum.id = lines->popup_create(winopts)
       let pum.buf = pum.id->winbufnr()
     endif

@@ -224,6 +224,7 @@ padding
                                                         *pum-options-reversed*
 reversed
 		Enable reversed mode.  The items order is reversed.
+		NOTE: It increases screen flicker.
 		NOTE: |pum-options-direction| must be "above" or command line
 		mode for the feature.
 

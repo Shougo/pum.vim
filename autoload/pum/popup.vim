@@ -248,7 +248,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       " Create new window
       const id = nvim_open_win(pum.buf, v:false, winopts)
 
-      call s:set_window_options(id, options, v:false)
+      call s:set_window_options(id, options, 'normal_menu')
 
       let pum.id = id
     endif
@@ -398,6 +398,7 @@ function pum#popup#_close(id) abort
   let pum.current_word = ''
   let pum.id = -1
   let pum.scroll_id = -1
+  let pum.preview_id = -1
   let pum.cursor = -1
 
   let g:pum#completed_item = {}
@@ -406,6 +407,10 @@ function pum#popup#_close(id) abort
   call s:stop_auto_confirm()
 endfunction
 function pum#popup#_close_id(id) abort
+  if a:id < 0
+    return
+  endif
+
   try
     " Move cursor
     call win_execute(a:id, 'call cursor(1, 0)')
@@ -658,7 +663,7 @@ function pum#popup#_redraw_horizontal_menu() abort
       " Create new window
       const id = nvim_open_win(pum.buf, v:false, winopts)
 
-      call s:set_window_options(id, options, v:true)
+      call s:set_window_options(id, options, 'horizontal_menu')
 
       let pum.id = id
     endif
@@ -697,6 +702,91 @@ function pum#popup#_redraw_horizontal_menu() abort
   if !has('nvim') || mode() ==# 'c'
     redraw
   endif
+endfunction
+
+function pum#popup#_preview() abort
+  let pum = pum#_get()
+
+  if pum.cursor <= 0
+    call pum#popup#_close_preview()
+    return
+  endif
+
+  const info = pum#current_item()->get('info', '')
+  if info ==# ''
+    call pum#popup#_close_preview()
+    return
+  endif
+
+  const lines = info->split('\n')
+  const pos = pum#get_pos()
+  const row = pos.row + 1
+  const col = pos.col + pos.width + 2
+
+  const options = pum#_options()
+
+  if has('nvim')
+    if pum.preview_buf < 0
+      let pum.preview_buf = nvim_create_buf(v:false, v:true)
+    endif
+    call nvim_buf_set_lines(pum.preview_buf, 0, -1, v:true, lines)
+
+    let winopts = #{
+          \   border: options.preview_border,
+          \   relative: 'editor',
+          \   width: lines->copy()->map({ _, val -> val->strwidth() })->max(),
+          \   height: lines->len(),
+          \   row: row - 1,
+          \   col: col - 1,
+          \   anchor: 'NW',
+          \   style: 'minimal',
+          \   zindex: options.zindex + 1,
+          \ }
+
+    if pum.preview_id > 0
+      " Reuse window
+      call nvim_win_set_config(pum.preview_id, winopts)
+    else
+      call pum#popup#_close_preview()
+
+      " NOTE: It cannot set in nvim_win_set_config()
+      let winopts.noautocmd = v:true
+
+      " Create new window
+      const id = nvim_open_win(pum.preview_buf, v:false, winopts)
+
+      call s:set_window_options(id, options, 'preview')
+
+      let pum.preview_id = id
+    endif
+  else
+    let winopts = #{
+          \   pos: 'topleft',
+          \   line: row,
+          \   col: col,
+          \   highlight: options.highlight_preview,
+          \ }
+
+    if pum.preview_id > 0
+      call popup_move(pum.preview_id, winopts)
+      call popup_settext(pum.preview_id, lines)
+    else
+      let pum.preview_id = popup_create(lines, winopts)
+      let pum.preview_buf = pum.preview_id->winbufnr()
+    endif
+  endif
+
+  " NOTE: redraw is needed for Vim8 or command line mode
+  if !has('nvim') || mode() ==# 'c'
+    redraw
+  endif
+endfunction
+function pum#popup#_close_preview() abort
+  let pum = pum#_get()
+
+  call pum#popup#_close_id(pum.preview_id)
+
+  let pum.preview_id = -1
 endfunction
 
 function pum#popup#_reset_auto_confirm(mode) abort
@@ -739,12 +829,9 @@ function s:auto_confirm() abort
   call pum#close()
 endfunction
 
-function s:set_window_options(id, options, is_horizontal) abort
+function s:set_window_options(id, options, highlight) abort
   " NOTE: nvim_win_set_option() causes title flicker...
-  let highlight = 'Normal:' .. (a:is_horizontal
-        \ ? a:options.highlight_horizontal_menu
-        \ : a:options.highlight_normal_menu
-        \ )
+  let highlight = 'Normal:' .. a:options['highlight_' .. a:highlight]
   if &hlsearch
     " Disable 'hlsearch' highlight
     let highlight ..= ',Search:None,CurSearch:None'

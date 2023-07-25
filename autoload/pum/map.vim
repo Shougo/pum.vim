@@ -25,6 +25,8 @@ function pum#map#select_relative(delta, overflow='empty') abort
       " Reset
       let pum.cursor = 0
 
+      call pum#popup#_close_preview()
+
       " Move real cursor
       if pum.horizontal_menu
         call pum#popup#_redraw_horizontal_menu()
@@ -53,9 +55,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
     endif
   endif
 
-  if '#User#PumCompleteChanged'->exists()
-    doautocmd <nomodeline> User PumCompleteChanged
-  endif
+  call pum#_complete_changed()
 
   if pum.horizontal_menu
     call pum#popup#_redraw_horizontal_menu()

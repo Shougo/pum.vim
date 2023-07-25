@@ -122,6 +122,12 @@ highlight_normal_menu
 
 		Default: "Pmenu"
 
+                                               *pum-options-highlight_preview*
+highlight_preview
+		The highlight of the preview window.
+
+		Default: "Pmenu"
+
                                              *pum-options-highlight_scrollbar*
 highlight_scrollbar
 		The scrollbar highlight.
@@ -220,6 +226,22 @@ padding
 		Enable left/right padding like native completion menu.
 
 		Default: v:false
+
+                                                         *pum-options-preview*
+preview
+		Enable preview window.
+		It prints "info" attribute in current item.
+
+		Default: v:false
+
+                                                  *pum-options-preview-border*
+preview_border
+		The preview window border.  You can specify border
+		|nvim_open_win()| border option.
+		NOTE: neovim only feature.  Vim's border feature is not
+		stable.
+
+		Default: "none"
 
                                                         *pum-options-reversed*
 reversed
@@ -476,7 +498,7 @@ FAQ 2:							|pum-faq-2|
 	The popup menu does not close immediately in Vim.
 
 FAQ 3:							|pum-faq-3|
-	The popup menu does not work in Command line window.
+	The popup menu does not work in |command-line-window|.
 
 FAQ 4:							|pum-faq-4|
 	Auto import or auto snippet expansion does not work in pum.vim.
@@ -507,9 +529,9 @@ Q: The popup menu does not close immediately in Vim.
 A: It is the known issue of Vim.  |popup_close()| does not work immediately.
 
                                                                    *pum-faq-3*
-Q: The popup menu does not work in Command line window.
+Q: The popup menu does not work in |command-line-window|.
 
-A: It is the limitation of Command line window.
+A: It is the limitation of |command-line-window|.
 
                                                                    *pum-faq-4*
 Q: Auto import or auto snippet expansion does not work in pum.vim.
@@ -535,8 +557,10 @@ Q: The popup window does not close when enter |command-line-window|.
 
 A: In |command-line-window|, the popup window cannot be closed.  It is
 Vim/neovim's feature.  The window is closed after you have leaved
-|command-line-window|.
-
+|command-line-window|.  You can use the mapping like this.
+>
+	cnoremap <C-f> <Cmd>call pum#close()<CR><C-f>
+<
                                                                    *pum-faq-7*
 Q: I want to move to the first/last item by Home/End keys.
 

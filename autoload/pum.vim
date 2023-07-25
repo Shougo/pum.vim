@@ -26,6 +26,8 @@ function pum#_init() abort
         \   len: 0,
         \   orig_input: '',
         \   pos: [],
+        \   preview_buf: -1,
+        \   preview_id: -1,
         \   reversed: v:false,
         \   scroll_buf: -1,
         \   scroll_id: -1,
@@ -47,8 +49,9 @@ function pum#_init_options() abort
         \   highlight_columns: {},
         \   highlight_horizontal_menu: '',
         \   highlight_horizontal_separator: 'PmenuSbar',
-        \   highlight_matches: '',
+        \   highlight_matches: 'Pmenu',
         \   highlight_normal_menu: 'Pmenu',
+        \   highlight_preview: '',
         \   highlight_scrollbar: 'PmenuSbar',
         \   highlight_selected: 'PmenuSel',
         \   horizontal_menu: v:false,
@@ -67,6 +70,8 @@ function pum#_init_options() abort
         \   offset_col: 3,
         \   offset_row: 0,
         \   padding: v:false,
+        \   preview: v:false,
+        \   preview_border: 'none',
         \   reversed: v:false,
         \   scrollbar_char: '|',
         \   use_complete: v:false,
@@ -172,9 +177,11 @@ function pum#close() abort
   " NOTE: pum.scroll_id is broken after pum#popup#_close()
   const id = pum.id
   const scroll_id = pum.scroll_id
+  const preview_id = pum.preview_id
 
   call pum#popup#_close(id)
   call pum#popup#_close(scroll_id)
+  call pum#popup#_close(preview_id)
 endfunction
 
 function s:to_bool(int_boolean_value) abort
@@ -221,9 +228,7 @@ endfunction
 function pum#update_current_item(dict) abort
   call extend(pum#current_item(), a:dict)
 
-  if '#User#PumCompleteChanged'->exists()
-    doautocmd <nomodeline> User PumCompleteChanged
-  endif
+  call pum#_complete_changed()
 endfunction
 
 function pum#get_pos() abort
@@ -358,4 +363,16 @@ function pum#_reset_skip_complete() abort
   let pum = pum#_get()
   let pum.skip_complete = v:false
   let pum.skip_count = 0
+endfunction
+
+function pum#_complete_changed() abort
+  let options = pum#_options()
+
+  if options.preview
+    call pum#popup#_preview()
+  endif
+
+  if '#User#PumCompleteChanged'->exists()
+    doautocmd <nomodeline> User PumCompleteChanged
+  endif
 endfunction

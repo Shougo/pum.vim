@@ -378,6 +378,5 @@ function pum#_complete_changed() abort
 endfunction
 
 function pum#_check_cmdwin() abort
-  " NOTE: In neovim 0.10+, floating window works in command line window
-  return '%'->bufname() ==# '[Command Line]' && !has('nvim-0.10')
+  return '%'->bufname() ==# '[Command Line]'
 endfunction

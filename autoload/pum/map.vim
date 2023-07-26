@@ -33,6 +33,10 @@ function pum#map#select_relative(delta, overflow='empty') abort
       else
         " NOTE: redraw is required
         call win_execute(pum.id, 'call cursor(1, 0) | redraw')
+
+        if pum#_check_cmdwin()
+          redraw!
+        endif
       endif
 
       " Reset scroll bar
@@ -82,6 +86,10 @@ function pum#map#select_relative(delta, overflow='empty') abort
             \ | call matchaddpos(pum#_options().highlight_selected,
             \                    [pum#_get().cursor], 0, pum#_cursor_id())
             \' .. redraw_cmd)
+    endif
+
+    if pum#_check_cmdwin()
+      redraw!
     endif
   endif
 

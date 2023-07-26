@@ -1,7 +1,8 @@
 let s:pum_matched_id = 70
 
 function pum#popup#_open(startcol, items, mode, insert) abort
-  if a:mode !~# '[ict]' || pum#_check_cmdwin()
+  " NOTE: In neovim 0.10+, floating window works in command line window
+  if a:mode !~# '[ict]' || (pum#_check_cmdwin() && !has('nvim-0.10'))
     " Invalid mode
     return -1
   endif

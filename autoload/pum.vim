@@ -376,3 +376,8 @@ function pum#_complete_changed() abort
     doautocmd <nomodeline> User PumCompleteChanged
   endif
 endfunction
+
+function pum#_check_cmdwin() abort
+  " NOTE: In neovim 0.10+, floating window works in command line window
+  return '%'->bufname() ==# '[Command Line]' && !has('nvim-0.10')
+endfunction

@@ -533,7 +533,10 @@ Q: The popup menu does not work in |command-line-window|.
 
 A: It is the limitation of |command-line-window|.
 
-                                                                   *pum-faq-4*
+NOTE: The problem is fixed in neovim 0.10+.  But |command-line-window| is
+special buffer.  If you use "ddc.vim", you need to enable special buffer
+completion.
+                                                                   *pum-faq-7*
 Q: Auto import or auto snippet expansion does not work in pum.vim.
 
 A: pum.vim does not support |CompleteDone| autocmd.  You need to emulate the
@@ -561,6 +564,8 @@ Vim/neovim's feature.  The window is closed after you have leaved
 >
 	cnoremap <C-f> <Cmd>call pum#close()<CR><C-f>
 <
+
+NOTE: The problem is fixed in neovim 0.10+.
                                                                    *pum-faq-7*
 Q: I want to move to the first/last item by Home/End keys.
 

@@ -1,7 +1,7 @@
 let s:pum_matched_id = 70
 
 function pum#popup#_open(startcol, items, mode, insert) abort
-  if a:mode !~# '[ict]' || '%'->bufname() ==# '[Command Line]'
+  if a:mode !~# '[ict]' || pum#_check_cmdwin()
     " Invalid mode
     return -1
   endif

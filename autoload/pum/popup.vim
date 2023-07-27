@@ -367,7 +367,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     endif
   endif
 
-  " NOTE: redraw is needed for Vim8 or command line mode
+  " NOTE: redraw is needed for Vim or command line mode
   if !has('nvim') || a:mode ==# 'c'
     redraw
   endif
@@ -433,7 +433,7 @@ function pum#popup#_close_id(id) abort
     call timer_start(100, { -> pum#popup#_close_id(a:id) })
   endtry
 
-  " NOTE: redraw is needed for Vim8 or command line mode
+  " NOTE: redraw is needed for Vim or command line mode
   if !has('nvim') || mode() ==# 'c'
     redraw
   endif
@@ -699,7 +699,7 @@ function pum#popup#_redraw_horizontal_menu() abort
           \ 0, g:pum#_namespace, 1, strwidth(words[0]) + 2, 1)
   endif
 
-  " NOTE: redraw is needed for Vim8 or command line mode
+  " NOTE: redraw is needed for Vim or command line mode
   if !has('nvim') || mode() ==# 'c'
     redraw
   endif
@@ -777,7 +777,7 @@ function pum#popup#_preview() abort
     endif
   endif
 
-  " NOTE: redraw is needed for Vim8 or command line mode
+  " NOTE: redraw is needed for Vim or command line mode
   if !has('nvim') || mode() ==# 'c'
     redraw
   endif

@@ -49,7 +49,7 @@ function pum#_init_options() abort
         \   highlight_columns: {},
         \   highlight_horizontal_menu: '',
         \   highlight_horizontal_separator: 'PmenuSbar',
-        \   highlight_matches: 'Pmenu',
+        \   highlight_matches: '',
         \   highlight_normal_menu: 'Pmenu',
         \   highlight_preview: '',
         \   highlight_scrollbar: 'PmenuSbar',

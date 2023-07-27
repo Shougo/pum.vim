@@ -536,7 +536,7 @@ A: It is the limitation of |command-line-window|.
 NOTE: The problem is fixed in neovim 0.10+.  But |command-line-window| is
 special buffer.  If you use "ddc.vim", you need to enable special buffer
 completion.
-                                                                   *pum-faq-7*
+                                                                   *pum-faq-4*
 Q: Auto import or auto snippet expansion does not work in pum.vim.
 
 A: pum.vim does not support |CompleteDone| autocmd.  You need to emulate the

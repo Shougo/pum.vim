@@ -564,12 +564,12 @@ function s:highlight(
 
   if has('nvim')
     call nvim_buf_add_highlight(
-          \ pum.buf,
-          \ a:id,
-          \ a:highlight,
-          \ a:row - 1,
-          \ col - 1,
-          \ col - 1 + a:length
+          \   pum.buf,
+          \   a:id,
+          \   a:highlight,
+          \   a:row - 1,
+          \   col - 1,
+          \   col - 1 + a:length
           \ )
   else
     call prop_add(a:row, col, #{

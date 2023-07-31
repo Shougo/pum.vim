@@ -48,6 +48,8 @@ function pum#map#select_relative(delta, overflow='empty') abort
               \ })
       endif
 
+      call pum#popup#_reset_auto_confirm(mode())
+
       return ''
     endif
 

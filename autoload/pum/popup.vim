@@ -819,10 +819,13 @@ function s:stop_auto_confirm() abort
   let pum = pum#_get()
   if pum.auto_confirm_timer > 0
     call timer_stop(pum.auto_confirm_timer)
+
+    let pum.auto_confirm_timer = -1
   endif
 endfunction
 function s:auto_confirm() abort
-  if pum#_get().current_word ==# ''
+  let pum = pum#_get()
+  if pum.current_word ==# '' || pum.cursor == 0
     return
   endif
 

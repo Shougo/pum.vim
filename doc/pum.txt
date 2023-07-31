@@ -332,7 +332,8 @@ pum#open({startcol}, {items})
 				type	 "abbr" or "kind" or "menu"
 				name	highlight name.  It is used for
 					|prop_type_add()| in Vim.
-					NOTE: It must be unique.
+					NOTE: It must be unique of each
+					highlight group.
 				hl_group	highlight group
 				(|highlight-groups|)
 				col	highlight start column (1 origin)

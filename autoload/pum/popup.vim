@@ -21,11 +21,13 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let items = s:uniq_by_word_or_dup(a:items)
 
   " Calc max columns
-  let max_columns = {}
-  let prev_column_name = ''
+  let max_columns = []
+  let width = 0
+  let non_abbr_length = 0
+  let prev_column_length = 0
   for column in options.item_orders
     let max_column =
-          \   column ==# 'space' ? 0 :
+          \   column ==# 'space' ? 1 :
           \   column ==# 'abbr' ? items->copy()->map({ _, val ->
           \     val->get('abbr', val.word)->strdisplaywidth()})->max() :
           \   column ==# 'kind' ? items->copy()->map({ _, val ->
@@ -36,26 +38,21 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \     val->get('columns', {})->get(column, '')->strdisplaywidth()})
           \   ->max()
 
-    if column ==# 'space' && prev_column_name !=# ''
-      " Padding
-      let max_columns[prev_column_name] += 1
-      let prev_column_name = ''
-    elseif max_column > 0
-      let max_columns[column] =
-            \ [max_column, options.max_columns->get(column, max_column)]
-            \ ->min()
-      let prev_column_name = column
-    endif
-  endfor
+    let max_column =
+          \ [max_column, options.max_columns->get(column, max_column)]->min()
 
-  " Calc width
-  let width = 0
-  let non_abbr_length = 0
-  for [column, max_column] in max_columns->items()
+    if max_column <= 0 || (column ==# 'space' && prev_column_length ==# 0)
+      let prev_column_length = 0
+      continue
+    endif
+
     let width += max_column
+    call add(max_columns, [column, max_column])
+
     if column !=# 'abbr'
       let non_abbr_length += max_column
     endif
+    let prev_column_length = max_column
   endfor
 
   " Padding
@@ -70,13 +67,14 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   " NOTE: abbr is the rest column
-  let max_columns.abbr = width - non_abbr_length
+  let abbr_width = width - non_abbr_length
   if options.padding
-    let max_columns.abbr -= 2
+    let abbr_width -= 2
   endif
 
   let lines = items->copy()->map({ _, val ->
-        \     pum#_format_item(val, options, a:mode, a:startcol, max_columns)
+        \     pum#_format_item(
+        \       val, options, a:mode, a:startcol, max_columns, abbr_width)
         \ })
 
   let pum = pum#_get()
@@ -341,8 +339,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   if !pum.horizontal_menu
     " Highlight
-    call s:highlight_items(
-          \ items, options.item_orders, max_columns)
+    call s:highlight_items(items, max_columns)
 
     " Simple highlight matches
     silent! call matchdelete(s:pum_matched_id, pum.id)
@@ -499,7 +496,7 @@ function s:get_borderchar_width(ch) abort
   endif
 endfunction
 
-function s:highlight_items(items, orders, max_columns) abort
+function s:highlight_items(items, max_columns) abort
   let pum = pum#_get()
   let options = pum#_options()
 
@@ -510,13 +507,7 @@ function s:highlight_items(items, orders, max_columns) abort
     let item_highlights = item->get('highlights', [])
 
     let start = 1
-    for order in a:orders
-      let max_column = a:max_columns->get(order, 0)
-
-      if max_column <= 0
-        continue
-      endif
-
+    for [order, max_column] in a:max_columns
       for hl in item_highlights->copy()->filter(
             \ {_, val -> val.type ==# order})
         call s:highlight(

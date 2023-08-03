@@ -288,7 +288,8 @@ function pum#_cursor_id() abort
   return s:pum_cursor_id
 endfunction
 
-function pum#_format_item(item, options, mode, startcol, max_columns) abort
+function pum#_format_item(
+      \ item, options, mode, startcol, max_columns, abbr_width) abort
   const columns = a:item->get('columns', {})->copy()->extend(#{
         \   abbr: a:item->get('abbr', a:item.word),
         \   kind: a:item->get('kind', ''),
@@ -296,22 +297,26 @@ function pum#_format_item(item, options, mode, startcol, max_columns) abort
         \ })
 
   let str = ''
-  for order in a:options.item_orders
-    if a:max_columns->get(order, 0) <= 0
+  for [name, max_column] in a:max_columns
+    if name ==# 'space'
+      let str ..= ' '
       continue
     endif
 
-    let column = columns->get(order, '')->substitute('[[:cntrl:]]', '?', 'g')
-    if order ==# 'abbr' && column ==# ''
+    if name ==# 'abbr'
+      let max_column = a:abbr_width
+    endif
+
+    let column = columns->get(name, '')->substitute('[[:cntrl:]]', '?', 'g')
+    if name ==# 'abbr' && column ==# ''
       " Fallback to "word"
       let column = a:item.word
     endif
 
-    let max_column = a:max_columns[order]
     if column->strdisplaywidth() > max_column
       " Truncate
       let column = pum#util#_truncate(
-            \ column, max_column - 1, max_column / 3, '...')
+            \ column, max_column, max_column / 3, '...')
     endif
     if column->strdisplaywidth() < max_column
       " Padding

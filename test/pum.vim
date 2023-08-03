@@ -75,11 +75,13 @@ function s:suite.format_item() abort
         \   item_orders: ['abbr', 'space', 'kind', 'space', 'menu'],
         \   padding: v:true,
         \ }, 'i', 2,
-        \ #{
-        \   abbr: 4,
-        \   kind: 4,
-        \   menu: 3,
-        \ }),
+        \ [
+        \   ['abbr', 3],
+        \   ['space', 1],
+        \   ['kind', 3],
+        \   ['space', 1],
+        \   ['menu', 3],
+        \ ], 3),
         \ ' foo bar baz ')
 
   call s:assert.equals(
@@ -88,11 +90,13 @@ function s:suite.format_item() abort
         \   item_orders: ['menu', 'space', 'abbr', 'space', 'kind'],
         \   padding: v:false,
         \ }, 'i', 1,
-        \ #{
-        \   abbr: 4,
-        \   kind: 3,
-        \   menu: 4,
-        \ }),
+        \ [
+        \   ['menu', 3],
+        \   ['space', 1],
+        \   ['abbr', 3],
+        \   ['space', 1],
+        \   ['kind', 3],
+        \ ], 3),
         \ 'baz foo bar')
 
   " truncate check
@@ -103,10 +107,12 @@ function s:suite.format_item() abort
         \   item_orders: ['menu', 'space', 'abbr', 'space', 'kind'],
         \   padding: v:false,
         \ }, 'i', 1,
-        \ #{
-        \   abbr: 10,
-        \   kind: 3,
-        \   menu: 4,
-        \ }),
-        \ 'ccc aaa...aaa bbb')
+        \ [
+        \   ['menu', 3],
+        \   ['space', 1],
+        \   ['abbr', 10],
+        \   ['space', 1],
+        \   ['kind', 3],
+        \ ], 10),
+        \ 'ccc aaaa...aaa bbb')
 endfunction

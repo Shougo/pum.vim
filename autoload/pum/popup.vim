@@ -704,32 +704,52 @@ function pum#popup#_preview() abort
     return
   endif
 
-  const info = pum#current_item()->get('info', '')
-  if info ==# ''
+  const item = pum#current_item()
+
+  " Get preview contents
+  const previewer = s:get_previewer(item)
+  if previewer->has_key('contents') && previewer.contents->empty()
     call pum#popup#_close_preview()
     return
   endif
 
-  const lines = info->split('\n')
+  const options = pum#_options()
+
   const pos = pum#get_pos()
   const row = pos.row + 1
   const col = pos.col + pos.width + 2
 
-  const options = pum#_options()
+  if previewer->has_key('contents')
+    let width = previewer.contents
+          \ ->copy()->map({ _, val -> val->strwidth() })->max()
+    let height = previewer.contents->len()
+    let width = [winopts.width, options.preview_width]->min()
+    let height = [winopts.height, options.preview_height]->min()
+  else
+    let width = options.preview_width
+    let height = options.preview_height
+  endif
+  " NOTE: Must be positive
+  let width = [10, options.preview_width]->max()
+  let height = [1, options.preview_height]->max()
 
   if has('nvim')
     if pum.preview_buf < 0
       let pum.preview_buf = nvim_create_buf(v:false, v:true)
     endif
-    call nvim_buf_set_lines(pum.preview_buf, 0, -1, v:true, lines)
+
+    if previewer->has_key('contents')
+      call nvim_buf_set_lines(
+            \ pum.preview_buf, 0, -1, v:true, previewer.contents)
+    endif
 
     let winopts = #{
           \   border: options.preview_border,
           \   relative: 'editor',
-          \   width: lines->copy()->map({ _, val -> val->strwidth() })->max(),
-          \   height: lines->len(),
           \   row: row - 1,
           \   col: col - 1,
+          \   width: width,
+          \   height: height,
           \   anchor: 'NW',
           \   style: 'minimal',
           \   zindex: options.zindex + 1,
@@ -751,21 +771,55 @@ function pum#popup#_preview() abort
 
       let pum.preview_id = id
     endif
+
+    if previewer.kind ==# 'help'
+      call win_execute(pum.preview_id,
+            \ 'setlocal buftype=help | help ' .. previewer.tag)
+    endif
   else
     let winopts = #{
           \   pos: 'topleft',
           \   line: row,
           \   col: col,
+          \   maxwidth: width,
+          \   maxheight: height,
           \   highlight: options.highlight_preview,
           \ }
 
-    if pum.preview_id > 0
+    if previewer.kind ==# 'help'
+      if pum.preview_id > 0
+        call popup_close(pum.preview_id)
+      endif
+
+      " Create dummy help buffer
+      " NOTE: ":help" does not work in popup window.
+      execute 'help' previewer.tag
+      const help_bufnr = bufnr()
+      const firstline = '.'->line()
+      helpclose
+
+      " Set firstline to display tag
+      let winopts.firstline = firstline
+
+      let pum.preview_id = popup_create(help_bufnr, winopts)
+      let pum.preview_buf = help_bufnr
+    elseif pum.preview_id > 0
       call popup_move(pum.preview_id, winopts)
-      call popup_settext(pum.preview_id, lines)
+      if previewer->has_key('contents')
+        call popup_settext(pum.preview_id, previewer.contents)
+      endif
     else
-      let pum.preview_id = popup_create(lines, winopts)
+      if previewer->has_key('contents')
+        let pum.preview_id = popup_create(previewer.contents, winopts)
+      else
+        let pum.preview_id = popup_create([], winopts)
+      endif
       let pum.preview_buf = pum.preview_id->winbufnr()
     endif
+  endif
+
+  if previewer->has_key('command')
+    call win_execute(pum.preview_id, previewer.command)
   endif
 
   " NOTE: redraw is needed for Vim or command line mode
@@ -779,6 +833,22 @@ function pum#popup#_close_preview() abort
   call pum#popup#_close_id(pum.preview_id)
 
   let pum.preview_id = -1
+endfunction
+function s:get_previewer(item) abort
+  if '*ddc#get_previewer'->exists()
+    const previewer = ddc#get_previewer(a:item)
+    if previewer.kind !=# 'empty'
+      return previewer
+    endif
+  endif
+
+  " Fallback to item info
+  const info = a:item->get('info', '')
+
+  return #{
+        \   kind: 'text',
+        \   contents: info->split('\n'),
+        \ }
 endfunction
 
 function pum#popup#_reset_auto_confirm(mode) abort

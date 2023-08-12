@@ -243,6 +243,18 @@ preview_border
 
 		Default: "none"
 
+                                                  *pum-options-preview_height*
+preview_height
+		The maximum height of the preview window.
+
+		Default: 'previewheight' value
+
+                                                   *pum-options-preview_width*
+preview_width
+		The maximum width of the preview window.
+
+		Default: 'pumwidth' / 2 value
+
                                                         *pum-options-reversed*
 reversed
 		Enable reversed mode.  The items order is reversed.

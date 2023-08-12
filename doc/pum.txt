@@ -230,7 +230,8 @@ padding
                                                          *pum-options-preview*
 preview
 		Enable preview window.
-		It prints "info" attribute in current item.
+		It prints "info" attribute in current item or prints previewer
+		information from |ddc#get_previewer()|.
 
 		Default: v:false
 

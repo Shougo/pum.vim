@@ -773,8 +773,13 @@ function pum#popup#_preview() abort
     endif
 
     if previewer.kind ==# 'help'
-      call win_execute(pum.preview_id,
-            \ 'setlocal buftype=help | help ' .. previewer.tag)
+      try
+        call win_execute(pum.preview_id,
+              \ 'setlocal buftype=help | help ' .. previewer.tag)
+      catch
+        call pum#popup#_close_preview()
+        return
+      endtry
     endif
   else
     let winopts = #{
@@ -787,16 +792,19 @@ function pum#popup#_preview() abort
           \ }
 
     if previewer.kind ==# 'help'
-      if pum.preview_id > 0
-        call popup_close(pum.preview_id)
-      endif
+      call pum#popup#_close_preview()
 
-      " Create dummy help buffer
-      " NOTE: ":help" does not work in popup window.
-      execute 'help' previewer.tag
-      const help_bufnr = bufnr()
-      const firstline = '.'->line()
-      helpclose
+      try
+        " Create dummy help buffer
+        " NOTE: ":help" does not work in popup window.
+        execute 'help' previewer.tag
+        const help_bufnr = bufnr()
+        const firstline = '.'->line()
+        helpclose
+      catch
+        call pum#popup#_close_preview()
+        return
+      endtry
 
       " Set firstline to display tag
       let winopts.firstline = firstline
@@ -819,7 +827,12 @@ function pum#popup#_preview() abort
   endif
 
   if previewer->has_key('command')
-    call win_execute(pum.preview_id, previewer.command)
+    try
+      call win_execute(pum.preview_id, previewer.command)
+    catch
+      call pum#popup#_close_preview()
+      return
+    endtry
   endif
 
   " NOTE: redraw is needed for Vim or command line mode

@@ -723,8 +723,8 @@ function pum#popup#_preview() abort
     let width = previewer.contents
           \ ->copy()->map({ _, val -> val->strwidth() })->max()
     let height = previewer.contents->len()
-    let width = [winopts.width, options.preview_width]->min()
-    let height = [winopts.height, options.preview_height]->min()
+    let width = [width, options.preview_width]->min()
+    let height = [height, options.preview_height]->min()
   else
     let width = options.preview_width
     let height = options.preview_height

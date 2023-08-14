@@ -835,6 +835,10 @@ function pum#popup#_preview() abort
     endtry
   endif
 
+  if previewer.kind ==# 'markdown'
+    call win_execute(pum.preview_id, 'setlocal filetype=markdown')
+  endif
+
   " NOTE: redraw is needed for Vim or command line mode
   if !has('nvim') || mode() ==# 'c'
     redraw

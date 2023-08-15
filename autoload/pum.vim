@@ -166,6 +166,7 @@ function pum#close() abort
   call pum#_reset_skip_complete()
 
   call pum#_stop_debounce_timer('s:debounce_preview_timer')
+  call pum#popup#_close_preview()
 
   if pum.cursor >= 0 && pum.current_word !=# ''
         \ && pum.items->len() >= pum.cursor
@@ -182,11 +183,9 @@ function pum#close() abort
   " NOTE: pum.scroll_id is broken after pum#popup#_close()
   const id = pum.id
   const scroll_id = pum.scroll_id
-  const preview_id = pum.preview_id
 
   call pum#popup#_close(id)
   call pum#popup#_close(scroll_id)
-  call pum#popup#_close(preview_id)
 endfunction
 
 function s:to_bool(int_boolean_value) abort

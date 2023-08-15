@@ -836,7 +836,7 @@ function pum#popup#_preview() abort
   endif
 
   if previewer.kind ==# 'markdown'
-    call win_execute(pum.preview_id, 'setlocal filetype=markdown')
+    call setbufvar(pum.preview_buf, '&filetype', 'markdown')
   endif
 
   " NOTE: redraw is needed for Vim or command line mode

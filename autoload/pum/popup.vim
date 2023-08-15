@@ -734,7 +734,7 @@ function pum#popup#_preview() abort
   let height = [1, options.preview_height]->max()
 
   if has('nvim')
-    if pum.preview_buf < 0
+    if pum.preview_buf < 0 || !getbufvar(pum.preview_buf, '&modifiable')
       let pum.preview_buf = nvim_create_buf(v:false, v:true)
     endif
 

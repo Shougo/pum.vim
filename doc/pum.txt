@@ -244,6 +244,12 @@ preview_border
 
 		Default: "none"
 
+                                                   *pum-options-preview_delay*
+preview_delay
+		The delay time(ms) to display preview window.
+
+		Default: 500
+
                                                   *pum-options-preview_height*
 preview_height
 		The maximum height of the preview window.

@@ -72,6 +72,7 @@ function pum#_init_options() abort
         \   padding: v:false,
         \   preview: v:false,
         \   preview_border: 'none',
+        \   preview_delay: 500,
         \   preview_height: &previewheight,
         \   preview_width: &pumwidth / 2,
         \   reversed: v:false,
@@ -163,6 +164,8 @@ function pum#close() abort
   endif
 
   call pum#_reset_skip_complete()
+
+  call pum#_stop_debounce_timer('s:debounce_preview_timer')
 
   if pum.cursor >= 0 && pum.current_word !=# ''
         \ && pum.items->len() >= pum.cursor
@@ -376,7 +379,10 @@ function pum#_complete_changed() abort
   let options = pum#_options()
 
   if options.preview
-    call pum#popup#_preview()
+    call pum#_stop_debounce_timer('s:debounce_preview_timer')
+
+    let s:debounce_preview_timer = timer_start(
+          \ options.preview_delay, { -> pum#popup#_preview() })
   endif
 
   if '#User#PumCompleteChanged'->exists()
@@ -386,4 +392,11 @@ endfunction
 
 function pum#_check_cmdwin() abort
   return '%'->bufname() ==# '[Command Line]'
+endfunction
+
+function pum#_stop_debounce_timer(timer_name) abort
+  if a:timer_name->exists()
+    silent! call timer_stop({a:timer_name})
+    unlet {a:timer_name}
+  endif
 endfunction

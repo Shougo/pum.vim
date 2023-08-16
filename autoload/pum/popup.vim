@@ -730,8 +730,8 @@ function pum#popup#_preview() abort
     let height = options.preview_height
   endif
   " NOTE: Must be positive
-  let width = [10, options.preview_width]->max()
-  let height = [1, options.preview_height]->max()
+  let width = [10, width]->max()
+  let height = [1, height]->max()
 
   if has('nvim')
     if pum.preview_buf < 0

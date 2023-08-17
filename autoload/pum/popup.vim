@@ -739,6 +739,7 @@ function pum#popup#_preview() abort
     endif
 
     if previewer->has_key('contents')
+      call setbufvar(pum.preview_buf, '&modifiable', v:true)
       call nvim_buf_set_lines(
             \ pum.preview_buf, 0, -1, v:true, previewer.contents)
       call setbufvar(pum.preview_buf, '&modified', v:false)

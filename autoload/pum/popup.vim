@@ -697,6 +697,14 @@ function pum#popup#_redraw_horizontal_menu() abort
 endfunction
 
 function pum#popup#_preview() abort
+  const pos = getpos('.')
+  try
+    call s:open_preview()
+  finally
+    call setpos('.', pos)
+  endtry
+endfunction
+function s:open_preview() abort
   let pum = pum#_get()
 
   if pum.cursor <= 0

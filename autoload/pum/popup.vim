@@ -874,7 +874,7 @@ function s:get_previewer(item) abort
 
   return #{
         \   kind: 'text',
-        \   contents: info->split('\n'),
+        \   contents: info->substitute('\r\n\?', '\n', 'g')->split('\n'),
         \ }
 endfunction
 

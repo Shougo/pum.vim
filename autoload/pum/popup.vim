@@ -303,7 +303,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   if reversed
     " The cursor must be end
-    call win_execute(pum.id, 'call cursor("$", 0) | redraw')
+    call win_execute(pum.id, 'call cursor("$", 0)')
+    redraw
 
     if pum.scroll_id > 0 && has('nvim')
       call nvim_win_set_config(pum.scroll_id, #{
@@ -926,9 +927,9 @@ function s:set_window_options(id, options, highlight) abort
     " Disable 'hlsearch' highlight
     let highlight ..= ',Search:None,CurSearch:None'
   endif
+
   call setwinvar(a:id, '&winhighlight', highlight)
   call setwinvar(a:id, '&winblend', &l:pumblend)
   call setwinvar(a:id, '&wrap', v:false)
   call setwinvar(a:id, '&scrolloff', 0)
-  call setwinvar(a:id, '&statusline', &l:statusline)
 endfunction

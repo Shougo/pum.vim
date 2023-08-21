@@ -262,11 +262,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
         let scroll_id = nvim_open_win(
               \ pum.scroll_buf, v:false, scroll_winopts)
-        call nvim_win_set_option(scroll_id, 'winhighlight',
-              \ printf('Normal:%s,NormalFloat:None',
-              \        options.highlight_scrollbar))
-        call nvim_win_set_option(scroll_id, 'winblend', &l:pumblend)
-        call nvim_win_set_option(scroll_id, 'statusline', &l:statusline)
+        call s:set_window_options(scroll_id, options, 'scrollbar')
 
         let pum.scroll_id = scroll_id
       endif
@@ -922,15 +918,17 @@ function s:auto_confirm() abort
 endfunction
 
 function s:set_window_options(id, options, highlight) abort
-  " NOTE: nvim_win_set_option() causes title flicker...
   let highlight = 'Normal:' .. a:options['highlight_' .. a:highlight]
+  if a:highlight ==# 'scrollbar'
+    let highlight ..= ',NormalFloat:None'
+  endif
   if &hlsearch
     " Disable 'hlsearch' highlight
     let highlight ..= ',Search:None,CurSearch:None'
   endif
-  call nvim_win_set_option(a:id, 'winhighlight', highlight)
-  call nvim_win_set_option(a:id, 'winblend', &l:pumblend)
-  call nvim_win_set_option(a:id, 'wrap', v:false)
-  call nvim_win_set_option(a:id, 'scrolloff', 0)
-  call nvim_win_set_option(a:id, 'statusline', &l:statusline)
+  call setwinvar(a:id, '&winhighlight', highlight)
+  call setwinvar(a:id, '&winblend', &l:pumblend)
+  call setwinvar(a:id, '&wrap', v:false)
+  call setwinvar(a:id, '&scrolloff', 0)
+  call setwinvar(a:id, '&statusline', &l:statusline)
 endfunction

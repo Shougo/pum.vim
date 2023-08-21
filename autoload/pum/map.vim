@@ -82,6 +82,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
             \ | call matchaddpos(pum#_options().highlight_selected,
             \                    [pum#_get().cursor], 0, pum#_cursor_id())')
     endif
+
     " NOTE: ":redraw" is needed if it is Vim or in command line mode or
     " scrollbar is disabled.
     if !has('nvim') || mode() ==# 'c' || pum.scroll_id < 0

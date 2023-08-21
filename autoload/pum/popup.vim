@@ -266,7 +266,6 @@ function pum#popup#_open(startcol, items, mode, insert) abort
               \ printf('Normal:%s,NormalFloat:None',
               \        options.highlight_scrollbar))
         call nvim_win_set_option(scroll_id, 'winblend', &l:pumblend)
-        call nvim_win_set_option(scroll_id, 'statusline', &l:statusline)
 
         let pum.scroll_id = scroll_id
       endif
@@ -307,7 +306,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   if reversed
     " The cursor must be end
-    call win_execute(pum.id, 'call cursor("$", 0) | redraw')
+    call win_execute(pum.id, 'call cursor("$", 0)')
+    redraw
 
     if pum.scroll_id > 0 && has('nvim')
       call nvim_win_set_config(pum.scroll_id, #{
@@ -835,5 +835,4 @@ function s:set_window_options(id, options, highlight) abort
   call nvim_win_set_option(a:id, 'winblend', &l:pumblend)
   call nvim_win_set_option(a:id, 'wrap', v:false)
   call nvim_win_set_option(a:id, 'scrolloff', 0)
-  call nvim_win_set_option(a:id, 'statusline', &l:statusline)
 endfunction

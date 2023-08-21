@@ -31,8 +31,9 @@ function pum#map#select_relative(delta, overflow='empty') abort
       if pum.horizontal_menu
         call pum#popup#_redraw_horizontal_menu()
       else
+        call win_execute(pum.id, 'call cursor(1, 0)')
         " NOTE: redraw is required
-        call win_execute(pum.id, 'call cursor(1, 0) | redraw')
+        redraw
 
         if pum#_check_cmdwin()
           redraw!
@@ -66,12 +67,6 @@ function pum#map#select_relative(delta, overflow='empty') abort
   if pum.horizontal_menu
     call pum#popup#_redraw_horizontal_menu()
   else
-    " NOTE: ":redraw" is needed if it is Vim or in command line mode or
-    " scrollbar is disabled.
-    const redraw_cmd =
-          \ (!has('nvim') || mode() ==# 'c' || pum.scroll_id < 0) ?
-          \ '| redraw' : ''
-
     " Move real cursor
     " NOTE: If up scroll, cursor must adjust...
     " NOTE: Use matchaddpos() instead of nvim_buf_add_highlight() or prop_add()
@@ -80,14 +75,17 @@ function pum#map#select_relative(delta, overflow='empty') abort
       call win_execute(pum.id, '
             \   call cursor(pum#_get().cursor, 0)
             \ | call matchaddpos(pum#_options().highlight_selected,
-            \                    [pum#_get().cursor], 0, pum#_cursor_id())
-            \' .. redraw_cmd)
+            \                    [pum#_get().cursor], 0, pum#_cursor_id())')
     else
       call win_execute(pum.id, '
             \   call cursor(pum#_get().cursor + 1, 0)
             \ | call matchaddpos(pum#_options().highlight_selected,
-            \                    [pum#_get().cursor], 0, pum#_cursor_id())
-            \' .. redraw_cmd)
+            \                    [pum#_get().cursor], 0, pum#_cursor_id())')
+    endif
+    " NOTE: ":redraw" is needed if it is Vim or in command line mode or
+    " scrollbar is disabled.
+    if !has('nvim') || mode() ==# 'c' || pum.scroll_id < 0
+      redraw
     endif
 
     if pum#_check_cmdwin()

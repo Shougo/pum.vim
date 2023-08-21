@@ -60,8 +60,8 @@ function pum#_init_options() abort
         \     kind: 10,
         \     menu: 20,
         \   },
-        \   max_horizontal_items: 3,
         \   max_height: &pumheight,
+        \   max_horizontal_items: 3,
         \   max_width: 0,
         \   min_height: 0,
         \   min_width: &pumwidth,
@@ -72,6 +72,9 @@ function pum#_init_options() abort
         \   padding: v:false,
         \   preview: v:false,
         \   preview_border: 'none',
+        \   preview_delay: 500,
+        \   preview_height: &previewheight,
+        \   preview_width: &pumwidth / 2,
         \   reversed: v:false,
         \   scrollbar_char: '|',
         \   use_complete: v:false,
@@ -162,6 +165,9 @@ function pum#close() abort
 
   call pum#_reset_skip_complete()
 
+  call pum#_stop_debounce_timer('s:debounce_preview_timer')
+  call pum#popup#_close_preview()
+
   if pum.cursor >= 0 && pum.current_word !=# ''
         \ && pum.items->len() >= pum.cursor
     " Call the event later
@@ -177,11 +183,9 @@ function pum#close() abort
   " NOTE: pum.scroll_id is broken after pum#popup#_close()
   const id = pum.id
   const scroll_id = pum.scroll_id
-  const preview_id = pum.preview_id
 
   call pum#popup#_close(id)
   call pum#popup#_close(scroll_id)
-  call pum#popup#_close(preview_id)
 endfunction
 
 function s:to_bool(int_boolean_value) abort
@@ -374,7 +378,10 @@ function pum#_complete_changed() abort
   let options = pum#_options()
 
   if options.preview
-    call pum#popup#_preview()
+    call pum#_stop_debounce_timer('s:debounce_preview_timer')
+
+    let s:debounce_preview_timer = timer_start(
+          \ options.preview_delay, { -> pum#popup#_preview() })
   endif
 
   if '#User#PumCompleteChanged'->exists()
@@ -384,4 +391,11 @@ endfunction
 
 function pum#_check_cmdwin() abort
   return '%'->bufname() ==# '[Command Line]'
+endfunction
+
+function pum#_stop_debounce_timer(timer_name) abort
+  if a:timer_name->exists()
+    silent! call timer_stop({a:timer_name})
+    unlet {a:timer_name}
+  endif
 endfunction

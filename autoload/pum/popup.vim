@@ -212,7 +212,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \ )->floor()->float2nr(), 1]->max()
 
     const scroll_row = pos[0] + border_top
-    const scroll_col = pos[1] + width
+    const scroll_col = pos[1] + width + border_right
     let scroll_winopts = #{
           \   relative: 'editor',
           \   width: options.scrollbar_char->strwidth(),

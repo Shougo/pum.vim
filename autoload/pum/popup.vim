@@ -211,7 +211,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \ (height * ((height + 0.0) / lines->len()) + 0.5
           \ )->floor()->float2nr(), 1]->max()
 
-    const scroll_row = pos[0]
+    const scroll_row = pos[0] + border_top
     const scroll_col = pos[1] + width
     let scroll_winopts = #{
           \   relative: 'editor',

@@ -32,12 +32,6 @@ function pum#map#select_relative(delta, overflow='empty') abort
         call pum#popup#_redraw_horizontal_menu()
       else
         call win_execute(pum.id, 'call cursor(1, 0)')
-        " NOTE: redraw is required
-        redraw
-
-        if pum#_check_cmdwin()
-          redraw!
-        endif
       endif
 
       " Reset scroll bar
@@ -47,6 +41,15 @@ function pum#map#select_relative(delta, overflow='empty') abort
               \   row: pum.scroll_row,
               \   col: pum.scroll_col,
               \ })
+        call win_execute(pum.scroll_id, 'call cursor(1, 0)')
+      endif
+
+      " NOTE: redraw is required
+      if pum#_check_cmdwin()
+        redraw!
+      else
+        " NOTE: normal redraw does not work...
+        call win_execute(pum.id, 'redraw')
       endif
 
       call pum#popup#_reset_auto_confirm(mode())
@@ -85,12 +88,13 @@ function pum#map#select_relative(delta, overflow='empty') abort
 
     " NOTE: ":redraw" is needed if it is Vim or in command line mode or
     " scrollbar is disabled.
-    if !has('nvim') || mode() ==# 'c' || pum.scroll_id < 0
-      redraw
-    endif
-
     if pum#_check_cmdwin()
       redraw!
+    elseif !has('nvim')
+      " NOTE: normal redraw does not work...
+      call win_execute(pum.id, 'redraw')
+    elseif !has('nvim') || mode() ==# 'c' || pum.scroll_id < 0
+      redraw
     endif
   endif
 

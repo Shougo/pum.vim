@@ -721,6 +721,9 @@ function s:open_preview() abort
   const options = pum#_options()
 
   const pos = pum#get_pos()
+  if pos->empty()
+    return
+  endif
   const row = pos.row + 1
   const col = pos.col + pos.width + 2
 

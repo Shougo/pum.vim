@@ -922,7 +922,8 @@ function s:auto_confirm() abort
 endfunction
 
 function s:set_window_options(id, options, highlight) abort
-  let highlight = 'Normal:' .. a:options['highlight_' .. a:highlight]
+  let highlight = 'NormalFloat:' .. a:options['highlight_' .. a:highlight]
+  let highlight ..= ',FloatBorder:FloatBorder,CursorLine:Visual'
   if a:highlight ==# 'scrollbar'
     let highlight ..= ',NormalFloat:None'
   endif

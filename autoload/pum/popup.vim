@@ -1,4 +1,5 @@
 let s:pum_matched_id = 70
+let s:pum_selected_id = -1
 
 function pum#popup#_open(startcol, items, mode, insert) abort
   " NOTE: In neovim 0.10+, floating window works in command line window
@@ -331,9 +332,6 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
   let pum.orig_line = '.'->getline()
 
-  " Clear current highlight
-  silent! call matchdelete(pum#_cursor_id(), pum.id)
-
   if !pum.horizontal_menu
     " Highlight
     call s:highlight_items(items, max_columns)
@@ -439,6 +437,9 @@ function pum#popup#_redraw_scroll() abort
 
   " NOTE: normal redraw does not work...
   call win_execute(pum.id, 'redraw')
+  if has('nvim') && &laststatus ==# 3
+    redrawstatus
+  endif
 
   if pum#_check_cmdwin()
     " NOTE: redraw! is required for cmdwin
@@ -540,7 +541,13 @@ function s:highlight(
     let col += 1
   endif
 
-  if !has('nvim')
+  if has('nvim')
+    return nvim_buf_set_extmark(pum.buf, a:id, a:row - 1, col - 1, #{
+          \   end_col: col - 1 + a:length,
+          \   hl_group: a:highlight,
+          \   priority: a:priority,
+          \ })
+  else
     " Add prop_type
     if a:prop_type->prop_type_get()->empty()
       call prop_type_add(a:prop_type, #{
@@ -548,25 +555,38 @@ function s:highlight(
             \   priority: a:priority,
             \ })
     endif
-  endif
-
-  if has('nvim')
-    call nvim_buf_add_highlight(
-          \   pum.buf,
-          \   a:id,
-          \   a:highlight,
-          \   a:row - 1,
-          \   col - 1,
-          \   col - 1 + a:length
-          \ )
-  else
     call prop_add(a:row, col, #{
           \   length: a:length,
           \   type: a:prop_type,
           \   bufnr: pum.buf,
           \   id: a:id,
           \ })
+    return -1
   endif
+endfunction
+
+function pum#popup#_redraw_selected() abort
+  let pum = pum#_get()
+  let prop_type = 'pum_highlight_selected'
+
+  " Clear current highlight
+  if has('nvim')
+    call nvim_buf_del_extmark(pum.buf, g:pum#_namespace, s:pum_selected_id)
+  elseif !prop_type->prop_type_get()->empty()
+    call prop_remove(#{
+          \   type: prop_type,
+          \   bufnr: pum.buf,
+          \ })
+  endif
+
+  if pum.cursor <= 0
+    return
+  endif
+  let length = pum.buf->getbufline(pum.cursor)[0]->strwidth()
+  let s:pum_selected_id = s:highlight(
+        \ pum#_options().highlight_selected,
+        \ prop_type, 0, g:pum#_namespace,
+        \ pum.cursor, 1, length)
 endfunction
 
 function pum#popup#_redraw_horizontal_menu() abort

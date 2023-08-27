@@ -9,11 +9,6 @@ function pum#map#select_relative(delta, overflow='empty') abort
     let delta *= -1
   endif
 
-  " Clear current highlight
-  if !pum.horizontal_menu
-    silent! call matchdelete(pum#_cursor_id(), pum.id)
-  endif
-
   let pum.cursor += delta
 
   if pum.cursor > pum.len || pum.cursor <= 0
@@ -32,6 +27,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
         call pum#popup#_redraw_horizontal_menu()
       else
         call win_execute(pum.id, 'call cursor(1, 0)')
+        call pum#popup#_redraw_selected()
       endif
 
       " Reset scroll bar
@@ -66,19 +62,12 @@ function pum#map#select_relative(delta, overflow='empty') abort
   else
     " Move real cursor
     " NOTE: If up scroll, cursor must adjust...
-    " NOTE: Use matchaddpos() instead of nvim_buf_add_highlight() or prop_add()
-    " Because the highlight conflicts with other highlights
     if delta < 0
-      call win_execute(pum.id, '
-            \   call cursor(pum#_get().cursor, 0)
-            \ | call matchaddpos(pum#_options().highlight_selected,
-            \                    [pum#_get().cursor], 0, pum#_cursor_id())')
+      call win_execute(pum.id, 'call cursor(pum#_get().cursor, 0)')
     else
-      call win_execute(pum.id, '
-            \   call cursor(pum#_get().cursor + 1, 0)
-            \ | call matchaddpos(pum#_options().highlight_selected,
-            \                    [pum#_get().cursor], 0, pum#_cursor_id())')
+      call win_execute(pum.id, 'call cursor(pum#_get().cursor + 1, 0)')
     endif
+    call pum#popup#_redraw_selected()
 
     call pum#popup#_redraw_scroll()
   endif

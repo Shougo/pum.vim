@@ -1,6 +1,5 @@
 let g:pum#_namespace = has('nvim') ? nvim_create_namespace('pum') : 0
 let g:pum#completed_item = {}
-let s:pum_cursor_id = 50
 
 
 function pum#_get() abort
@@ -286,10 +285,6 @@ function pum#_col() abort
         \ mode() ==# 'c' ? getcmdpos() :
         \ mode() ==# 't' ? '.'->col() : '.'->col()
   return col
-endfunction
-
-function pum#_cursor_id() abort
-  return s:pum_cursor_id
 endfunction
 
 function pum#_format_item(

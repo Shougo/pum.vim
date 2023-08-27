@@ -44,12 +44,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
         call win_execute(pum.scroll_id, 'call cursor(1, 0)')
       endif
 
-      " NOTE: normal redraw does not work...
-      call win_execute(pum.id, 'redraw')
-      if pum#_check_cmdwin()
-        " NOTE: redraw! is required for cmdwin
-        redraw!
-      endif
+      call pum#popup#_redraw()
 
       call pum#popup#_reset_auto_confirm(mode())
 
@@ -85,16 +80,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
             \                    [pum#_get().cursor], 0, pum#_cursor_id())')
     endif
 
-    " NOTE: ":redraw" is needed if it is Vim or in command line mode or
-    " scrollbar is disabled.
-    if pum#_check_cmdwin()
-      redraw!
-    elseif !has('nvim')
-      " NOTE: normal redraw does not work...
-      call win_execute(pum.id, 'redraw')
-    elseif mode() ==# 'c' || pum.scroll_id < 0
-      redraw
-    endif
+    call pum#popup#_redraw()
   endif
 
   " Update scroll bar

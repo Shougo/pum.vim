@@ -44,12 +44,11 @@ function pum#map#select_relative(delta, overflow='empty') abort
         call win_execute(pum.scroll_id, 'call cursor(1, 0)')
       endif
 
-      " NOTE: redraw is required
+      " NOTE: normal redraw does not work...
+      call win_execute(pum.id, 'redraw')
       if pum#_check_cmdwin()
+        " NOTE: redraw! is required for cmdwin
         redraw!
-      else
-        " NOTE: normal redraw does not work...
-        call win_execute(pum.id, 'redraw')
       endif
 
       call pum#popup#_reset_auto_confirm(mode())
@@ -93,7 +92,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
     elseif !has('nvim')
       " NOTE: normal redraw does not work...
       call win_execute(pum.id, 'redraw')
-    elseif !has('nvim') || mode() ==# 'c' || pum.scroll_id < 0
+    elseif mode() ==# 'c' || pum.scroll_id < 0
       redraw
     endif
   endif

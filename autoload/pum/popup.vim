@@ -304,7 +304,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   if reversed
     " The cursor must be end
     call win_execute(pum.id, 'call cursor("$", 0)')
-    redraw
+    call pum#popup#_redraw_scroll()
 
     if pum.scroll_id > 0 && has('nvim')
       call nvim_win_set_config(pum.scroll_id, #{
@@ -360,10 +360,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       call feedkeys("\<C-r>\<BS>", 'n')
     endif
 
-    " NOTE: redraw is needed for Vim or command line mode
-    if !has('nvim') || a:mode ==# 'c'
-      redraw
-    endif
+    call pum#popup#_redraw()
   endif
 
   " Close popup automatically
@@ -427,17 +424,22 @@ function pum#popup#_close_id(id) abort
     call timer_start(100, { -> pum#popup#_close_id(a:id) })
   endtry
 
+  call pum#popup#_redraw()
+endfunction
+
+function pum#popup#_redraw() abort
   " NOTE: redraw is needed for Vim or command line mode
   if !has('nvim') || mode() ==# 'c'
     redraw
   endif
 endfunction
 
-function pum#popup#_redraw() abort
+function pum#popup#_redraw_scroll() abort
   const pum = pum#_get()
 
   " NOTE: normal redraw does not work...
   call win_execute(pum.id, 'redraw')
+
   if pum#_check_cmdwin()
     " NOTE: redraw! is required for cmdwin
     redraw!
@@ -685,10 +687,7 @@ function pum#popup#_redraw_horizontal_menu() abort
           \ 0, g:pum#_namespace, 1, strwidth(words[0]) + 2, 1)
   endif
 
-  " NOTE: redraw is needed for Vim or command line mode
-  if !has('nvim') || mode() ==# 'c'
-    redraw
-  endif
+  call pum#popup#_redraw()
 endfunction
 
 function pum#popup#_preview() abort
@@ -847,10 +846,7 @@ function s:open_preview() abort
     call setbufvar(pum.preview_buf, '&filetype', 'markdown')
   endif
 
-  " NOTE: redraw is needed for Vim or command line mode
-  if !has('nvim') || mode() ==# 'c'
-    redraw
-  endif
+  call pum#popup#_redraw()
 endfunction
 function pum#popup#_close_preview() abort
   let pum = pum#_get()

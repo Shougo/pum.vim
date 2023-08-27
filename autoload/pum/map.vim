@@ -44,7 +44,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
         call win_execute(pum.scroll_id, 'call cursor(1, 0)')
       endif
 
-      call pum#popup#_redraw()
+      call pum#popup#_redraw_scroll()
 
       call pum#popup#_reset_auto_confirm(mode())
 
@@ -80,7 +80,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
             \                    [pum#_get().cursor], 0, pum#_cursor_id())')
     endif
 
-    call pum#popup#_redraw()
+    call pum#popup#_redraw_scroll()
   endif
 
   " Update scroll bar

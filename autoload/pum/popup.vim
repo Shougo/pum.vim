@@ -2,9 +2,9 @@ let s:pum_matched_id = 70
 let s:pum_selected_id = -1
 
 const s:priority_highlight_item = 2
-const s:priority_highlight_column = 0
-const s:priority_highlight_selected = 1
-const s:priority_highlight_horizontal_separator = 0
+const s:priority_highlight_column = 1
+const s:priority_highlight_selected = 0
+const s:priority_highlight_horizontal_separator = 1
 
 function pum#popup#_open(startcol, items, mode, insert) abort
   " NOTE: In neovim 0.10+, floating window works in command line window
@@ -587,7 +587,7 @@ function pum#popup#_redraw_selected() abort
   if pum.cursor <= 0
     return
   endif
-  let length = pum.buf->getbufline(pum.cursor)[0]->strwidth()
+  let length = pum.buf->getbufline(pum.cursor)[0]->strlen()
   let s:pum_selected_id = s:highlight(
         \ pum#_options().highlight_selected,
         \ prop_type,

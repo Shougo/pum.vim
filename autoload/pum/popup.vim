@@ -588,11 +588,13 @@ function pum#popup#_redraw_selected() abort
     return
   endif
   let length = pum.buf->getbufline(pum.cursor)[0]->strlen()
+  let col = pum#_options().padding && (mode() ==# 'c' || pum.startcol != 1)
+        \ ? 0 : 1
   let s:pum_selected_id = s:highlight(
         \ pum#_options().highlight_selected,
         \ prop_type,
         \ s:priority_highlight_selected,
-        \ pum.cursor, 1, length)
+        \ pum.cursor, col, length)
 endfunction
 
 function pum#popup#_redraw_horizontal_menu() abort
@@ -705,14 +707,14 @@ function pum#popup#_redraw_horizontal_menu() abort
           \ options.highlight_selected,
           \ 'pum_highlight_selected',
           \ s:priority_highlight_selected,
-          \ 1, 1, items[0]->get('abbr', items[0].word)->strwidth())
+          \ 1, 1, items[0]->get('abbr', items[0].word)->strlen())
   endif
   if words->len() > 1
     call s:highlight(
           \ options.highlight_horizontal_separator,
           \ 'pum_highlight_separator',
           \ s:priority_highlight_selected,
-          \ 1, strwidth(words[0]) + 2, 1)
+          \ 1, strlen(words[0]) + 2, 1)
   endif
 
   call pum#popup#_redraw()

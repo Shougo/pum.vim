@@ -1,6 +1,11 @@
 let s:pum_matched_id = 70
 let s:pum_selected_id = -1
 
+const s:priority_highlight_item = 2
+const s:priority_highlight_column = 0
+const s:priority_highlight_selected = 0
+const s:priority_highlight_horizontal_separator = 0
+
 function pum#popup#_open(startcol, items, mode, insert) abort
   " NOTE: In neovim 0.10+, floating window works in command line window
   if a:mode !~# '[ict]' || (pum#_check_cmdwin() && !has('nvim-0.10'))
@@ -509,7 +514,8 @@ function s:highlight_items(items, max_columns) abort
       for hl in item_highlights->copy()->filter(
             \ {_, val -> val.type ==# order})
         call s:highlight(
-              \ hl.hl_group, hl.name, 2,
+              \ hl.hl_group, hl.name,
+              \ s:priority_highlight_item,
               \ row, start + hl.col - 1, hl.width)
       endfor
 
@@ -523,7 +529,8 @@ function s:highlight_items(items, max_columns) abort
       let highlight_column = options.highlight_columns->get(order, '')
       if highlight_column !=# ''
         call s:highlight(
-              \ highlight_column, 'pum_' .. order, 0,
+              \ highlight_column, 'pum_' .. order,
+              \ s:priority_highlight_column,
               \ row, start, width)
       endif
 
@@ -583,7 +590,9 @@ function pum#popup#_redraw_selected() abort
   let length = pum.buf->getbufline(pum.cursor)[0]->strwidth()
   let s:pum_selected_id = s:highlight(
         \ pum#_options().highlight_selected,
-        \ prop_type, 0, pum.cursor, 1, length)
+        \ prop_type,
+        \ s:priority_highlight_selected,
+        \ pum.cursor, 1, length)
 endfunction
 
 function pum#popup#_redraw_horizontal_menu() abort
@@ -694,13 +703,15 @@ function pum#popup#_redraw_horizontal_menu() abort
     " Highlight the first item
     call s:highlight(
           \ options.highlight_selected,
-          \ 'pum_highlight_selected', 0,
+          \ 'pum_highlight_selected',
+          \ s:priority_highlight_selected,
           \ 1, 1, items[0]->get('abbr', items[0].word)->strwidth())
   endif
   if words->len() > 1
     call s:highlight(
           \ options.highlight_horizontal_separator,
-          \ 'pum_highlight_separator', 0,
+          \ 'pum_highlight_separator',
+          \ s:priority_highlight_selected,
           \ 1, strwidth(words[0]) + 2, 1)
   endif
 

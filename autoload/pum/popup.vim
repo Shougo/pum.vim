@@ -509,8 +509,8 @@ function s:highlight_items(items, max_columns) abort
       for hl in item_highlights->copy()->filter(
             \ {_, val -> val.type ==# order})
         call s:highlight(
-              \ hl.hl_group, hl.name, 1,
-              \ g:pum#_namespace, row, start + hl.col - 1, hl.width)
+              \ hl.hl_group, hl.name, 2,
+              \ row, start + hl.col - 1, hl.width)
       endfor
 
       " NOTE: The byte length of multibyte characters may be larger than
@@ -524,7 +524,7 @@ function s:highlight_items(items, max_columns) abort
       if highlight_column !=# ''
         call s:highlight(
               \ highlight_column, 'pum_' .. order, 0,
-              \ g:pum#_namespace, row, start, width)
+              \ row, start, width)
       endif
 
       let start += width
@@ -532,8 +532,7 @@ function s:highlight_items(items, max_columns) abort
   endfor
 endfunction
 
-function s:highlight(
-      \ highlight, prop_type, priority, id, row, col, length) abort
+function s:highlight(highlight, prop_type, priority, row, col, length) abort
   let pum = pum#_get()
 
   let col = a:col
@@ -542,7 +541,7 @@ function s:highlight(
   endif
 
   if has('nvim')
-    return nvim_buf_set_extmark(pum.buf, a:id, a:row - 1, col - 1, #{
+    return nvim_buf_set_extmark(pum.buf, g:pum#_namespace, a:row - 1, col - 1, #{
           \   end_col: col - 1 + a:length,
           \   hl_group: a:highlight,
           \   priority: a:priority,
@@ -559,7 +558,6 @@ function s:highlight(
           \   length: a:length,
           \   type: a:prop_type,
           \   bufnr: pum.buf,
-          \   id: a:id,
           \ })
     return -1
   endif
@@ -585,8 +583,7 @@ function pum#popup#_redraw_selected() abort
   let length = pum.buf->getbufline(pum.cursor)[0]->strwidth()
   let s:pum_selected_id = s:highlight(
         \ pum#_options().highlight_selected,
-        \ prop_type, 0, g:pum#_namespace,
-        \ pum.cursor, 1, length)
+        \ prop_type, 0, pum.cursor, 1, length)
 endfunction
 
 function pum#popup#_redraw_horizontal_menu() abort
@@ -697,14 +694,14 @@ function pum#popup#_redraw_horizontal_menu() abort
     " Highlight the first item
     call s:highlight(
           \ options.highlight_selected,
-          \ 'pum_highlight_selected', 0, g:pum#_namespace,
+          \ 'pum_highlight_selected', 0,
           \ 1, 1, items[0]->get('abbr', items[0].word)->strwidth())
   endif
   if words->len() > 1
     call s:highlight(
           \ options.highlight_horizontal_separator,
-          \ 'pum_highlight_separator',
-          \ 0, g:pum#_namespace, 1, strwidth(words[0]) + 2, 1)
+          \ 'pum_highlight_separator', 0,
+          \ 1, strwidth(words[0]) + 2, 1)
   endif
 
   call pum#popup#_redraw()

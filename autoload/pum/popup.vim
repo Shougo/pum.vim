@@ -3,7 +3,7 @@ let s:pum_selected_id = -1
 
 const s:priority_highlight_item = 2
 const s:priority_highlight_column = 0
-const s:priority_highlight_selected = 0
+const s:priority_highlight_selected = 1
 const s:priority_highlight_horizontal_separator = 0
 
 function pum#popup#_open(startcol, items, mode, insert) abort

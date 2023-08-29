@@ -325,8 +325,12 @@ function pum#_format_item(
     let str ..= column
   endfor
 
-  if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)
-    let str = ' ' .. str .. ' '
+  if a:options.padding
+    let str ..= ' '
+
+    if a:mode ==# 'c' || a:startcol != 1
+      let str = ' ' .. str
+    endif
   endif
 
   return str

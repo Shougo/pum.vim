@@ -62,9 +62,9 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endfor
 
   " Padding
-  if options.padding && (a:mode ==# 'c' || a:startcol != 1)
-    let width += 2
-  endif
+  const padding = options.padding ?
+        \ (a:mode ==# 'c' || a:startcol != 1) ? 2 : 1 : 0
+  let width += padding
   if options.min_width > 0
     let width = [width, options.min_width]->max()
   endif
@@ -73,10 +73,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   " NOTE: abbr is the rest column
-  let abbr_width = width - non_abbr_length
-  if options.padding
-    let abbr_width -= 2
-  endif
+  const abbr_width = width - non_abbr_length - padding
 
   let lines = items->copy()->map({ _, val ->
         \     pum#_format_item(

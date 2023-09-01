@@ -945,9 +945,6 @@ endfunction
 function s:set_window_options(id, options, highlight) abort
   let highlight = 'NormalFloat:' .. a:options['highlight_' .. a:highlight]
   let highlight ..= ',FloatBorder:FloatBorder,CursorLine:Visual'
-  if a:highlight ==# 'scrollbar'
-    let highlight ..= ',NormalFloat:None'
-  endif
   if &hlsearch
     " Disable 'hlsearch' highlight
     let highlight ..= ',Search:None,CurSearch:None'

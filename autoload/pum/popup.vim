@@ -250,7 +250,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       " Create new window
       const id = nvim_open_win(pum.buf, v:false, winopts)
 
-      call s:set_window_options(id, options, 'normal_menu')
+      call s:set_float_window_options(id, options, 'normal_menu')
 
       let pum.id = id
     endif
@@ -265,7 +265,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
         let scroll_id = nvim_open_win(
               \ pum.scroll_buf, v:false, scroll_winopts)
-        call s:set_window_options(scroll_id, options, 'scrollbar')
+        call s:set_float_window_options(scroll_id, options, 'scrollbar')
 
         let pum.scroll_id = scroll_id
       endif
@@ -677,7 +677,7 @@ function pum#popup#_redraw_horizontal_menu() abort
       " Create new window
       const id = nvim_open_win(pum.buf, v:false, winopts)
 
-      call s:set_window_options(id, options, 'horizontal_menu')
+      call s:set_float_window_options(id, options, 'horizontal_menu')
 
       let pum.id = id
     endif
@@ -801,7 +801,7 @@ function s:open_preview() abort
       " Create new window
       const id = nvim_open_win(pum.preview_buf, v:false, winopts)
 
-      call s:set_window_options(id, options, 'preview')
+      call s:set_float_window_options(id, options, 'preview')
 
       let pum.preview_id = id
     endif
@@ -942,7 +942,7 @@ function s:auto_confirm() abort
   call pum#close()
 endfunction
 
-function s:set_window_options(id, options, highlight) abort
+function s:set_float_window_options(id, options, highlight) abort
   let highlight = 'NormalFloat:' .. a:options['highlight_' .. a:highlight]
   let highlight ..= ',FloatBorder:FloatBorder,CursorLine:Visual'
   if &hlsearch

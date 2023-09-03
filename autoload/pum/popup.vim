@@ -772,6 +772,7 @@ function s:open_preview() abort
 
     if previewer->has_key('contents')
       call setbufvar(pum.preview_buf, '&modifiable', v:true)
+      call setbufvar(pum.preview_buf, '&readonly', v:false)
       call nvim_buf_set_lines(
             \ pum.preview_buf, 0, -1, v:true, previewer.contents)
       call setbufvar(pum.preview_buf, '&modified', v:false)

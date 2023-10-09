@@ -102,7 +102,7 @@ function pum#map#insert_relative(delta, overflow='empty') abort
     return ''
   endif
 
-  if !s:check_textwidth()
+  if s:check_textwidth()
     " NOTE: If the input text is longer than 'textwidth', the completed text
     " will be the next line.  It breaks insert behavior.
     call pum#map#select_relative(a:delta, a:overflow)

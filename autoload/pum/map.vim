@@ -102,6 +102,13 @@ function pum#map#insert_relative(delta, overflow='empty') abort
     return ''
   endif
 
+  if !s:check_textwidth()
+    " NOTE: If the input text is longer than 'textwidth', the completed text
+    " will be the next line.  It breaks insert behavior.
+    call pum#map#select_relative(a:delta, a:overflow)
+    return
+  endif
+
   let pum = pum#_get()
 
   let prev_word = pum.cursor > 0 ?
@@ -395,4 +402,20 @@ function s:insert_line_jobsend(text) abort
     call term_sendkeys(bufnr(), chars)
     call term_wait(bufnr())
   endif
+endfunction
+
+function s:check_textwidth() abort
+  if mode() ==# 'i' && &l:formatoptions =~# '[tca]' && &l:textwidth > 0
+    const pum = pum#_get()
+    const startcol = pum.startcol - 1
+    const prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
+    const word = pum.cursor > 0 ?
+          \ pum.items[pum.cursor - 1].word :
+          \ pum.orig_input
+    if (prev_input .. word)->strdisplaywidth() >= &l:textwidth
+      return v:true
+    endif
+  endif
+
+  return v:false
 endfunction

@@ -84,9 +84,15 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   if !has('nvim') && a:mode ==# 't'
     const cursor = bufnr('%')->term_getcursor()
-    let spos = #{ row: cursor[0], col: a:startcol }
+    let spos = #{
+          \   row: cursor[0],
+          \   col: options.follow_cursor ? cursor[1] : a:startcol,
+          \ }
   else
-    let spos = screenpos(0, '.'->line(), a:startcol)
+    let spos = screenpos(
+          \   0, '.'->line(),
+          \   options.follow_cursor ? getcurpos()[2] : a:startcol,
+          \ )
   endif
 
   const [border_left, border_top, border_right, border_bottom]
@@ -154,6 +160,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   let pos = a:mode ==# 'c' ?
         \ [&lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
+        \  options.follow_cursor ? getcmdpos() :
         \  a:startcol - padding_left + options.offset_cmdcol] :
         \ [spos.row + (direction ==# 'above' ?
         \              -options.offset_row : options.offset_row),

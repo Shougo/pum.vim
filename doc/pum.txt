@@ -88,6 +88,12 @@ direction
 
 		Default: "auto"
 
+                                                   *pum-options-follow_cursor*
+follow_cursor
+		The popup menu is displayed after the cursor position.
+
+		Default: v:false
+
                                                *pum-options-highlight_columns*
 highlight_columns
 		The columns highlights of candidates.

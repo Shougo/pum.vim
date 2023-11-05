@@ -242,12 +242,12 @@ function pum#get_pos() abort
 
   let pum = pum#_get()
   return #{
-        \ height: pum.height + pum.border_height,
-        \ width: pum.width + pum.border_width,
-        \ row: pum.pos[0],
-        \ col: pum.pos[1],
-        \ size: pum.len,
-        \ scrollbar: pum.scroll_id > 0,
+        \   height: pum.height + pum.border_height,
+        \   width: pum.width + pum.border_width,
+        \   row: pum.pos[0],
+        \   col: pum.pos[1],
+        \   size: pum.len,
+        \   scrollbar: pum.scroll_id > 0,
         \ }
 endfunction
 

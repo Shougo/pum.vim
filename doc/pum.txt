@@ -539,6 +539,10 @@ FAQ 6:							|pum-faq-6|
 FAQ 7:							|pum-faq-7|
 	I want to move to the first/last item by Home/End keys.
 
+FAQ 8:							|pum-faq-8|
+	'incsearch' text is flickered when |pum-options-reversed| is set in
+	neovim.
+
 
 ------------------------------------------------------------------------------
                                                                    *pum-faq-1*
@@ -601,6 +605,13 @@ A: >
 	inoremap <End>
 	\ <Cmd>call pum#map#insert_relative(+9999, 'ignore')<CR>
 <
+                                                                   *pum-faq-8*
+Q: 'incsearch' text is flickered when |pum-options-reversed| is set in neovim.
+
+A: It is feature.  Because 'incsearch' is broken when |:redraw| in floating
+window.  I have gave up to fix it in plugin side.
+https://github.com/neovim/neovim/issues/17810
+
 
 ==============================================================================
 COMPATIBILITY                                              *pum-compatibility*

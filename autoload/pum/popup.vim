@@ -361,12 +361,6 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   elseif options.auto_select
     call pum#map#select_relative(+1)
   else
-    if a:mode ==# 'c' && &incsearch
-          \ && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
-      " Redraw without breaking 'incsearch' in search commands
-      call feedkeys("\<C-r>\<BS>", 'n')
-    endif
-
     call pum#popup#_redraw()
   endif
 
@@ -435,8 +429,17 @@ function pum#popup#_close_id(id) abort
 endfunction
 
 function pum#popup#_redraw() abort
+  const mode = mode()
+  if has('nvim') && mode !=# 'c'
+    return
+  endif
+
   " NOTE: redraw is needed for Vim or command line mode
-  if !has('nvim') || mode() ==# 'c'
+  if mode ==# 'c' && &incsearch
+        \ && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
+    " Redraw without breaking 'incsearch' in search commands
+    call feedkeys("\<C-r>\<BS>", 'n')
+  else
     redraw
   endif
 endfunction

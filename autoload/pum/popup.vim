@@ -434,7 +434,9 @@ function pum#popup#_redraw() abort
     return
   endif
 
-  " NOTE: redraw is needed for Vim or command line mode
+  call s:redraw()
+endfunction
+function s:redraw() abort
   if mode ==# 'c' && &incsearch
         \ && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
     " Redraw without breaking 'incsearch' in search commands
@@ -448,7 +450,7 @@ function pum#popup#_redraw_scroll() abort
   const pum = pum#_get()
 
   " NOTE: normal redraw does not work...
-  call win_execute(pum.id, 'redraw')
+  call win_execute(pum.id, 'call s:redraw()')
   if has('nvim') && &laststatus ==# 3
     redrawstatus
   endif

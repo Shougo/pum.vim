@@ -606,7 +606,8 @@ A: >
 	\ <Cmd>call pum#map#insert_relative(+9999, 'ignore')<CR>
 <
                                                                    *pum-faq-8*
-Q: 'incsearch' text is flickered when |pum-options-reversed| is set in neovim.
+Q: 'incsearch' text is cleared when |pum-options-reversed| is set or move
+cursor in neovim.
 
 A: It is feature.  Because 'incsearch' is broken when |:redraw| in floating
 window.  I have gave up to fix it in plugin side.

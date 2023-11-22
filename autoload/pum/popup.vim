@@ -237,9 +237,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     let pum.scroll_col = scroll_col
     let pum.scroll_height = scroll_height
 
-    if pum.id > 0 && !reversed
-      " NOTE: If reversed, reuse popup windows does not work well.
-
+    if pum.id > 0
       if pos == pum.pos
         " Resize window
         call nvim_win_set_width(pum.id, width)
@@ -296,8 +294,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \   zindex: options.zindex,
           \ }
 
-    if pum.id > 0 && !reversed
-      " NOTE: If reversed, reuse popup windows does not work well.
+    if pum.id > 0
       call popup_move(pum.id, winopts)
       call popup_settext(pum.id, lines)
     else
@@ -311,12 +308,12 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     let pum.horizontal_menu = v:false
   endif
 
-  if reversed
+  if reversed && pum.scroll_id > 0
     " The cursor must be end
     call win_execute(pum.id, 'call cursor("$", 0)')
     call pum#popup#_redraw_scroll()
 
-    if pum.scroll_id > 0 && has('nvim')
+    if has('nvim')
       call nvim_win_set_config(pum.scroll_id, #{
             \   relative: 'editor',
             \   row: pum.scroll_row + height - 1,
@@ -449,7 +446,8 @@ function pum#popup#_redraw_scroll() abort
   const pum = pum#_get()
 
   " NOTE: normal redraw does not work...
-  call win_execute(pum.id, 'call s:redraw()')
+  " And incsearch hack does not work in neovim.
+  call win_execute(pum.id, has('nvim') ? 'redraw' : 'call s:redraw()')
   if has('nvim') && &laststatus ==# 3
     redrawstatus
   endif

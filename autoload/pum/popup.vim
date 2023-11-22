@@ -429,15 +429,14 @@ function pum#popup#_close_id(id) abort
 endfunction
 
 function pum#popup#_redraw() abort
-  const mode = mode()
-  if has('nvim') && mode !=# 'c'
+  if has('nvim') && mode() !=# 'c'
     return
   endif
 
   call s:redraw()
 endfunction
 function s:redraw() abort
-  if mode ==# 'c' && &incsearch
+  if mode() ==# 'c' && &incsearch
         \ && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
     " Redraw without breaking 'incsearch' in search commands
     call feedkeys("\<C-r>\<BS>", 'n')

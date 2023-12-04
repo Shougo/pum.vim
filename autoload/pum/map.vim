@@ -306,6 +306,8 @@ function s:check_user_input(callback) abort
   let pum = pum#_get()
   let pum.current_line = pum#_getline()[: pum.startcol]
 
+  let s:prev_line = pum#_getline()
+
   if mode() ==# 'c'
     autocmd pum-temp CmdlineLeave * ++once
           \ call pum#_reset_skip_complete()
@@ -317,31 +319,23 @@ function s:check_user_input(callback) abort
             \   end
             \ end)
     else
-      let s:prev_line = pum#_getline()
-      autocmd pum-temp TextChangedT * call s:check_text_changed_terminal()
+      autocmd pum-temp TextChangedT * call s:check_text_changed()
     endif
   else
     autocmd pum-temp InsertLeave * ++once
           \ call pum#_reset_skip_complete()
-   autocmd pum-temp TextChangedI *
-          \ : if s:check_text_changed()
-          \ |   call pum#close()
-          \ | endif
+   autocmd pum-temp TextChangedI * call s:check_text_changed()
   endif
 endfunction
 function s:check_text_changed() abort
-  return !pum#_get().skip_complete
-endfunction
-function s:check_text_changed_terminal() abort
-  " Check pum.items is inserted
   let pum = pum#_get()
-  if pum#_row() != pum.startrow
-    call pum#close()
+  const current_line = pum#_getline()
+  if pum.skip_complete
+    let s:prev_line = current_line
     return
   endif
 
-  const current_line = pum#_getline()
-  if current_line !=# s:prev_line
+  if pum#_row() != pum.startrow || current_line !=# s:prev_line
     call pum#close()
   endif
   let s:prev_line = current_line

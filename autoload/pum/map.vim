@@ -350,22 +350,23 @@ function s:insert_line_feedkeys(text, after_func) abort
     undojoin
   endif
 
-  let chars = ''
-  " NOTE: Change backspace option to work <BS> correctly
-  if mode() ==# 'i'
-    let chars ..= "\<Cmd>set backspace=start\<CR>"
-  endif
   const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars ..= "\<BS>"->repeat(current_word->strchars()) .. a:text
+  let chars = "\<BS>"->repeat(current_word->strchars()) .. a:text
   if mode() ==# 'i'
-    let chars ..= printf("\<Cmd>set backspace=%s\<CR>", &backspace)
+    " NOTE: Change backspace option to work <BS> correctly
+    let s:save_backspace = &backspace
+    set backspace=start
+
+    " NOTE: Restore backspace
+    autocmd pum TextChangedI,TextChangedP * ++once
+          \ let &backspace = s:save_backspace
   endif
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)
     let chars ..= "\<Cmd>call call(g:PumCallback, [])\<CR>"
   endif
 
-  call feedkeys(chars, 'n')
+  call feedkeys(chars, 'in')
 endfunction
 
 function s:insert_line_complete(text) abort

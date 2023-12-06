@@ -324,7 +324,7 @@ function s:check_user_input(callback) abort
   else
     autocmd pum-temp InsertLeave * ++once
           \ call pum#_reset_skip_complete()
-   autocmd pum-temp TextChangedI * call s:check_text_changed()
+    autocmd pum-temp TextChangedI * call s:check_text_changed()
   endif
 endfunction
 function s:check_text_changed() abort
@@ -355,11 +355,16 @@ function s:insert_line_feedkeys(text, after_func) abort
   if mode() ==# 'i'
     " NOTE: Change backspace option to work <BS> correctly
     let s:save_backspace = &backspace
-    set backspace=start
+    " NOTE: Disable indentkeys
+    let s:save_indentkeys = &l:indentkeys
 
-    " NOTE: Restore backspace
+    set backspace=start
+    set indentkeys=
+
+    " NOTE: Restore options
     autocmd pum TextChangedI,TextChangedP * ++once
-          \ let &backspace = s:save_backspace
+          \ : let &backspace = s:save_backspace
+          \ | let &l:indentkeys = s:save_indentkeys
   endif
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)

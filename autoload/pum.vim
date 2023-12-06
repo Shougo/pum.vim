@@ -77,7 +77,6 @@ function pum#_init_options() abort
         \   preview_width: &pumwidth / 2,
         \   reversed: v:false,
         \   scrollbar_char: '|',
-        \   use_complete: v:false,
         \   use_setline: v:false,
         \   zindex: 1000,
         \ }
@@ -253,11 +252,7 @@ endfunction
 
 function pum#skip_complete() abort
   let pum = pum#_get()
-
   let skip = pum.skip_complete
-  if pum#entered()
-    return skip
-  endif
 
   let pum.skip_count -= 1
   if pum.skip_count <= 0

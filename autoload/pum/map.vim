@@ -273,8 +273,7 @@ function s:insert(word, prev_word, after_func) abort
   elseif pum#_options().use_setline
     call setline('.', prev_input .. a:word .. next_input)
     call cursor(0, pum.startcol + len(a:word))
-  elseif a:word ==# '' || !pum#_options().use_complete
-        \ || a:after_func != v:null
+  elseif a:word ==# '' || a:after_func != v:null
     " NOTE: complete() does not work for empty string
     call s:insert_line_feedkeys(a:word, a:after_func)
     return
@@ -379,10 +378,13 @@ function s:insert_line_complete(text) abort
 
   " NOTE: Restore completeopt is needed after complete()
   autocmd pum TextChangedI,TextChangedP * ++once
-        \ let &completeopt = s:save_completeopt
+        \ : let &completeopt = s:save_completeopt
+        \ | let &eventignore = s:save_eventignore
 
   let s:save_completeopt = &completeopt
+  let s:save_eventignore = &eventignore
   set completeopt=menu
+  set eventignore=CompleteDone
 
   call complete(pum#_get().startcol, [a:text])
 

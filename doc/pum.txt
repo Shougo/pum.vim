@@ -285,17 +285,6 @@ scrollbar_char
 
 		Default: "|"
 
-                                                    *pum-options-use_complete*
-use_complete
-		Use |complete()| instead of |feedkeys()| when insertion.
-		It is faster and does not break undo state.
-
-		NOTE: If you insert the item, |CompleteDone| event is fired
-		automatically.  It may break your plugins behavior.
-		NOTE: It is for insert mode only.
-
-		Default: v:false
-
                                                      *pum-options-use_setline*
 use_setline
 		Use |setline()| instead of |feedkeys()| when insertion.
@@ -616,6 +605,9 @@ https://github.com/neovim/neovim/issues/17810
 
 ==============================================================================
 COMPATIBILITY                                              *pum-compatibility*
+
+2023.12.06
+* "use_complete" is default behavior.
 
 2023.07.19
 * "item_orders" must include "space" item.

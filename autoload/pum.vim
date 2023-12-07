@@ -91,15 +91,16 @@ function pum#_options() abort
 
   const mode = mode()
 
-  call extend(options, s:local_options->get(mode, {}))
+  let local_options = s:local_options->get(mode, {})
   if mode ==# 'c'
     " Use getcmdtype()
-    call extend(options, s:local_options->get(getcmdtype(), {}))
+    call extend(local_options, s:local_options->get(getcmdtype(), {}))
+  endif
+  if 'b:buffer_options'->exists()
+    call extend(local_options, b:buffer_options)
   endif
 
-  if 'b:buffer_options'->exists()
-    call extend(options, b:buffer_options)
-  endif
+  call extend(options, local_options)
 
   return options
 endfunction
@@ -110,26 +111,44 @@ function pum#set_option(key_or_dict, value = '') abort
   endif
 
   const dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
+  call s:check_options(dict)
+
   call extend(s:options, dict)
 endfunction
 function pum#set_local_option(mode, key_or_dict, value = '') abort
-  if !('s:local_options'->exists())
+  if !('s:options'->exists())
     call pum#_init_options()
   endif
 
   const dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
+  call s:check_options(dict)
+
   if !(s:local_options->has_key(a:mode))
     let s:local_options[a:mode] = {}
   endif
   call extend(s:local_options[a:mode], dict)
 endfunction
 function pum#set_buffer_option(key_or_dict, value = '') abort
+  if !('s:options'->exists())
+    call pum#_init_options()
+  endif
   if !('b:buffer_options'->exists())
     let b:buffer_options = {}
   endif
 
   const dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
+  call s:check_options(dict)
+
   call extend(b:buffer_options, dict)
+endfunction
+function s:check_options(options) abort
+  const default_keys = s:options->keys()
+
+  for key in a:options->keys()
+    if default_keys->index(key) < 0
+      call pum#util#_print_error('Invalid option: ' .. key)
+    endif
+  endfor
 endfunction
 
 function pum#open(startcol, items, mode = mode(), insert = v:false) abort

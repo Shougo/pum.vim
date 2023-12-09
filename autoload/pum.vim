@@ -3,7 +3,7 @@ let g:pum#completed_item = {}
 
 
 function pum#_get() abort
-  if !('s:pum'->exists())
+  if !'s:pum'->exists()
     call pum#_init()
   endif
   return s:pum
@@ -83,7 +83,7 @@ function pum#_init_options() abort
   let s:local_options = {}
 endfunction
 function pum#_options() abort
-  if !('s:options'->exists())
+  if !'s:options'->exists()
     call pum#_init_options()
   endif
 
@@ -106,7 +106,7 @@ function pum#_options() abort
 endfunction
 
 function pum#set_option(key_or_dict, value = '') abort
-  if !('s:options'->exists())
+  if !'s:options'->exists()
     call pum#_init_options()
   endif
 
@@ -116,23 +116,23 @@ function pum#set_option(key_or_dict, value = '') abort
   call extend(s:options, dict)
 endfunction
 function pum#set_local_option(mode, key_or_dict, value = '') abort
-  if !('s:options'->exists())
+  if !'s:options'->exists()
     call pum#_init_options()
   endif
 
   const dict = pum#util#_normalize_key_or_dict(a:key_or_dict, a:value)
   call s:check_options(dict)
 
-  if !(s:local_options->has_key(a:mode))
+  if !s:local_options->has_key(a:mode)
     let s:local_options[a:mode] = {}
   endif
   call extend(s:local_options[a:mode], dict)
 endfunction
 function pum#set_buffer_option(key_or_dict, value = '') abort
-  if !('s:options'->exists())
+  if !'s:options'->exists()
     call pum#_init_options()
   endif
-  if !('b:buffer_options'->exists())
+  if !'b:buffer_options'->exists()
     let b:buffer_options = {}
   endif
 
@@ -211,14 +211,14 @@ function s:to_bool(int_boolean_value) abort
 endfunction
 
 function pum#visible() abort
-  return s:to_bool(pum#_get().id > 0)
+  return (pum#_get().id > 0)->s:to_bool()
 endfunction
 
 function pum#entered() abort
   const info = pum#complete_info()
   const selected = (!pum#_options().auto_select && info.selected == 0)
         \ || info.selected > 0
-  return s:to_bool(info.pum_visible && (selected || info.inserted != ''))
+  return (info.pum_visible && (selected || info.inserted != ''))->s:to_bool()
 endfunction
 
 function pum#complete_info(...) abort
@@ -307,7 +307,8 @@ endfunction
 
 function pum#_format_item(
       \ item, options, mode, startcol, max_columns, abbr_width) abort
-  const columns = a:item->get('columns', {})->copy()->extend(#{
+  const columns = a:item->get('columns', {})->copy()
+        \ ->extend(#{
         \   abbr: a:item->get('abbr', a:item.word),
         \   kind: a:item->get('kind', ''),
         \   menu: a:item->get('menu', ''),
@@ -332,8 +333,8 @@ function pum#_format_item(
 
     if column->strdisplaywidth() > max_column
       " Truncate
-      let column = pum#util#_truncate(
-            \ column, max_column, max_column / 3, '...')
+      let column = column->pum#util#_truncate(
+            \ max_column, max_column / 3, '...')
     endif
     if column->strdisplaywidth() < max_column
       " Padding

@@ -83,7 +83,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let pum = pum#_get()
 
   if !has('nvim') && a:mode ==# 't'
-    const cursor = bufnr('%')->term_getcursor()
+    const cursor = '%'->bufnr()->term_getcursor()
     let spos = #{
           \   row: cursor[0],
           \   col: options.follow_cursor ? cursor[1] : a:startcol,
@@ -465,12 +465,12 @@ function s:get_border_size(border) abort
     return [0, 0, 0, 0]
   elseif a:border->type() == v:t_string
     return a:border ==# 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
-  elseif a:border->type() == v:t_list && !(a:border->empty())
+  elseif a:border->type() == v:t_list && !a:border->empty()
     return [
-          \ s:get_borderchar_width(a:border[3 % len(a:border)]),
-          \ s:get_borderchar_height(a:border[1 % len(a:border)]),
-          \ s:get_borderchar_width(a:border[7 % len(a:border)]),
-          \ s:get_borderchar_height(a:border[5 % len(a:border)]),
+          \   s:get_borderchar_width(a:border[3 % len(a:border)]),
+          \   s:get_borderchar_height(a:border[1 % len(a:border)]),
+          \   s:get_borderchar_width(a:border[7 % len(a:border)]),
+          \   s:get_borderchar_height(a:border[5 % len(a:border)]),
           \ ]
   else
     return [0, 0, 0, 0]
@@ -482,7 +482,7 @@ function s:get_borderchar_height(ch) abort
     " character
     return a:ch->empty() ? 0 : 1
   elseif a:ch->type() == v:t_list
-        \ && !(a:ch->empty()) && a:ch[0]->type() == v:t_string
+        \ && !a:ch->empty() && a:ch[0]->type() == v:t_string
     " character with highlight: [ch, highlight]
     return a:ch[0]->empty() ? 0 : 1
   else
@@ -496,7 +496,7 @@ function s:get_borderchar_width(ch) abort
     " character
     return strdisplaywidth(a:ch)
   elseif a:ch->type() == v:t_list
-        \ && !(a:ch->empty()) && a:ch[0]->type() == v:t_string
+        \ && !a:ch->empty() && a:ch[0]->type() == v:t_string
     " character with highlight: [ch, highlight]
     return strdisplaywidth(a:ch[0])
   else
@@ -554,7 +554,8 @@ function s:highlight(highlight, prop_type, priority, row, col, length) abort
   endif
 
   if has('nvim')
-    return nvim_buf_set_extmark(pum.buf, g:pum#_namespace, a:row - 1, col - 1, #{
+    return nvim_buf_set_extmark(
+          \ pum.buf, g:pum#_namespace, a:row - 1, col - 1, #{
           \   end_col: col - 1 + a:length,
           \   hl_group: a:highlight,
           \   priority: a:priority,
@@ -971,7 +972,7 @@ function s:uniq_by_word_or_dup(items) abort
   let seen = {}
   for item in a:items
     let key = item.word
-    if !(seen->has_key(key)) || item->get('dup', 0)
+    if !seen->has_key(key) || item->get('dup', 0)
       let seen[key] = v:true
       call add(ret, item)
     endif

@@ -448,6 +448,12 @@ pum#map#longest_relative({delta}[, {overflow}])
 		The behavior is like "list:longest,full" in 'wildmode'.
 		NOTE: It must not be called in |:map-<expr>|.
 
+                                                    *pum#map#scroll_preview()*
+pum#map#scroll_preview({delta})
+		Scroll forward or backward {delta} number in the
+		|pum-options-preview| window.
+		NOTE: It must not be called in |:map-<expr>|.
+
                                                    *pum#map#select_relative()*
 pum#map#select_relative({delta}[, {overflow}])
 		Move forward or backward {delta} number and select the

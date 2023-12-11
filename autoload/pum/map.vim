@@ -230,6 +230,20 @@ function pum#map#insert_relative_page(delta, overflow='empty') abort
   return ''
 endfunction
 
+function pum#map#scroll_preview(delta) abort
+  let pum = pum#_get()
+  if pum.preview_id < 0 || a:delta ==# 0
+    return ''
+  endif
+
+  const command = printf('noautocmd silent execute "normal! %s"',
+        \                repeat(a:delta > 0 ? "\<C-e>": "\<C-y>",
+        \                       a:delta > 0 ? a:delta : -a:delta))
+  call win_execute(pum.preview_id, command)
+  call pum#popup#_redraw_preview()
+  return ''
+endfunction
+
 function s:skip_next_complete() abort
   " Skip completion until next input
 

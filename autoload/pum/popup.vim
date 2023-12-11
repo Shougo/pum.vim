@@ -457,6 +457,21 @@ function pum#popup#_redraw_scroll() abort
     redraw!
   endif
 endfunction
+function pum#popup#_redraw_preview() abort
+  const pum = pum#_get()
+
+  " NOTE: normal redraw does not work...
+  " And incsearch hack does not work in neovim.
+  call win_execute(pum.preview_id, has('nvim') ? 'redraw' : 'call s:redraw()')
+  if has('nvim') && &laststatus ==# 3
+    redrawstatus
+  endif
+
+  if pum#_check_cmdwin()
+    " NOTE: redraw! is required for cmdwin
+    redraw!
+  endif
+endfunction
 
 " returns [border_left, border_top, border_right, border_bottom]
 function s:get_border_size(border) abort

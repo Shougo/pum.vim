@@ -176,7 +176,7 @@ function pum#map#confirm() abort
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice
-  autocmd pum-temp TextChangedI,TextChangedP * ++once
+  autocmd TextChangedI,TextChangedP * ++once
         \ let v:completed_item = {}
 
   return ''
@@ -193,7 +193,7 @@ function pum#map#confirm_word() abort
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice
-  autocmd pum-temp TextChangedI,TextChangedP * ++once
+  autocmd TextChangedI,TextChangedP * ++once
         \ let v:completed_item = {}
 
   return ''
@@ -240,7 +240,7 @@ function s:skip_next_complete() abort
 
   " Note: s:check_user_input() does not work well in terminal mode
   if mode() ==# 't' && !has('nvim')
-    autocmd pum-temp TextChangedT * ++once call pum#_reset_skip_complete()
+    autocmd TextChangedT * ++once call pum#_reset_skip_complete()
   else
     call s:check_user_input({ -> pum#_reset_skip_complete() })
   endif
@@ -308,7 +308,7 @@ function s:check_user_input(callback) abort
   let s:prev_line = pum#_getline()
 
   if mode() ==# 'c'
-    autocmd pum-temp CmdlineLeave * ++once
+    autocmd CmdlineLeave * ++once
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
     if has('nvim')
@@ -351,7 +351,7 @@ function s:insert_line_feedkeys(text, after_func) abort
 
   const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
   let chars = "\<BS>"->repeat(current_word->strchars()) .. a:text
-  if mode() ==# 'i'
+  if mode() ==# 'i' && !'s:save_backspace'->exists()
     " NOTE: Change backspace option to work <BS> correctly
     let s:save_backspace = &backspace
     " NOTE: Disable indentkeys
@@ -361,9 +361,11 @@ function s:insert_line_feedkeys(text, after_func) abort
     set indentkeys=
 
     " NOTE: Restore options
-    autocmd pum TextChangedI,TextChangedP * ++once
+    autocmd TextChangedI,TextChangedP * ++once
           \ : let &backspace = s:save_backspace
+          \ | unlet! s:save_backspace
           \ | let &l:indentkeys = s:save_indentkeys
+          \ | unlet! s:save_save_indentkeys
   endif
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)
@@ -377,7 +379,7 @@ function s:insert_line_complete(text) abort
   " complete() implementation
 
   " NOTE: Restore completeopt is needed after complete()
-  autocmd pum TextChangedI,TextChangedP * ++once
+  autocmd TextChangedI,TextChangedP * ++once
         \ : let &completeopt = s:save_completeopt
         \ | let &eventignore = s:save_eventignore
 

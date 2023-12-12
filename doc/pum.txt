@@ -77,6 +77,15 @@ border
 
 		Default: "none"
 
+                                               *pum-options-commit_characters*
+commit_characters
+		When the characters are input, execute |pum#map#confirm()|
+		automatically.
+		NOTE: It does work only insert mode.
+		NOTE: The input text must be head match.
+
+		Default: []
+
                                                        *pum-options-direction*
 direction
 		The popup menu direction if possible.

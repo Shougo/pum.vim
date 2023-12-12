@@ -44,6 +44,7 @@ function pum#_init_options() abort
         \   auto_confirm_time: 0,
         \   auto_select: &completeopt =~# 'noinsert',
         \   border: 'none',
+        \   commit_characters: [],
         \   direction: 'auto',
         \   follow_cursor: v:false,
         \   highlight_columns: {},

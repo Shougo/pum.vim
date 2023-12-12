@@ -91,6 +91,28 @@ function pum#map#select_relative(delta, overflow='empty') abort
   " Close popup menu and CompleteDone if user input
   call s:check_user_input({ -> pum#close() })
 
+  if mode() ==# 'i' && !pum#_options().commit_characters->empty()
+    " TODO: vim.on_key support
+    "if has('nvim')
+    "  if !'s:check_commit_characters_handler'->exists()
+    "    lua vim.on_key(function(key)
+    "          \   local options = vim.fn['pum#_options']()
+    "          \   local commit_characters = vim.fn.get(
+    "          \     options, 'commit_characters', {})
+    "          \   for _, v in ipairs(commit_characters) do
+    "          \     if v == key then
+    "          \       vim.fn['pum#map#confirm']()
+    "          \       break
+    "          \     end
+    "          \   end
+    "          \ end)
+    "    const s:check_commit_characters_handler = v:true
+    "  endif
+    "endif
+
+    autocmd InsertCharPre * ++once call s:check_commit_characters()
+  endif
+
   call pum#popup#_reset_auto_confirm(mode())
 
   return ''
@@ -326,11 +348,14 @@ function s:check_user_input(callback) abort
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
     if has('nvim')
-      lua vim.on_key(function(key)
-            \   if string.match(key, '^%C$') then
-            \     vim.fn['pum#close']()
-            \   end
-            \ end)
+      if !'s:check_user_input_handler'->exists()
+        lua vim.on_key(function(key)
+              \   if string.match(key, '^%C$') then
+              \     vim.fn['pum#close']()
+              \   end
+              \ end)
+        const s:check_user_input_handler = v:true
+      endif
     else
       autocmd pum-temp TextChangedT * call s:check_text_changed()
     endif
@@ -352,6 +377,22 @@ function s:check_text_changed() abort
     call pum#close()
   endif
   let s:prev_line = current_line
+endfunction
+function s:check_commit_characters() abort
+  if pum#_options().commit_characters->index(v:char) < 0 || !pum#visible()
+    return
+  endif
+
+  let pum = pum#_get()
+  const word = pum.cursor > 0 ?
+        \ pum.items[pum.cursor - 1].word :
+        \ pum.orig_input
+  if word->stridx(pum.orig_input) < 0
+    " It must be head match
+    return
+  endif
+
+  let v:char = word[pum.orig_input->len() :] .. v:char
 endfunction
 
 function s:insert_line_feedkeys(text, after_func) abort

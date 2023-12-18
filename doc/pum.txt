@@ -44,6 +44,16 @@ INTERFACE                                                      *pum-interface*
 ------------------------------------------------------------------------------
 VARIABLES                                                      *pum-variables*
 
+                                                       *g:pum#completed_event*
+g:pum#completed_event
+		It is event name.
+
+		"confirm": |pum#map#confirm()|.
+		"confirm_word": |pum#map#confirm_word()|.
+		"complete_done": Others.
+
+		It is used in |PumCompleteDone| event.
+
                                                         *g:pum#completed_item*
 g:pum#completed_item
 		It is inserted item like |v:completed_item|.
@@ -494,6 +504,7 @@ PumCompleteChanged
 PumCompleteDone
 		It is called after completion is done like |CompleteDone|.
 		|g:pum#completed_item| gives the completed item.
+		|g:pum#completed_event| gives the event name.
 
 		NOTE: You must not use |v:completed_item| in the event.
 		Please use |g:pum#completed_item| instead.

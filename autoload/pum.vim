@@ -1,5 +1,6 @@
 let g:pum#_namespace = has('nvim') ? nvim_create_namespace('pum') : 0
 let g:pum#completed_item = {}
+let g:pum#completed_event = ''
 
 
 function pum#_get() abort
@@ -172,7 +173,7 @@ function pum#open(startcol, items, mode = mode(), insert = v:false) abort
   endtry
 endfunction
 
-function pum#close() abort
+function pum#close(event = 'complete_done') abort
   if !pum#visible()
     return
   endif
@@ -192,7 +193,7 @@ function pum#close() abort
     " Call the event later
     " NOTE: It may be failed when inside autocmd
     let completed_item = pum.items[pum.cursor - 1]
-    call timer_start(1, { -> s:complete_done(completed_item) })
+    call timer_start(1, { -> s:complete_done(completed_item, a:event) })
   endif
 
   if '#User#PumClose'->exists()
@@ -356,8 +357,9 @@ function pum#_format_item(
   return str
 endfunction
 
-function s:complete_done(completed_item) abort
+function s:complete_done(completed_item, event) abort
   let g:pum#completed_item = a:completed_item
+  let g:pum#completed_event = a:event
 
   if '#User#PumCompleteDonePre'->exists()
     doautocmd <nomodeline> User PumCompleteDonePre

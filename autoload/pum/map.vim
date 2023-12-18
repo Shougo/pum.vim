@@ -192,9 +192,10 @@ function pum#map#confirm() abort
   let pum = pum#_get()
 
   if pum.cursor > 0 && pum.current_word ==# ''
-    call s:insert_current_word(pum.orig_input, { -> s:skip_next_complete() })
+    call s:insert_current_word(pum.orig_input,
+          \ { -> s:skip_next_complete('confirm') })
   else
-    call s:skip_next_complete()
+    call s:skip_next_complete('confirm')
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice
@@ -209,9 +210,10 @@ function pum#map#confirm_word() abort
   if pum.cursor > 0
     " Get non space characters
     const word = pum.items[pum.cursor - 1].word->matchstr('^\S\+')
-    call s:insert(word, pum.orig_input, { -> s:skip_next_complete() })
+    call s:insert(word, pum.orig_input,
+          \ { -> s:skip_next_complete('confirm_word') })
   else
-    call s:skip_next_complete()
+    call s:skip_next_complete('confirm_word')
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice
@@ -266,10 +268,10 @@ function pum#map#scroll_preview(delta) abort
   return ''
 endfunction
 
-function s:skip_next_complete() abort
+function s:skip_next_complete(event = 'complete_done') abort
   " Skip completion until next input
 
-  call pum#close()
+  call pum#close(a:event)
 
   let pum = pum#_get()
   let pum.skip_complete = v:true

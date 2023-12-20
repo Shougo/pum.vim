@@ -389,7 +389,7 @@ function s:check_commit_characters() abort
   const word = pum.cursor > 0 ?
         \ pum.items[pum.cursor - 1].word :
         \ pum.orig_input
-  if word->stridx(pum.orig_input) < 0
+  if word ==# pum.current_word || word->stridx(pum.orig_input) < 0
     " It must be head match
     return
   endif

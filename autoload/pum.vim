@@ -173,7 +173,7 @@ function pum#open(startcol, items, mode = mode(), insert = v:false) abort
   endtry
 endfunction
 
-function pum#close(event = 'complete_done') abort
+function pum#close(event = 'complete_done', close_window = v:true) abort
   if !pum#visible()
     return
   endif
@@ -200,12 +200,14 @@ function pum#close(event = 'complete_done') abort
     doautocmd <nomodeline> User PumClose
   endif
 
-  " NOTE: pum.scroll_id is broken after pum#popup#_close()
-  const id = pum.id
-  const scroll_id = pum.scroll_id
+  if a:close_window
+    " NOTE: pum.scroll_id is broken after pum#popup#_close()
+    const id = pum.id
+    const scroll_id = pum.scroll_id
 
-  call pum#popup#_close(id)
-  call pum#popup#_close(scroll_id)
+    call pum#popup#_close(id)
+    call pum#popup#_close(scroll_id)
+  endif
 endfunction
 
 function s:to_bool(int_boolean_value) abort

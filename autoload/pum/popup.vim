@@ -238,6 +238,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     let pum.scroll_height = scroll_height
 
     if pum.id > 0
+      call pum#close('complete_done', v:false)
+
       if pos == pum.pos
         " Resize window
         call nvim_win_set_width(pum.id, width)
@@ -295,6 +297,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \ }
 
     if pum.id > 0
+      call pum#close('complete_done', v:false)
+
       call popup_move(pum.id, winopts)
       call popup_settext(pum.id, lines)
     else

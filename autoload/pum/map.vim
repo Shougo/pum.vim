@@ -419,10 +419,12 @@ function s:insert_line_feedkeys(text, after_func) abort
 
     " NOTE: Restore options
     autocmd TextChangedI,TextChangedP * ++once
-          \ : let &backspace = s:save_backspace
-          \ | unlet! s:save_backspace
-          \ | let &l:indentkeys = s:save_indentkeys
-          \ | unlet! s:save_save_indentkeys
+          \ : if 's:save_backspace'->exists()
+          \ |   let &backspace = s:save_backspace
+          \ |   unlet! s:save_backspace
+          \ |   let &l:indentkeys = s:save_indentkeys
+          \ |   unlet! s:save_save_indentkeys
+          \ | endif
   endif
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)
@@ -437,8 +439,12 @@ function s:insert_line_complete(text) abort
 
   " NOTE: Restore completeopt is needed after complete()
   autocmd TextChangedI,TextChangedP * ++once
-        \ : let &completeopt = s:save_completeopt
-        \ | let &eventignore = s:save_eventignore
+        \ : if 's:save_completeopt'->exists()
+        \ |   let &completeopt = s:save_completeopt
+        \ |   unlet! s:save_completeopt
+        \ |   let &eventignore = s:save_eventignore
+        \ |   unlet! s:save_eventignore
+        \ | endif
 
   let s:save_completeopt = &completeopt
   let s:save_eventignore = &eventignore

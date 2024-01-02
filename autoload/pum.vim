@@ -403,8 +403,13 @@ function pum#_complete_changed() abort
   if options.preview
     call pum#_stop_debounce_timer('s:debounce_preview_timer')
 
-    let s:debounce_preview_timer = timer_start(
-          \ options.preview_delay, { -> pum#popup#_preview() })
+    " NOTE: In terminal mode, the timer does not work well.
+    if mode() ==# 't'
+      call pum#popup#_preview()
+    else
+      let s:debounce_preview_timer = timer_start(
+            \ options.preview_delay, { -> pum#popup#_preview() })
+    endif
   endif
 
   if '#User#PumCompleteChanged'->exists()

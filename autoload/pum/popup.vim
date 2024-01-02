@@ -908,6 +908,10 @@ endfunction
 function pum#popup#_close_preview() abort
   let pum = pum#_get()
 
+  if pum.preview_id < 0
+    return
+  endif
+
   call pum#popup#_close_id(pum.preview_id)
 
   let pum.preview_id = -1

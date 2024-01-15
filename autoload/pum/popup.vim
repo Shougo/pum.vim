@@ -917,7 +917,8 @@ function pum#popup#_close_preview() abort
   let pum.preview_id = -1
 endfunction
 function s:get_previewer(item) abort
-  if '*ddc#get_previewer'->exists()
+  " In terminal mode, it does not work well.
+  if mode() !=# 't' && '*ddc#get_previewer'->exists()
     const previewer = ddc#get_previewer(a:item)
     if previewer.kind !=# 'empty'
       return previewer
@@ -1002,4 +1003,3 @@ function s:uniq_by_word_or_dup(items) abort
   endfor
   return ret
 endfunction
-

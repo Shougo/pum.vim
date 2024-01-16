@@ -902,6 +902,7 @@ function s:open_preview() abort
   if previewer.kind ==# 'markdown'
     call setbufvar(pum.preview_buf, '&filetype', 'markdown')
   endif
+  call setbufvar(pum.preview_buf, '&wrap', v:true)
 
   call pum#popup#_redraw()
 endfunction

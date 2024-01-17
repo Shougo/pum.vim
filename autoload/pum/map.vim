@@ -83,7 +83,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
 
     call nvim_win_set_config(pum.scroll_id, #{
           \   relative: 'editor',
-          \   row: pum.scroll_row + [offset, pum.height - 1]->min(),
+          \   row: pum.scroll_row + [offset, pum.scroll_height - 1]->min(),
           \   col: pum.scroll_col,
           \ })
   endif

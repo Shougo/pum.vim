@@ -220,7 +220,6 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     const scroll_height = [
           \ (height * ((height + 0.0) / lines->len()) + 0.5
           \ )->floor()->float2nr(), 1]->max()
-
     const scroll_row = pos[0] + border_top
     const scroll_col = pos[1] + width + border_right
     let scroll_winopts = #{
@@ -233,9 +232,10 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \   style: 'minimal',
           \   zindex: options.zindex + 1,
           \ }
-    let pum.scroll_row = scroll_row
-    let pum.scroll_col = scroll_col
-    let pum.scroll_height = scroll_height
+
+    let pum.scroll_row = scroll_winopts.row
+    let pum.scroll_col = scroll_winopts.col
+    let pum.scroll_height = scroll_winopts.height
 
     if pum.id > 0
       call pum#close('complete_done', v:false)

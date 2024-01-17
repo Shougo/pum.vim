@@ -412,7 +412,7 @@ function pum#popup#_close_id(id) abort
     " NOTE: popup may be already closed
     " Close popup and clear highlights
     if has('nvim')
-      call nvim_buf_clear_namespace(pum#_get().buf, g:pum#_namespace, 1, -1)
+      call nvim_buf_clear_namespace(a:id->winbufnr(), g:pum#_namespace, 1, -1)
       call nvim_win_close(a:id, v:true)
     else
       " NOTE: prop_remove() is not needed.

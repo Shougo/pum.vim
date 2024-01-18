@@ -8,7 +8,7 @@ const s:priority_highlight_horizontal_separator = 1
 
 function pum#popup#_open(startcol, items, mode, insert) abort
   " NOTE: In neovim 0.10+, floating window works in command line window
-  if a:mode !~# '[ict]' || (pum#_check_cmdwin() && !has('nvim-0.10'))
+  if a:mode !~# '[ict]' || (getcmdwintype() !=# '' && !has('nvim-0.10'))
     " Invalid mode
     return -1
   endif
@@ -456,7 +456,7 @@ function pum#popup#_redraw_scroll() abort
     redrawstatus
   endif
 
-  if pum#_check_cmdwin()
+  if getcmdwintype() !=# ''
     " NOTE: redraw! is required for cmdwin
     redraw!
   endif
@@ -471,7 +471,7 @@ function pum#popup#_redraw_preview() abort
     redrawstatus
   endif
 
-  if pum#_check_cmdwin()
+  if getcmdwintype() !=# ''
     " NOTE: redraw! is required for cmdwin
     redraw!
   endif

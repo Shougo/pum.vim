@@ -417,10 +417,6 @@ function pum#_complete_changed() abort
   endif
 endfunction
 
-function pum#_check_cmdwin() abort
-  return '%'->bufname() ==# '[Command Line]'
-endfunction
-
 function pum#_stop_debounce_timer(timer_name) abort
   if a:timer_name->exists()
     silent! call timer_stop({a:timer_name})

@@ -449,7 +449,7 @@ function s:insert_line_complete(text) abort
   let s:save_completeopt = &completeopt
   let s:save_eventignore = &eventignore
   set completeopt=menu
-  set eventignore=CompleteDone
+  set eventignore=CompleteDone,ModeChanged
 
   call complete(pum#_get().startcol, [a:text])
 

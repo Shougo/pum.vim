@@ -116,6 +116,8 @@ function pum#set_option(key_or_dict, value = '') abort
   call s:check_options(dict)
 
   call extend(s:options, dict)
+
+  call pum#popup#_close_preview()
 endfunction
 function pum#set_local_option(mode, key_or_dict, value = '') abort
   if !'s:options'->exists()

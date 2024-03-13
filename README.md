@@ -1,7 +1,5 @@
 # pum.vim
 
-Note: It is still experimental version.
-
 [![Doc](https://img.shields.io/badge/doc-%3Ah%20pum-orange.svg)](doc/pum.txt)
 
 Please read [help](doc/pum.txt) for details.
@@ -61,6 +59,3 @@ inoremap <PageUp>   <Cmd>call pum#map#insert_relative_page(-1)<CR>
 ```
 
 ## Screenshots
-
-## Plans
-

@@ -1,6 +1,6 @@
 *pum.txt*	Original popup completion menu framework library
 
-Version: 0.0
+Version: 2.0
 Author: Shougo <Shougo.Matsu at gmail.com>
 License: MIT license
 

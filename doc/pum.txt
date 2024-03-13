@@ -529,7 +529,7 @@ EXAMPLES                                                        *pum-examples*
 <
 
 ==============================================================================
-FREQUENTLY ASKED QUESTIONS (FAQ)			*pum-faq*
+FREQUENTLY ASKED QUESTIONS (FAQ)                                     *pum-faq*
 
 
 FAQ 1:							|pum-faq-1|

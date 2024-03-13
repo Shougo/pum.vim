@@ -27,26 +27,6 @@ recommended) or Vim 9.0.1276+.
 pum.vim detects if "noice.nvim" is installed.
 https://github.com/folke/noice.nvim
 
-For vim-plug
-
-```vim
-call plug#begin()
-
-Plug 'Shougo/pum.vim'
-
-call plug#end()
-```
-
-For dein.vim
-
-```vim
-call dein#begin()
-
-call dein#add('Shougo/pum.vim')
-
-call dein#end()
-```
-
 ## Configuration
 
 ```vim

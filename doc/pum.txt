@@ -532,29 +532,29 @@ EXAMPLES                                                        *pum-examples*
 FREQUENTLY ASKED QUESTIONS (FAQ)                                     *pum-faq*
 
 
-FAQ 1:							|pum-faq-1|
+FAQ 1:                                                             |pum-faq-1|
 	How to donate money to you?
 
-FAQ 2:							|pum-faq-2|
+FAQ 2:                                                             |pum-faq-2|
 	The popup menu does not close immediately in Vim.
 
-FAQ 3:							|pum-faq-3|
+FAQ 3:                                                             |pum-faq-3|
 	The popup menu does not work in |command-line-window|.
 
-FAQ 4:							|pum-faq-4|
+FAQ 4:                                                             |pum-faq-4|
 	Auto import or auto snippet expansion does not work in pum.vim.
 
-FAQ 5:							|pum-faq-5|
+FAQ 5:                                                             |pum-faq-5|
 	I want to use j/k keys to navigate popup menu when only entered popup
 	menu.
 
-FAQ 6:							|pum-faq-6|
+FAQ 6:                                                             |pum-faq-6|
 	The popup window does not close when enter |command-line-window|.
 
-FAQ 7:							|pum-faq-7|
+FAQ 7:                                                             |pum-faq-7|
 	I want to move to the first/last item by Home/End keys.
 
-FAQ 8:							|pum-faq-8|
+FAQ 8:                                                             |pum-faq-8|
 	'incsearch' text is flickered when |pum-options-reversed| is set in
 	neovim.
 

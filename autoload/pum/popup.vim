@@ -167,7 +167,13 @@ function pum#popup#_open(startcol, items, mode, insert) abort
         \  spos.col - 1]
 
   if a:mode ==# 'c'
-    if has('nvim') && pum#util#_luacheck('noice')
+    if '*cmdline#_get'->exists() && !cmdline#_get().pos->empty()
+      let cmdline_pos = cmdline#_get().pos->copy()
+      let pos[0] = cmdline_pos[0] + 1
+      let pos[0] += (direction ==# 'above' ?
+        \            -options.offset_row : options.offset_row)
+      let pos[1] += cmdline#_get().prompt->strlen() + cmdline_pos[1]
+    elseif has('nvim') && pum#util#_luacheck('noice')
       " Use noice cursor
       let noice_pos = luaeval(
             \ 'require("noice").api.get_cmdline_position()').screenpos
@@ -175,7 +181,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       let noice_view = luaeval('require("noice.config").options.cmdline.view')
       if noice_view !=# 'cmdline'
         let pos[0] = noice_pos.row
-        let pos[0] += options.offset_cmdrow
+        let pos[0] += (direction ==# 'above' ?
+              \        -options.offset_row : options.offset_row)
       endif
 
       let pos[1] += noice_pos.col - 1

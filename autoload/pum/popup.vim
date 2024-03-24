@@ -35,14 +35,18 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     let max_column =
           \   column ==# 'space' ? 1 :
           \   column ==# 'abbr' ? items->copy()->map({ _, val ->
-          \     val->get('abbr', val.word)->strdisplaywidth()})->max() :
+          \     val->get('abbr', val.word)->strdisplaywidth()
+          \   })->max() :
           \   column ==# 'kind' ? items->copy()->map({ _, val ->
-          \     val->get('kind', '')->strdisplaywidth()})->max() :
+          \     val->get('kind', '')->strdisplaywidth()
+          \   })->max() :
           \   column ==# 'menu' ? items->copy()->map({ _, val ->
-          \     val->get('menu', '')->strdisplaywidth()})->max() :
+          \     val->get('menu', '')->strdisplaywidth()
+          \   })->max() :
           \   items->copy()->map({ _, val ->
-          \     val->get('columns', {})->get(column, '')->strdisplaywidth()})
-          \   ->max()
+          \     val->get('columns', {})->get(column, '')
+          \     ->strdisplaywidth()
+          \   })->max()
 
     let max_column =
           \ [max_column, options.max_columns->get(column, max_column)]->min()
@@ -75,9 +79,11 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   " NOTE: abbr is the rest column
   const abbr_width = width - non_abbr_length - padding
 
-  let lines = items->copy()->map({ _, val ->
-        \     pum#_format_item(
-        \       val, options, a:mode, a:startcol, max_columns, abbr_width)
+  let lines = items->copy()
+        \ ->map({ _, val ->
+        \   pum#_format_item(
+        \     val, options, a:mode, a:startcol, max_columns, abbr_width
+        \   )
         \ })
 
   let pum = pum#_get()

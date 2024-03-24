@@ -1000,7 +1000,7 @@ function s:set_float_window_options(id, options, highlight) abort
   endif
 
   call setwinvar(a:id, '&winhighlight', highlight)
-  call setwinvar(a:id, '&winblend', &l:pumblend)
+  call setwinvar(a:id, '&winblend', a:options.blend)
   call setwinvar(a:id, '&wrap', v:false)
   call setwinvar(a:id, '&scrolloff', 0)
 endfunction

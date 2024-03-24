@@ -44,6 +44,7 @@ function pum#_init_options() abort
   let s:options = #{
         \   auto_confirm_time: 0,
         \   auto_select: &completeopt =~# 'noinsert',
+        \   blend: '+pumblend'->exists() ? &pumblend : 0,
         \   border: 'none',
         \   commit_characters: [],
         \   direction: 'auto',

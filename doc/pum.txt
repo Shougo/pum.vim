@@ -78,6 +78,13 @@ auto_select
 
 		Default: v:true if 'completeopt' contains "noinsert"
 
+                                                           *pum-options-blend*
+blend
+		Specify 'winblend' option value.
+		NOTE: neovim only feature.
+
+		Default: 'pumblend' value
+
                                                           *pum-options-border*
 border
 		The completion window border.  You can specify border

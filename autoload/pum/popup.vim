@@ -309,12 +309,24 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \   line: pos[0] + 1,
           \   col: pos[1] + 1,
           \   highlight: options.highlight_normal_menu,
+          \   border: [],
+          \   borderchars: [],
           \   maxwidth: width,
           \   maxheight: height,
           \   scroll: options.scrollbar_char !=# '',
           \   wrap: 0,
           \   zindex: options.zindex,
           \ }
+
+    if options.border->type() ==# v:t_string
+      if options.border ==# 'double'
+        let winopts.border = [2, 2, 2, 2]
+      elseif options.border !=# 'none'
+        let winopts.border = [1, 1, 1, 1]
+      endif
+    else
+      let winopts.borderchars = options.border
+    endif
 
     if pum.id > 0
       call pum#close('complete_done', v:false)
@@ -499,10 +511,7 @@ endfunction
 
 " returns [border_left, border_top, border_right, border_bottom]
 function s:get_border_size(border) abort
-  if !has('nvim')
-    " NOTE: Vim is not supported
-    return [0, 0, 0, 0]
-  elseif a:border->type() == v:t_string
+  if a:border->type() == v:t_string
     return a:border ==# 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
   elseif a:border->type() == v:t_list && !a:border->empty()
     return [

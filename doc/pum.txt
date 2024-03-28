@@ -87,10 +87,19 @@ blend
 
                                                           *pum-options-border*
 border
-		The completion window border.  You can specify border
-		|nvim_open_win()| border option.
-		NOTE: neovim only feature.  Vim's border feature is not
-		stable.
+		The completion window border.
+		See |nvim_open_win()| or |popup_create-arguments| for the
+		detail.
+
+		Following values are available:
+
+		"none": Disabled.
+		"single": A single line box.
+		"double": A double line box.
+		"rounded": neovim only.
+		"solid": neovim only.
+		"shadow": neovim only.
+		array: Specifify the eight chars building up the border.
 
 		Default: "none"
 

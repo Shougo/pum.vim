@@ -174,10 +174,17 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   if a:mode ==# 'c'
     if '*cmdline#_get'->exists() && !cmdline#_get().pos->empty()
+      const [cmdline_left, cmdline_top, cmdline_right, cmdline_bottom]
+            \ = s:get_border_size(cmdline#_options().border)
+
       let cmdline_pos = cmdline#_get().pos->copy()
-      let pos[0] = cmdline_pos[0] + 1
+      let cmdline_pos[0] += cmdline_top + cmdline_bottom
+      let cmdline_pos[1] += cmdline_left
+
+      let pos[0] = cmdline_pos[0]
       let pos[0] += (direction ==# 'above' ?
-        \            -options.offset_row : options.offset_row)
+            \        -options.offset_row : options.offset_row)
+
       let pos[1] += cmdline#_get().prompt->strlen() + cmdline_pos[1]
     elseif has('nvim') && pum#util#_luacheck('noice')
       " Use noice cursor

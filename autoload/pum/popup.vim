@@ -309,8 +309,6 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \   line: pos[0] + 1,
           \   col: pos[1] + 1,
           \   highlight: options.highlight_normal_menu,
-          \   border: [],
-          \   borderchars: [],
           \   maxwidth: width,
           \   maxheight: height,
           \   scroll: options.scrollbar_char !=# '',

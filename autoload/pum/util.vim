@@ -1,7 +1,8 @@
-function pum#util#_print_error(string) abort
+function pum#util#print_error(string, name = 'pum') abort
   echohl Error
-  echomsg printf('[pum] %s', a:string->type() ==# v:t_string ?
-        \ a:string : a:string->string())
+  for line in a:string->string()->split("\n")
+    echomsg printf('[%s] %s', a:name, line)
+  endfor
   echohl None
 endfunction
 

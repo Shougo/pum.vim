@@ -216,24 +216,28 @@ max_horizontal_items
                                                       *pum-options-max_height*
 max_height
 		The maximum height of the popup menu.
+		NOTE: It does not work for |pum-options-horizontal_menu|.
 
 		Default: 'pumheight' value
 
                                                        *pum-options-max_width*
 max_width
 		The maximum width of the popup menu.
+		NOTE: It does not work for |pum-options-horizontal_menu|.
 
 		Default: 0
 
                                                       *pum-options-min_height*
 min_height
 		The minimum height of the popup menu.
+		NOTE: It does not work for |pum-options-horizontal_menu|.
 
 		Default: 0
 
                                                        *pum-options-min_width*
 min_width
 		The minimum width of the popup menu.
+		NOTE: It does not work for |pum-options-horizontal_menu|.
 
 		Default: 'pumwidth' value
 

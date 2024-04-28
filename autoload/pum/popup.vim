@@ -398,7 +398,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   " Close popup automatically
   autocmd pum ModeChanged i:[^i]* ++once call pum#close()
   autocmd pum ModeChanged [ct]:* ++once call pum#close()
-  autocmd pum CmdWinLeave * ++once call pum#close()
+  autocmd pum CmdWinEnter,CmdWinLeave * ++once call pum#close()
   autocmd pum CursorHold * ++once call pum#close()
 
   call pum#popup#_reset_auto_confirm(a:mode)

@@ -659,6 +659,7 @@ function pum#popup#_redraw_horizontal_menu() abort
     return
   endif
 
+  " Adjust cursor
   if pum.cursor == 0
     let items = pum.items->copy()
   else
@@ -670,21 +671,62 @@ function pum#popup#_redraw_horizontal_menu() abort
     endif
   endif
 
-  const max_items = pum#_options().max_horizontal_items
+  let options = pum#_options()
 
-  if pum.items->len() > max_items
-    let items = items[: max_items - 1]
+  " Adjust height
+  let lines = []
+  let height = 0
+  let item_count = 0
+  let word = ''
+  let separator = v:false
+  for index in items->len()->range()
+    if item_count != 0
+      let word ..= ' | '
+      let separator = v:true
+    endif
+    let word ..= items[index]->get('abbr', items[index].word)
+
+    let item_count += 1
+
+    if item_count >= options.max_horizontal_items
+      if height >= options.max_height
+        if index < items->len() - 1
+          let word ..= ' ...'
+        endif
+
+        break
+      endif
+
+      call add(lines, word)
+
+      " Next line
+      let height += 1
+      let word = ''
+      let item_count = 0
+    endif
+  endfor
+  if word != ''
+    call add(lines, word)
+    let height += 1
+
+    if index < items->len() - 1
+      let word ..= ' ...'
+    endif
   endif
 
-  const words = items->copy()->map({ _, val -> val->get('abbr', val.word) })
-  const word = printf('%s%s%s%s',
-        \   words[0], words->len() > 1 ? '   ' : '',
-        \   words[1:]->join(' | '),
-        \   pum.items->len() <= max_items ? '' : ' ... ',
-        \ )
+  if options.min_height > 0
+    let height = [height, options.min_height]->max()
+  endif
 
-  let options = pum#_options()
-  const lines = [word]
+  const [border_left, border_top, border_right, border_bottom]
+        \ = s:get_border_size(options.border)
+  let padding_height = 1 + border_top + border_bottom
+  let padding_width = 1 + border_left + border_right
+  let padding_left = border_left
+  if options.padding && (a:mode ==# 'c' || a:startcol != 1)
+    let padding_width += 2
+    let padding_left += 1
+  endif
 
   if !has('nvim') && mode() ==# 't'
     const cursor = bufnr('%')->term_getcursor()
@@ -693,16 +735,41 @@ function pum#popup#_redraw_horizontal_menu() abort
     let spos = screenpos(0, '.'->line(), '.'->col())
   endif
 
-  const rest_width = &columns - spos.col - options.offset_col
+  if mode() !=# 'c'
+    " Adjust to screen row
+    let minheight_below = [
+          \ height, &lines - spos.row - padding_height - options.offset_row
+          \ ]->min()
+    let minheight_above = [
+          \ height, spos.row - padding_height - options.offset_row
+          \ ]->min()
+    if (minheight_below < minheight_above && options.direction ==# 'auto')
+          \ || (minheight_above >= 1 && options.direction ==# 'above')
+      " Use above window
+      const direction = 'above'
+    else
+      " Use below window
+      const direction = 'below'
+    endif
+  else
+    const direction = 'above'
+  endif
 
-  const row = mode() ==# 'c' ?
-        \ &lines - [1, &cmdheight]->max() - options.offset_cmdrow :
-        \ rest_width < word->strwidth() || mode() ==# 't' ?
-        \ (&lines - [1, &cmdheight]->max() <= spos.row + 1 ?
-        \  spos.row - 1 : spos.row + 1) :
-        \ spos.row
-  const col = mode() ==# 'c' ?
-        \ options.offset_cmdcol : spos.col + options.offset_col
+  let width = lines->copy()->map({ _, val -> val->strwidth() })->max()
+  if options.min_width > 0
+    let width = [width, options.min_width]->max()
+  endif
+  if options.max_width > 0
+    let width = [width, options.max_width]->min()
+  endif
+
+  let pos = mode() ==# 'c' ?
+        \ [&lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
+        \  options.follow_cursor ? getcmdpos() + options.offset_cmdcol :
+        \  options.offset_cmdcol] :
+        \ [spos.row + (direction ==# 'above' ?
+        \              -options.offset_row : options.offset_row),
+        \  spos.col - 1 + options.offset_col]
 
   if has('nvim')
     if pum.buf < 0
@@ -713,10 +780,10 @@ function pum#popup#_redraw_horizontal_menu() abort
     let winopts = #{
           \   border: options.border,
           \   relative: 'editor',
-          \   width: word->strwidth(),
-          \   height: 1,
-          \   row: row - 1,
-          \   col: col - 1,
+          \   width: width,
+          \   height: height,
+          \   row: pos[0],
+          \   col: pos[1],
           \   anchor: 'NW',
           \   style: 'minimal',
           \   zindex: options.zindex,
@@ -741,8 +808,10 @@ function pum#popup#_redraw_horizontal_menu() abort
   else
     let winopts = #{
           \   pos: 'topleft',
-          \   line: row,
-          \   col: col,
+          \   line: pos[0] + 1,
+          \   col: pos[1] + 1,
+          \   maxheight: height,
+          \   maxwidth: width,
           \   highlight: options.highlight_horizontal_menu,
           \ }
 
@@ -755,6 +824,8 @@ function pum#popup#_redraw_horizontal_menu() abort
     endif
   endif
 
+  let pum.pos = pos
+
   if pum.cursor > 0
     " Highlight the first item
     call s:highlight(
@@ -763,12 +834,12 @@ function pum#popup#_redraw_horizontal_menu() abort
           \ s:priority_highlight_selected,
           \ 1, 1, items[0]->get('abbr', items[0].word)->strlen())
   endif
-  if words->len() > 1
+  if separator
     call s:highlight(
           \ options.highlight_horizontal_separator,
           \ 'pum_highlight_separator',
           \ s:priority_highlight_selected,
-          \ 1, strlen(words[0]) + 2, 1)
+          \ 1, items[0]->get('abbr', items[0].word)->strlen() + 2, 1)
   endif
 
   call pum#popup#_redraw()

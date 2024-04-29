@@ -70,7 +70,7 @@ function pum#_init_options() abort
         \   min_width: &pumwidth,
         \   offset_cmdcol: 0,
         \   offset_cmdrow: 0,
-        \   offset_col: 3,
+        \   offset_col: 1,
         \   offset_row: 0,
         \   padding: v:false,
         \   preview: v:false,

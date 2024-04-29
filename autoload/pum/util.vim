@@ -1,4 +1,4 @@
-function pum#util#print_error(string, name = 'pum') abort
+function pum#util#_print_error(string, name = 'pum') abort
   echohl Error
   for line in
         \ (a:string->type() ==# v:t_string ? a:string : a:string->string())

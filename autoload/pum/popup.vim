@@ -690,10 +690,6 @@ function pum#popup#_redraw_horizontal_menu() abort
 
     if item_count >= options.max_horizontal_items
       if height >= options.max_height
-        if index < items->len() - 1
-          let word ..= ' ...'
-        endif
-
         break
       endif
 
@@ -706,12 +702,12 @@ function pum#popup#_redraw_horizontal_menu() abort
     endif
   endfor
   if word != ''
-    call add(lines, word)
-    let height += 1
-
     if index < items->len() - 1
       let word ..= ' ...'
     endif
+
+    call add(lines, word)
+    let height += 1
   endif
 
   if options.min_height > 0

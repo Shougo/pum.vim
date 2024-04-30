@@ -1,5 +1,5 @@
-let s:pum_matched_id = 70
-let s:pum_selected_id = -1
+const s:pum_matched_id = 70
+const s:pum_selected_id = -1
 
 const s:priority_highlight_item = 2
 const s:priority_highlight_column = 1
@@ -764,9 +764,42 @@ function pum#popup#_redraw_horizontal_menu() abort
         \  options.follow_cursor ? getcmdpos() + options.offset_cmdcol :
         \  options.offset_cmdcol] :
         \ [spos.row + (direction ==# 'above' ?
-        \              -options.offset_row : options.offset_row),
+        \              -options.offset_row - height - 1 : options.offset_row),
         \  options.follow_cursor ? spos.col - 1 + options.offset_col :
         \  options.offset_col]
+
+  if mode() ==# 'c'
+    if '*cmdline#_get'->exists() && !cmdline#_get().pos->empty()
+      const [cmdline_left, cmdline_top, cmdline_right, cmdline_bottom]
+            \ = s:get_border_size(cmdline#_options().border)
+
+      let cmdline_pos = cmdline#_get().pos->copy()
+      let cmdline_pos[0] += cmdline_top + cmdline_bottom
+      let cmdline_pos[1] += cmdline_left
+
+      let pos[0] = cmdline_pos[0]
+      let pos[0] += (direction ==# 'above' ?
+            \        -options.offset_row : options.offset_row)
+
+      let pos[1] += cmdline#_get().prompt->strlen() + cmdline_pos[1]
+    elseif has('nvim') && pum#util#_luacheck('noice')
+      " Use noice cursor
+      let noice_pos = luaeval(
+            \ 'require("noice").api.get_cmdline_position()').screenpos
+
+      let noice_view = luaeval('require("noice.config").options.cmdline.view')
+      if noice_view !=# 'cmdline'
+        let pos[0] = noice_pos.row
+        let pos[0] += (direction ==# 'above' ?
+              \        -options.offset_row : options.offset_row)
+      endif
+
+      let pos[1] += noice_pos.col - 1
+    else
+      " Use getcmdscreenpos() for adjustment
+      let pos[1] += (getcmdscreenpos() - 1) - getcmdpos()
+    endif
+  endif
 
   if has('nvim')
     if pum.buf < 0

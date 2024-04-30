@@ -1,5 +1,5 @@
 const s:pum_matched_id = 70
-const s:pum_selected_id = -1
+let s:pum_selected_id = -1
 
 const s:priority_highlight_item = 2
 const s:priority_highlight_column = 1

@@ -440,7 +440,8 @@ function pum#popup#_close_id(id) abort
     " NOTE: popup may be already closed
     " Close popup and clear highlights
     if has('nvim')
-      call nvim_buf_clear_namespace(a:id->winbufnr(), g:pum#_namespace, 1, -1)
+      call nvim_buf_clear_namespace(
+            \ a:id->winbufnr(), pum#_get().namespace, 1, -1)
       call nvim_win_close(a:id, v:true)
     else
       " NOTE: prop_remove() is not needed.
@@ -599,7 +600,7 @@ function s:highlight(highlight, prop_type, priority, row, col, length) abort
 
   if has('nvim')
     return nvim_buf_set_extmark(
-          \ pum.buf, g:pum#_namespace, a:row - 1, col - 1, #{
+          \ pum.buf, pum.namespace, a:row - 1, col - 1, #{
           \   end_col: col - 1 + a:length,
           \   hl_group: a:highlight,
           \   priority: a:priority,
@@ -627,7 +628,7 @@ function pum#popup#_redraw_selected() abort
 
   " Clear current highlight
   if has('nvim')
-    call nvim_buf_del_extmark(pum.buf, g:pum#_namespace, pum.selected_id)
+    call nvim_buf_del_extmark(pum.buf, pum.namespace, pum.selected_id)
     let pum.selected_id = -1
   elseif !prop_type->prop_type_get()->empty()
     call prop_remove(#{

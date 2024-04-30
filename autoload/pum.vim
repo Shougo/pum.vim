@@ -1,4 +1,3 @@
-let g:pum#_namespace = has('nvim') ? nvim_create_namespace('pum') : 0
 let g:pum#completed_item = {}
 let g:pum#completed_event = ''
 
@@ -25,6 +24,7 @@ function pum#_init() abort
         \   id: -1,
         \   len: 0,
         \   matched_id: 70,
+        \   namespace: has('nvim') ? nvim_create_namespace('pum') : 0,
         \   orig_input: '',
         \   pos: [],
         \   preview_buf: -1,

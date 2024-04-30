@@ -1,6 +1,3 @@
-const s:pum_matched_id = 70
-let s:pum_selected_id = -1
-
 const s:priority_highlight_item = 2
 const s:priority_highlight_column = 1
 const s:priority_highlight_selected = 0
@@ -377,12 +374,12 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     call s:highlight_items(items, max_columns)
 
     " Simple highlight matches
-    silent! call matchdelete(s:pum_matched_id, pum.id)
+    silent! call matchdelete(pum.matched_id, pum.id)
     if options.highlight_matches !=# ''
       let pattern = pum.orig_input->escape('~"*\.^$[]')
             \ ->substitute('\w\ze.', '\0[^\0]\\{-}', 'g')
       call matchadd(
-            \ options.highlight_matches, pattern, 0, s:pum_matched_id,
+            \ options.highlight_matches, pattern, 0, pum.matched_id,
             \ #{ window: pum.id })
     endif
   endif
@@ -630,7 +627,8 @@ function pum#popup#_redraw_selected() abort
 
   " Clear current highlight
   if has('nvim')
-    call nvim_buf_del_extmark(pum.buf, g:pum#_namespace, s:pum_selected_id)
+    call nvim_buf_del_extmark(pum.buf, g:pum#_namespace, pum.selected_id)
+    let pum.selected_id = -1
   elseif !prop_type->prop_type_get()->empty()
     call prop_remove(#{
           \   type: prop_type,
@@ -644,7 +642,7 @@ function pum#popup#_redraw_selected() abort
   let length = pum.buf->getbufline(pum.cursor)[0]->strlen()
   let col = pum#_options().padding && (mode() ==# 'c' || pum.startcol != 1)
         \ ? 0 : 1
-  let s:pum_selected_id = s:highlight(
+  let pum.selected_id = s:highlight(
         \ pum#_options().highlight_selected,
         \ prop_type,
         \ s:priority_highlight_selected,

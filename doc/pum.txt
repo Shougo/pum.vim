@@ -247,14 +247,13 @@ offset_cmdcol
 offset_cmdrow
 		Popup row offset in the command line mode.
 
-		Default:
-			0
+		Default: 0
 
                                                       *pum-options-offset_col*
 offset_col
 		Popup column offset if |pum-options-horizontal_menu|.
 
-		Default: 1
+		Default: 0
 
                                                       *pum-options-offset_row*
 offset_row

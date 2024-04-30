@@ -765,7 +765,8 @@ function pum#popup#_redraw_horizontal_menu() abort
         \  options.offset_cmdcol] :
         \ [spos.row + (direction ==# 'above' ?
         \              -options.offset_row : options.offset_row),
-        \  spos.col - 1 + options.offset_col]
+        \  options.follow_cursor ? spos.col - 1 + options.offset_col :
+        \  options.offset_col]
 
   if has('nvim')
     if pum.buf < 0

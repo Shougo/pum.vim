@@ -393,10 +393,14 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   " Close popup automatically
-  autocmd pum InsertLeave * ++once call pum#close()
-  autocmd pum ModeChanged [ct]:* ++once call pum#close()
-  autocmd pum CmdWinEnter,CmdWinLeave * ++once call pum#close()
-  autocmd pum CursorHold * ++once call pum#close()
+  autocmd pum InsertLeave * ++once ++nested
+        \ call pum#close()
+  autocmd pum ModeChanged [ct]:* ++once ++nested
+        \ call pum#close()
+  autocmd pum CmdWinEnter,CmdWinLeave * ++once ++nested
+        \ call pum#close()
+  autocmd pum CursorHold * ++once ++nested
+        \ call pum#close()
 
   call pum#popup#_reset_auto_confirm(a:mode)
 

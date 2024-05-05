@@ -393,6 +393,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   " Close popup automatically
+  " NOTE: ModeChanged i:[^i]* does not work well when html lsp
   autocmd pum InsertLeave * ++once ++nested
         \ call pum#close()
   autocmd pum ModeChanged [ct]:* ++once ++nested

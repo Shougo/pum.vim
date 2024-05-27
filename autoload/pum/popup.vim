@@ -1083,13 +1083,13 @@ function pum#popup#_reset_auto_confirm(mode) abort
 
   " Reset the timer when user input texts
   if a:mode ==# 'i'
-    autocmd pum TextChangedI,TextChangedP * ++once
+    autocmd pum TextChangedI,TextChangedP * ++once ++nested
           \ call pum#popup#_reset_auto_confirm(mode())
   elseif a:mode ==# 'c'
-    autocmd pum CmdlineChanged * ++once
+    autocmd pum CmdlineChanged * ++once ++nested
           \ call pum#popup#_reset_auto_confirm(mode())
   elseif a:mode ==# 't'
-    autocmd pum TextChangedT * ++once
+    autocmd pum TextChangedT * ++once ++nested
           \ call pum#popup#_reset_auto_confirm(mode())
   endif
 endfunction

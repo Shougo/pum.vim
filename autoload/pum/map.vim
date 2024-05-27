@@ -110,7 +110,8 @@ function pum#map#select_relative(delta, overflow='empty') abort
     "  endif
     "endif
 
-    autocmd InsertCharPre * ++once call s:check_commit_characters()
+    autocmd InsertCharPre * ++once ++nested
+          \ call s:check_commit_characters()
   endif
 
   call pum#popup#_reset_auto_confirm(mode())
@@ -199,7 +200,7 @@ function pum#map#confirm() abort
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice
-  autocmd TextChangedI,TextChangedP * ++once
+  autocmd TextChangedI,TextChangedP * ++once ++nested
         \ let v:completed_item = {}
 
   return ''
@@ -217,7 +218,7 @@ function pum#map#confirm_word() abort
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice
-  autocmd TextChangedI,TextChangedP * ++once
+  autocmd TextChangedI,TextChangedP * ++once ++nested
         \ let v:completed_item = {}
 
   return ''
@@ -278,7 +279,8 @@ function s:skip_next_complete(event = 'complete_done') abort
 
   " Note: s:check_user_input() does not work well in terminal mode
   if mode() ==# 't' && !has('nvim')
-    autocmd TextChangedT * ++once call pum#_reset_skip_complete()
+    autocmd TextChangedT * ++once ++nested
+          \ call pum#_reset_skip_complete()
   else
     call s:check_user_input({ -> pum#_reset_skip_complete() })
   endif
@@ -346,7 +348,7 @@ function s:check_user_input(callback) abort
   let s:prev_line = pum#_getline()
 
   if mode() ==# 'c'
-    autocmd CmdlineLeave * ++once
+    autocmd CmdlineLeave * ++once ++nested
           \ call pum#_reset_skip_complete()
   elseif mode() ==# 't'
     if has('nvim')
@@ -359,12 +361,14 @@ function s:check_user_input(callback) abort
         const s:check_user_input_handler = v:true
       endif
     else
-      autocmd pum-temp TextChangedT * call s:check_text_changed()
+      autocmd pum-temp TextChangedT * ++nested
+            \ call s:check_text_changed()
     endif
   else
-    autocmd pum-temp InsertLeave * ++once
+    autocmd pum-temp InsertLeave * ++once ++nested
           \ call pum#_reset_skip_complete()
-    autocmd pum-temp TextChangedI * call s:check_text_changed()
+    autocmd pum-temp TextChangedI * ++nested
+          \ call s:check_text_changed()
   endif
 endfunction
 function s:check_text_changed() abort
@@ -418,7 +422,7 @@ function s:insert_line_feedkeys(text, after_func) abort
     set indentkeys=
 
     " NOTE: Restore options
-    autocmd TextChangedI,TextChangedP * ++once
+    autocmd TextChangedI,TextChangedP * ++once ++nested
           \ : if 's:save_backspace'->exists()
           \ |   let &backspace = s:save_backspace
           \ |   unlet! s:save_backspace
@@ -438,7 +442,7 @@ function s:insert_line_complete(text) abort
   " complete() implementation
 
   " NOTE: Restore completeopt is needed after complete()
-  autocmd TextChangedI,TextChangedP * ++once
+  autocmd TextChangedI,TextChangedP * ++once ++nested
         \ : if 's:save_completeopt'->exists()
         \ |   let &completeopt = s:save_completeopt
         \ |   unlet! s:save_completeopt

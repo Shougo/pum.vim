@@ -444,7 +444,7 @@ function s:insert_line_complete(text) abort
   " NOTE: Restore completeopt is needed after complete()
   autocmd TextChangedI,TextChangedP * ++once ++nested
         \ : if 's:save_completeopt'->exists()
-        \ |   let &completeopt = s:save_completeopt
+        \ |   let &l:completeopt = s:save_completeopt
         \ |   unlet! s:save_completeopt
         \ |   let &eventignore = s:save_eventignore
         \ |   unlet! s:save_eventignore
@@ -452,7 +452,7 @@ function s:insert_line_complete(text) abort
 
   let s:save_completeopt = &completeopt
   let s:save_eventignore = &eventignore
-  set completeopt=menu
+  setlocal completeopt=menu
   set eventignore=CompleteDone
 
   call complete(pum#_get().startcol, [a:text])

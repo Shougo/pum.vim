@@ -290,6 +290,13 @@ preview_delay
 
 		Default: 500
 
+                                                   *pum-options-preview_enter*
+preview_enter
+		The preview window can be entered.
+		NOTE: The option is available in neovim.
+
+		Default: v:false
+
                                                   *pum-options-preview_height*
 preview_height
 		The maximum height of the preview window.

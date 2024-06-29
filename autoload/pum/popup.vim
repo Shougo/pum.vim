@@ -962,7 +962,8 @@ function s:open_preview() abort
       let winopts.noautocmd = v:true
 
       " Create new window
-      const id = nvim_open_win(pum.preview_buf, v:false, winopts)
+      const id = nvim_open_win(
+            \ pum.preview_buf, options.preview_enter, winopts)
 
       call s:set_float_window_options(id, options, 'preview')
 

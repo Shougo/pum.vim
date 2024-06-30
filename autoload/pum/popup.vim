@@ -927,6 +927,8 @@ function s:open_preview() abort
   let width = [20, width]->max()
   let height = [1, height]->max()
 
+  let save_id = win_getid()
+
   if has('nvim')
     if pum.preview_buf < 0
       let pum.preview_buf = nvim_create_buf(v:false, v:true)
@@ -1032,6 +1034,8 @@ function s:open_preview() abort
       return
     endtry
   endif
+
+  call win_gotoid(save_id)
 
   if previewer.kind ==# 'markdown'
     call setbufvar(pum.preview_buf, '&filetype', 'markdown')

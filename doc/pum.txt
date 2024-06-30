@@ -367,6 +367,10 @@ pum#get_pos()
 			size		total number of items
 			scrollbar	|TRUE| if scrollbar is visible
 
+                                                       *pum#get_preview_buf()*
+pum#get_preview_buf()
+		Returns preview buffer number.
+		NOTE: You must enable |pum-option-preview|.
                                                                   *pum#open()*
 pum#open({startcol}, {items})
 		Open popup menu like |complete()|.
@@ -573,6 +577,8 @@ FAQ 8:                                                             |pum-faq-8|
 	'incsearch' text is flickered when |pum-options-reversed| is set in
 	neovim.
 
+FAQ 9:                                                             |pum-faq-9|
+	I want to enter the documentation window.
 
 ------------------------------------------------------------------------------
                                                                    *pum-faq-1*
@@ -643,6 +649,13 @@ A: It is feature.  Because 'incsearch' is broken when |:redraw| in floating
 window.  I have gave up to fix it in plugin side.
 https://github.com/neovim/neovim/issues/17810
 
+                                                                   *pum-faq-9*
+Q: I want to enter the documentation window.
+
+A: You can use |pum#get_preview_buf()| for it.
+>
+	execute pum#get_preview_buf() .. 'buffer'
+<
 
 ==============================================================================
 COMPATIBILITY                                              *pum-compatibility*

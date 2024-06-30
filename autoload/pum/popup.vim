@@ -859,6 +859,7 @@ function pum#popup#_redraw_horizontal_menu() abort
   endif
 
   let pum.pos = pos
+  let pum.width = width
 
   if pum.cursor > 0
     " Highlight the first item

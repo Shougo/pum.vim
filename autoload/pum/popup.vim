@@ -881,12 +881,16 @@ function pum#popup#_redraw_horizontal_menu() abort
 endfunction
 
 function pum#popup#_preview() abort
+  let save_id = win_getid()
+
   const pos = getpos('.')
   try
     call s:open_preview()
   finally
     call setpos('.', pos)
   endtry
+
+  call win_gotoid(save_id)
 endfunction
 function s:open_preview() abort
   let pum = pum#_get()
@@ -928,8 +932,6 @@ function s:open_preview() abort
   let width = [20, width]->max()
   let height = [1, height]->max()
 
-  let save_id = win_getid()
-
   if has('nvim')
     if pum.preview_buf < 0
       let pum.preview_buf = nvim_create_buf(v:false, v:true)
@@ -966,7 +968,7 @@ function s:open_preview() abort
 
       " Create new window
       const id = nvim_open_win(
-            \ pum.preview_buf, options.preview_enter, winopts)
+            \ pum.preview_buf, v:false, winopts)
 
       call s:set_float_window_options(id, options, 'preview')
 
@@ -1035,8 +1037,6 @@ function s:open_preview() abort
       return
     endtry
   endif
-
-  call win_gotoid(save_id)
 
   if previewer.kind ==# 'markdown'
     call setbufvar(pum.preview_buf, '&filetype', 'markdown')

@@ -78,7 +78,6 @@ function pum#_init_options() abort
         \   preview: v:false,
         \   preview_border: 'none',
         \   preview_delay: 500,
-        \   preview_enter: v:false,
         \   preview_height: &previewheight,
         \   preview_width: &pumwidth / 2,
         \   reversed: v:false,

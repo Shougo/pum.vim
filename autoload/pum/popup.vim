@@ -464,13 +464,6 @@ function pum#popup#_close_id(id) abort
 endfunction
 
 function pum#popup#_redraw() abort
-  if has('nvim') && mode() !=# 'c'
-    return
-  endif
-
-  call s:redraw()
-endfunction
-function s:redraw() abort
   if mode() ==# 'c' && &incsearch
         \ && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
     " Redraw without breaking 'incsearch' in search commands
@@ -485,7 +478,8 @@ function pum#popup#_redraw_scroll() abort
 
   " NOTE: normal redraw does not work...
   " And incsearch hack does not work in neovim.
-  call win_execute(pum.id, has('nvim') ? 'redraw' : 'call s:redraw()')
+  call win_execute(pum.id,
+        \ has('nvim') ? 'redraw' : 'call pum#popup#_redraw()')
   if has('nvim') && &laststatus ==# 3
     redrawstatus
   endif
@@ -500,7 +494,8 @@ function pum#popup#_redraw_preview() abort
 
   " NOTE: normal redraw does not work...
   " And incsearch hack does not work in neovim.
-  call win_execute(pum.preview_id, has('nvim') ? 'redraw' : 'call s:redraw()')
+  call win_execute(pum.preview_id,
+        \ has('nvim') ? 'redraw' : 'call pum#popup#_redraw()')
   if has('nvim') && &laststatus ==# 3
     redrawstatus
   endif

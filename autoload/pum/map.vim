@@ -350,6 +350,8 @@ function s:check_user_input(callback) abort
   if mode() ==# 'c'
     autocmd CmdlineLeave * ++once ++nested
           \ call pum#_reset_skip_complete()
+    autocmd CmdlineChanged * ++once ++nested
+          \ call s:check_text_changed()
   elseif mode() ==# 't'
     if has('nvim')
       if !'s:check_user_input_handler'->exists()

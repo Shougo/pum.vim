@@ -402,6 +402,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
         \ call pum#close()
   autocmd pum CursorHold * ++once ++nested
         \ call pum#close()
+  autocmd pum TextChangedI * ++once ++nested
+        \ call pum#popup#_check_text_changed()
 
   call pum#popup#_reset_auto_confirm(a:mode)
 
@@ -1110,6 +1112,25 @@ function s:auto_confirm() abort
 
   call pum#map#confirm()
   call pum#close()
+endfunction
+
+function pum#popup#_check_text_changed() abort
+  if !'s:prev_line'->exists()
+    let s:prev_line = pum#_getline()
+  endif
+
+  let pum = pum#_get()
+  const current_line = pum#_getline()
+  if pum.skip_complete
+    let s:prev_line = current_line
+    return
+  endif
+
+  if pum#_row() != pum.startrow || current_line !=# s:prev_line
+        \ || ('g:skkeleton#mode'->exists() && g:skkeleton#mode !=# '')
+    call pum#close()
+  endif
+  let s:prev_line = current_line
 endfunction
 
 function s:set_float_window_options(id, options, highlight) abort

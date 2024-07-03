@@ -345,8 +345,6 @@ function s:check_user_input(callback) abort
   let pum = pum#_get()
   let pum.current_line = pum#_getline()[: pum.startcol]
 
-  let s:prev_line = pum#_getline()
-
   if mode() ==# 'c'
     autocmd CmdlineLeave * ++once ++nested
           \ call pum#_reset_skip_complete()

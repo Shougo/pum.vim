@@ -346,9 +346,9 @@ function s:check_user_input(callback) abort
   let pum.current_line = pum#_getline()[: pum.startcol]
 
   if mode() ==# 'c'
-    autocmd CmdlineLeave * ++once ++nested
+    autocmd pum-temp CmdlineLeave * ++once ++nested
           \ call pum#_reset_skip_complete()
-    autocmd CmdlineChanged * ++once ++nested
+    autocmd pum-temp CmdlineChanged * ++once ++nested
           \ call pum#popup#_check_text_changed()
   elseif mode() ==# 't'
     if has('nvim')

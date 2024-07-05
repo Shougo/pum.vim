@@ -394,16 +394,21 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   " Close popup automatically
   " NOTE: ModeChanged i:[^i]* does not work well when html lsp
-  autocmd pum InsertLeave * ++once ++nested
-        \ call pum#close()
+  if a:mode ==# 'i'
+    autocmd pum InsertLeave * ++once ++nested
+          \ call pum#close()
+    autocmd pum TextChangedI * ++once ++nested
+          \ call pum#popup#_check_text_changed()
+  elseif a:mode ==# 'c'
+    autocmd pum CmdlineChanged * ++once ++nested
+          \ call pum#popup#_check_text_changed()
+  endif
   autocmd pum ModeChanged [ct]:* ++once ++nested
         \ call pum#close()
   autocmd pum CmdWinEnter,CmdWinLeave * ++once ++nested
         \ call pum#close()
   autocmd pum CursorHold * ++once ++nested
         \ call pum#close()
-  autocmd pum TextChangedI * ++once ++nested
-        \ call pum#popup#_check_text_changed()
 
   call pum#popup#_reset_auto_confirm(a:mode)
 

@@ -92,25 +92,7 @@ function pum#map#select_relative(delta, overflow='empty') abort
   call s:check_user_input({ -> pum#close() })
 
   if mode() ==# 'i' && !pum#_options().commit_characters->empty()
-    " TODO: vim.on_key support
-    "if has('nvim')
-    "  if !'s:check_commit_characters_handler'->exists()
-    "    lua vim.on_key(function(key)
-    "          \   local options = vim.fn['pum#_options']()
-    "          \   local commit_characters = vim.fn.get(
-    "          \     options, 'commit_characters', {})
-    "          \   for _, v in ipairs(commit_characters) do
-    "          \     if v == key then
-    "          \       vim.fn['pum#map#confirm']()
-    "          \       break
-    "          \     end
-    "          \   end
-    "          \ end)
-    "    const s:check_commit_characters_handler = v:true
-    "  endif
-    "endif
-
-    autocmd InsertCharPre * ++once ++nested
+    autocmd pum InsertCharPre * ++once ++nested
           \ call s:check_commit_characters()
   endif
 
@@ -351,7 +333,10 @@ function s:check_user_input(callback) abort
     autocmd pum-temp CmdlineChanged * ++once ++nested
           \ call pum#popup#_check_text_changed()
   elseif mode() ==# 't'
-    if has('nvim')
+    if '##KeyInputPre'->exists()
+      autocmd pum-temp KeyInputPre * ++nested
+            \ call pum#popup#_check_text_changed()
+    elseif has('nvim')
       if !'s:check_user_input_handler'->exists()
         lua vim.on_key(function(key)
               \   if string.match(key, '^%C$') then

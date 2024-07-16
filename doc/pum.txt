@@ -65,27 +65,27 @@ OPTIONS                                                          *pum-options*
 Options can be toggled through the use of |pum#set_option()|.
 NOTE: The options must be set before call of |pum#open()|.
 
-                                               *pum-options-auto_confirm_time*
+                                                *pum-option-auto_confirm_time*
 auto_confirm_time
 		If it is positive value, the inserted item is auto confirmed
 		after you don't input.
 
 		Default: 0
 
-                                                     *pum-options-auto_select*
+                                                      *pum-option-auto_select*
 auto_select
 		Enable the auto selection of the first item.
 
 		Default: v:true if 'completeopt' contains "noinsert"
 
-                                                           *pum-options-blend*
+                                                            *pum-option-blend*
 blend
 		Specify 'winblend' option value.
 		NOTE: neovim only feature.
 
 		Default: 'pumblend' value
 
-                                                          *pum-options-border*
+                                                           *pum-option-border*
 border
 		The completion window border.
 		See |nvim_open_win()| or |popup_create-arguments| for the
@@ -103,7 +103,7 @@ border
 
 		Default: "none"
 
-                                               *pum-options-commit_characters*
+                                                *pum-option-commit_characters*
 commit_characters
 		When the characters are input, execute |pum#map#confirm()|
 		automatically.
@@ -112,7 +112,7 @@ commit_characters
 
 		Default: []
 
-                                                       *pum-options-direction*
+                                                        *pum-option-direction*
 direction
 		The popup menu direction if possible.
 		NOTE: It does not work for command line mode.
@@ -123,13 +123,13 @@ direction
 
 		Default: "auto"
 
-                                                   *pum-options-follow_cursor*
+                                                    *pum-option-follow_cursor*
 follow_cursor
 		The popup menu is displayed after the cursor position.
 
 		Default: v:false
 
-                                               *pum-options-highlight_columns*
+                                                *pum-option-highlight_columns*
 highlight_columns
 		The columns highlights of candidates.
 		The key is column name.
@@ -137,52 +137,52 @@ highlight_columns
 
 		Default: {}
 
-                                       *pum-options-highlight_horizontal_menu*
+                                        *pum-option-highlight_horizontal_menu*
 highlight_horizontal_menu
 		The highlight of the horizontal menu.
-		|pum-options-horizontal_menu|
+		|pum-option-horizontal_menu|
 
 		Default: ""
 
-                                  *pum-options-highlight_horizontal_separator*
+                                   *pum-option-highlight_horizontal_separator*
 highlight_horizontal_separator
 		The highlight of the horizontal menu separator.
-		|pum-options-horizontal_menu|
+		|pum-option-horizontal_menu|
 
 		Default: "PmenuSbar"
 
-                                               *pum-options-highlight_matches*
+                                                *pum-option-highlight_matches*
 highlight_matches
 		The input matches highlight of candidates.
 
 		Default: ""
 
-                                           *pum-options-highlight_normal_menu*
+                                            *pum-option-highlight_normal_menu*
 highlight_normal_menu
 		The highlight of the normal menu.
 
 		Default: "Pmenu"
 
-                                               *pum-options-highlight_preview*
+                                                *pum-option-highlight_preview*
 highlight_preview
 		The highlight of the preview window.
 
 		Default: "Pmenu"
 
-                                             *pum-options-highlight_scrollbar*
+                                              *pum-option-highlight_scrollbar*
 highlight_scrollbar
 		The scrollbar highlight.
 		NOTE: neovim only feature.
 
 		Default: "PmenuSbar"
 
-                                              *pum-options-highlight_selected*
+                                               *pum-option-highlight_selected*
 highlight_selected
 		The selected highlight of candidates.
 
 		Default: "PmenuSel"
 
-                                                 *pum-options-horizontal_menu*
+                                                  *pum-option-horizontal_menu*
 horizontal_menu
 		Use horizontal menu instead of vertical popup menu.
 		NOTE: The feature does not support custom highlights and
@@ -190,7 +190,7 @@ horizontal_menu
 
 		Default: v:false
 
-                                                     *pum-options-item_orders*
+                                                      *pum-option-item_orders*
 item_orders
 		The column order of the item.
 		NOTE: "space" column means between items padding.
@@ -200,74 +200,74 @@ item_orders
 
 		Default: ["abbr", "space", "kind", "space", "menu"]
 
-                                                     *pum-options-max_columns*
+                                                      *pum-option-max_columns*
 max_columns
 		The column maximum width of the item.
 
 		Default: #{ kind: 10, menu: 20 }
 
-                                            *pum-options-max_horizontal_items*
+                                             *pum-option-max_horizontal_items*
 max_horizontal_items
 		The max items of the horizontal menu.
-		|pum-options-horizontal_menu|
+		|pum-option-horizontal_menu|
 
 		Default: 3
 
-                                                      *pum-options-max_height*
+                                                       *pum-option-max_height*
 max_height
 		The maximum height of the popup menu.
 
 		Default: 'pumheight' value
 
-                                                       *pum-options-max_width*
+                                                        *pum-option-max_width*
 max_width
 		The maximum width of the popup menu.
 
 		Default: 0
 
-                                                      *pum-options-min_height*
+                                                       *pum-option-min_height*
 min_height
 		The minimum height of the popup menu.
 
 		Default: 0
 
-                                                       *pum-options-min_width*
+                                                        *pum-option-min_width*
 min_width
 		The minimum width of the popup menu.
 
 		Default: 'pumwidth' value
 
-                                                   *pum-options-offset_cmdcol*
+                                                    *pum-option-offset_cmdcol*
 offset_cmdcol
 		Popup col offset in the command line mode.
 
 		Default: 0
 
-                                                   *pum-options-offset_cmdrow*
+                                                    *pum-option-offset_cmdrow*
 offset_cmdrow
 		Popup row offset in the command line mode.
 
 		Default: 0
 
-                                                      *pum-options-offset_col*
+                                                       *pum-option-offset_col*
 offset_col
-		Popup column offset if |pum-options-horizontal_menu|.
+		Popup column offset if |pum-option-horizontal_menu|.
 
 		Default: 0
 
-                                                      *pum-options-offset_row*
+                                                       *pum-option-offset_row*
 offset_row
 		Popup row offset.
 
 		Default: 0
 
-                                                         *pum-options-padding*
+                                                          *pum-option-padding*
 padding
 		Enable left/right padding like native completion menu.
 
 		Default: v:false
 
-                                                         *pum-options-preview*
+                                                          *pum-option-preview*
 preview
 		Enable preview window.
 		It prints "info" attribute in current item or prints previewer
@@ -275,7 +275,7 @@ preview
 
 		Default: v:false
 
-                                                  *pum-options-preview-border*
+                                                   *pum-option-preview-border*
 preview_border
 		The preview window border.  You can specify border
 		|nvim_open_win()| border option.
@@ -284,34 +284,34 @@ preview_border
 
 		Default: "none"
 
-                                                   *pum-options-preview_delay*
+                                                    *pum-option-preview_delay*
 preview_delay
 		The delay time(ms) to display preview window.
 
 		Default: 500
 
-                                                  *pum-options-preview_height*
+                                                   *pum-option-preview_height*
 preview_height
 		The maximum height of the preview window.
 
 		Default: 'previewheight' value
 
-                                                   *pum-options-preview_width*
+                                                    *pum-option-preview_width*
 preview_width
 		The maximum width of the preview window.
 
 		Default: 'pumwidth' / 2 value
 
-                                                        *pum-options-reversed*
+                                                         *pum-option-reversed*
 reversed
 		Enable reversed mode.  The items order is reversed.
 		NOTE: It increases screen flicker.
-		NOTE: |pum-options-direction| must be "above" or command line
+		NOTE: |pum-option-direction| must be "above" or command line
 		mode for the feature.
 
 		Default: v:false
 
-                                                  *pum-options-scrollbar_char*
+                                                   *pum-option-scrollbar_char*
 scrollbar_char
 		Specify scrollbar character.
 		NOTE: The scrollbar feature is disabled if it is empty string.
@@ -319,7 +319,7 @@ scrollbar_char
 
 		Default: "|"
 
-                                                     *pum-options-use_setline*
+                                                      *pum-option-use_setline*
 use_setline
 		Use |setline()| instead of |feedkeys()| when insertion.
 		It is faster but |.| repeat does not work.
@@ -328,7 +328,7 @@ use_setline
 
 		Default: v:false
 
-                                                          *pum-options-zindex*
+                                                           *pum-option-zindex*
 zindex
 		Popup window z-index.
 
@@ -489,7 +489,7 @@ pum#map#longest_relative({delta}[, {overflow}])
                                                     *pum#map#scroll_preview()*
 pum#map#scroll_preview({delta})
 		Scroll forward or backward {delta} number in the
-		|pum-options-preview| window.
+		|pum-option-preview| window.
 		NOTE: It must not be called in |:map-<expr>|.
 
                                                    *pum#map#select_relative()*
@@ -574,7 +574,7 @@ FAQ 7:                                                             |pum-faq-7|
 	I want to move to the first/last item by Home/End keys.
 
 FAQ 8:                                                             |pum-faq-8|
-	'incsearch' text is flickered when |pum-options-reversed| is set in
+	'incsearch' text is flickered when |pum-option-reversed| is set in
 	neovim.
 
 FAQ 9:                                                             |pum-faq-9|
@@ -642,7 +642,7 @@ A: >
 	\ <Cmd>call pum#map#insert_relative(+9999, 'ignore')<CR>
 <
                                                                    *pum-faq-8*
-Q: 'incsearch' text is cleared when |pum-options-reversed| is set or move
+Q: 'incsearch' text is cleared when |pum-option-reversed| is set or move
 cursor in neovim.
 
 A: It is feature.  Because 'incsearch' is broken when |:redraw| in floating

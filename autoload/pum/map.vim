@@ -205,6 +205,43 @@ function pum#map#confirm_word() abort
 
   return ''
 endfunction
+function pum#map#confirm_suffix() abort
+  let pum = pum#_get()
+
+  if pum.cursor > 0
+    const word = pum.cursor > 0 ?
+          \ pum.items[pum.cursor - 1].word :
+          \ pum.orig_input
+    const next_input = pum.orig_line[pum.col - 1 :]
+
+    " Get suffix matched to next_input
+    let suffix = ''
+    for i in range(word->len() - 1, -1, -1)
+      if next_input[:word->len() - i - 1] == word[i:]
+        let suffix = word[i:]
+        break
+      endif
+    endfor
+
+    " The rest word is inserted
+    const next_input_word = next_input[suffix->len():]->matchstr('^\w\+\S\?')
+    const remove_next_input = suffix .. next_input_word
+
+    call s:insert_next_input(
+          \ word[: -1 - suffix->len()] .. suffix .. next_input_word,
+          \ pum.orig_input,
+          \ { -> s:skip_next_complete('confirm_word') },
+          \ next_input[remove_next_input->len():])
+  else
+    call s:skip_next_complete('confirm_suffix')
+  endif
+
+  " Reset v:completed_item to prevent CompleteDone is twice
+  autocmd TextChangedI,TextChangedP * ++once ++nested
+        \ let v:completed_item = {}
+
+  return ''
+endfunction
 
 function pum#map#cancel() abort
   let pum = pum#_get()
@@ -268,7 +305,7 @@ function s:skip_next_complete(event = 'complete_done') abort
   endif
 endfunction
 
-function s:insert(word, prev_word, after_func) abort
+function s:insert(word, prev_word, after_func, next_input='') abort
   augroup pum-temp
     autocmd!
   augroup END
@@ -278,7 +315,7 @@ function s:insert(word, prev_word, after_func) abort
   " Convert to 0 origin
   const startcol = pum.startcol - 1
   const prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
-  const next_input = pum#_getline()[startcol :][len(a:prev_word):]
+  const next_input = pum#_getline()[startcol :][a:prev_word->len():]
 
   " NOTE: current_word must be changed before call after_func
   let pum.current_word = a:word
@@ -289,10 +326,10 @@ function s:insert(word, prev_word, after_func) abort
   if mode() ==# 'c'
     " NOTE: setcmdpos() does not work in command line mode!
     call setcmdline(prev_input .. a:word .. next_input,
-          \ pum.startcol + len(a:word))
+          \ pum.startcol + a:word->len())
   elseif mode() ==# 't'
     call s:insert_line_jobsend(a:word)
-  elseif pum#_options().use_setline
+  elseif pum#_options().use_setline || next_input !=# ''
     call setline('.', prev_input .. a:word .. next_input)
     call cursor(0, pum.startcol + len(a:word))
   elseif a:word ==# '' || a:after_func != v:null
@@ -302,6 +339,38 @@ function s:insert(word, prev_word, after_func) abort
   else
     call s:insert_line_complete(a:word)
     return
+  endif
+
+  if a:after_func != v:null
+    call call(a:after_func, [])
+  endif
+endfunction
+function s:insert_next_input(word, prev_word, after_func, next_input) abort
+  augroup pum-temp
+    autocmd!
+  augroup END
+
+  let pum = pum#_get()
+
+  " Convert to 0 origin
+  const startcol = pum.startcol - 1
+  const prev_input = startcol == 0 ? '' : pum#_getline()[: startcol - 1]
+
+  " NOTE: current_word must be changed before call after_func
+  let pum.current_word = a:word
+
+  " NOTE: The text changes fires TextChanged events.  It must be ignored.
+  call pum#_inc_skip_complete()
+
+  if mode() ==# 'c'
+    " NOTE: setcmdpos() does not work in command line mode!
+    call setcmdline(prev_input .. a:word .. a:next_input,
+          \ pum.startcol + a:word->len())
+  elseif mode() ==# 't'
+    call s:insert_line_jobsend(a:word)
+  else
+    call setline('.', prev_input .. a:word .. a:next_input)
+    call cursor(0, pum.startcol + len(a:word))
   endif
 
   if a:after_func != v:null
@@ -437,7 +506,8 @@ endfunction
 function s:insert_line_jobsend(text) abort
   const current_word = pum#_getline()[
         \ pum#_get().startcol - 1 : pum#_col() - 2]
-  const chars = "\<C-h>"->repeat(current_word->strchars()) .. a:text
+  let chars   = "\<C-h>"->repeat(current_word->strchars())
+  let chars ..= a:text
 
   if has('nvim')
     call chansend(b:terminal_job_id, chars)

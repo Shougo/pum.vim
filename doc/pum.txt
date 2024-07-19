@@ -447,6 +447,13 @@ pum#map#confirm()
 		Insert the select and close the popup.
 		NOTE: It must not be called in |:map-<expr>|.
 
+                                                    *pum#map#confirm_suffix()*
+pum#map#confirm_suffix()
+		Insert the select suffix matched word and close the popup.
+		It is useful if you want to edit suffix.
+		NOTE: It must not be called in |:map-<expr>|.
+		NOTE: It does not work in |:terminal|.
+
                                                       *pum#map#confirm_word()*
 pum#map#confirm_word()
 		Insert the select word and close the popup.

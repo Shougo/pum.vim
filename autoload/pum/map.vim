@@ -217,7 +217,7 @@ function pum#map#confirm_suffix() abort
     " Get suffix matched to next_input
     let suffix = ''
     for i in range(word->len() - 1, -1, -1)
-      if next_input[:word->len() - i - 1] == word[i:]
+      if next_input[:word->len() - i - 1] ==# word[i:]
         let suffix = word[i:]
         break
       endif

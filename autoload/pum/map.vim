@@ -223,6 +223,11 @@ function pum#map#confirm_suffix() abort
       endif
     endfor
 
+    if suffix ==# ''
+      " non suffix.  Normal confirm behavior.
+      return pum#map#confirm()
+    endif
+
     " The rest word is inserted
     const next_input_word = next_input[suffix->len():]->matchstr('^\w\+\S\?')
     const remove_next_input = suffix .. next_input_word

@@ -228,15 +228,11 @@ function pum#map#confirm_suffix() abort
       return pum#map#confirm()
     endif
 
-    " The rest word is inserted
-    const next_input_word = next_input[suffix->len():]->matchstr('^\w\+\S\?')
-    const remove_next_input = suffix .. next_input_word
-
     call s:insert_next_input(
-          \ word[: -1 - suffix->len()] .. suffix .. next_input_word,
+          \ word[: -1 - suffix->len()] .. suffix,
           \ pum.orig_input,
           \ { -> s:skip_next_complete('confirm_word') },
-          \ next_input[remove_next_input->len():])
+          \ next_input[suffix->len():])
   else
     call s:skip_next_complete('confirm_suffix')
   endif

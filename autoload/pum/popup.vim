@@ -1120,22 +1120,23 @@ function s:auto_confirm() abort
 endfunction
 
 function pum#popup#_check_text_changed() abort
-  if !'s:prev_line'->exists()
-    let s:prev_line = pum#_getline()
+  const next_input = pum#_getline()['.'->col():]
+
+  if !'s:prev_next'->exists()
+    let s:prev_next = next_input
   endif
 
   let pum = pum#_get()
-  const current_line = pum#_getline()
   if pum.skip_complete
-    let s:prev_line = current_line
+    let s:prev_next = next_input
     return
   endif
 
-  if pum#_row() != pum.startrow || current_line !=# s:prev_line
+  if pum#_row() != pum.startrow || next_input !=# s:prev_next
         \ || ('g:skkeleton#mode'->exists() && g:skkeleton#mode !=# '')
     call pum#close()
   endif
-  let s:prev_line = current_line
+  let s:prev_next = next_input
 endfunction
 
 function s:set_float_window_options(id, options, highlight) abort

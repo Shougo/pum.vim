@@ -12,6 +12,7 @@ Interface		|pum-interface|
   Variables		  |pum-variables|
   Options		  |pum-options|
   Functions		  |pum-functions|
+  Columns		  |pum-columns|
   Key mappings		  |pum-key-mappings|
   Autocmds		  |pum-autocmds|
 Examples		|pum-examples|
@@ -134,6 +135,7 @@ highlight_columns
 		The columns highlights of candidates.
 		The key is column name.
 		The value is highlight name.
+		See |pum-columns|.
 
 		Default: {}
 
@@ -194,15 +196,14 @@ horizontal_menu
 item_orders
 		The column order of the item.
 		NOTE: "space" column means between items padding.
-		NOTE: "abbr", "kind" and "menu" columns are from the item
-		attribute.  Other columns are from the item's "columns"
-		attribute.
+		See |pum-columns|.
 
 		Default: ["abbr", "space", "kind", "space", "menu"]
 
                                                       *pum-option-max_columns*
 max_columns
 		The column maximum width of the item.
+		See |pum-columns|.
 
 		Default: #{ kind: 10, menu: 20 }
 
@@ -432,6 +433,13 @@ pum#update_current_item({dict})
 pum#visible()
 		Returns |v:true| if the popup menu is visible like
 		|pumvisible()|.
+
+
+------------------------------------------------------------------------------
+COLUMNS                                                          *pum-columns*
+
+"abbr", "kind" and "menu" columns are from the item attribute.  Other columns
+are from the item's "columns" attribute.
 
 
 ------------------------------------------------------------------------------

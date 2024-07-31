@@ -607,7 +607,7 @@ function s:highlight(highlight, prop_type, priority, row, col, length) abort
 
   if !a:highlight->hlexists()
     call pum#util#_print_error(
-          \ printf('highlight "%s" does not exists', a:highlight))
+          \ printf('highlight "%s" does not exist', a:highlight))
     return
   endif
 

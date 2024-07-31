@@ -605,6 +605,11 @@ function s:highlight(highlight, prop_type, priority, row, col, length) abort
     let col += 1
   endif
 
+  if !a:highlight->hlexists()
+    call pum#util#_print_error('highlight "%s" does not exists', a:highlight)
+    return
+  endif
+
   if has('nvim')
     return nvim_buf_set_extmark(
           \ pum.buf, pum.namespace, a:row - 1, col - 1, #{

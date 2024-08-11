@@ -936,7 +936,10 @@ function s:open_preview() abort
     " (MIT Licence; Copyright (c) 2021 Haruki Matsui)
     let height = 0
     for line in previewer.contents
-      let height += max([1, float2nr(ceil(strdisplaywidth(l:line) / str2float('' . width)))])
+      let height += [
+            \   1, (line->strdisplaywidth() / ('' .. width)->str2float())
+            \      ->ceil()->float2nr()
+            \ ]->max()
     endfor
     let height = [height, options.preview_height]->min()
   else

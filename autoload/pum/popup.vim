@@ -929,8 +929,15 @@ function s:open_preview() abort
   if previewer->has_key('contents')
     let width = previewer.contents
           \ ->copy()->map({ _, val -> val->strwidth() })->max()
-    let height = previewer.contents->len()
     let width = [width, options.preview_width]->min()
+
+    " Calculate height with an algorithm derived from
+    " https://github.com/matsui54/denops-popup-preview.vim
+    " (MIT Licence; Copyright (c) 2021 Haruki Matsui)
+    let height = 0
+    for line in previewer.contents
+      let height += max([1, float2nr(ceil(strdisplaywidth(l:line) / str2float('' . width)))])
+    endfor
     let height = [height, options.preview_height]->min()
   else
     let width = options.preview_width

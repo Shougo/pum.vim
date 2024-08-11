@@ -1051,6 +1051,10 @@ function s:open_preview() abort
   endif
   call setbufvar(pum.preview_buf, '&wrap', v:true)
 
+  if '#User#PumPreview'->exists()
+    doautocmd <nomodeline> User PumPreview
+  endif
+
   call pum#popup#_redraw()
 endfunction
 function pum#popup#_close_preview() abort

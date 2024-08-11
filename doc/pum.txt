@@ -370,7 +370,7 @@ pum#get_pos()
 
                                                        *pum#get_preview_buf()*
 pum#get_preview_buf()
-		Returns preview buffer number.
+		Returns the preview buffer number.
 		NOTE: You must enable |pum-option-preview|.
                                                                   *pum#open()*
 pum#open({startcol}, {items})
@@ -550,6 +550,12 @@ PumCompleteDonePre
 
 		NOTE: You must not use |v:completed_item| in the event.
 		Please use |g:pum#completed_item| instead.
+
+                                                                  *PumPreview*
+PumPreview
+		It is called after the preview window is created.
+		You can get preview buffer number by |pum#get_preview_buf()|.
+		NOTE: You must enable |pum-option-preview|.
 
 ==============================================================================
 EXAMPLES                                                        *pum-examples*

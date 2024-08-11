@@ -937,7 +937,7 @@ function s:open_preview() abort
     let height = 0
     for line in previewer.contents
       let height += [
-            \   1, (line->strdisplaywidth() / ('' .. width)->str2float())
+            \   1, (line->strdisplaywidth() / (width + 0.0))
             \      ->ceil()->float2nr()
             \ ]->max()
     endfor

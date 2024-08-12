@@ -1060,6 +1060,7 @@ function s:open_preview() abort
     call setbufvar(pum.preview_buf, '&filetype', 'markdown')
   endif
   call setbufvar(pum.preview_buf, '&wrap', v:true)
+  call setwinvar(pum.preview_id, '&foldenable', v:false)
 
   if '#User#PumPreview'->exists()
     doautocmd <nomodeline> User PumPreview

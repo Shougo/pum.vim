@@ -947,7 +947,8 @@ function s:open_preview() abort
     let height = options.preview_height
   endif
   " NOTE: Must be positive
-  let width  = [[20, width]->max(), &columns / 3]->min()
+  let width  = [[20, width]->max(),
+        \       (&columns - win_screenpos(0)[1]) / 3]->min()
   let height = [[1, height]->max(), &lines / 2]->min()
 
   if has('nvim')

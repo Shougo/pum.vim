@@ -330,7 +330,7 @@ function s:insert(word, prev_word, after_func, next_input='') abort
           \ pum.startcol + a:word->len())
   elseif mode() ==# 't'
     call s:insert_line_jobsend(a:word)
-  elseif pum#_options().use_setline || next_input !=# ''
+  elseif pum#_options().use_setline
     call setline('.', prev_input .. a:word .. next_input)
     call cursor(0, pum.startcol + len(a:word))
   elseif a:word ==# '' || a:after_func != v:null

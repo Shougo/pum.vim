@@ -424,6 +424,8 @@ function s:check_user_input(callback) abort
           \ call pum#_reset_skip_complete()
     autocmd pum-temp TextChangedI * ++nested
           \ call pum#popup#_check_text_changed()
+    autocmd pum-temp InsertCharPre * ++nested
+          \ call pum#close()
   endif
 endfunction
 function s:check_commit_characters() abort

@@ -368,6 +368,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let pum.col = pum#_col()
   let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
   let pum.orig_line = '.'->getline()
+  let pum.changedtick = b:changedtick
 
   if !pum.horizontal_menu
     " Highlight
@@ -397,11 +398,13 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   if a:mode ==# 'i'
     autocmd pum InsertLeave * ++once ++nested
           \ call pum#close()
-    autocmd pum TextChangedI * ++once ++nested
+    autocmd pum TextChangedI,CursorMovedI * ++nested
           \ call pum#popup#_check_text_changed()
   elseif a:mode ==# 'c'
-    autocmd pum CmdlineChanged * ++once ++nested
+    autocmd pum CmdlineChanged * ++nested
           \ call pum#popup#_check_text_changed()
+    autocmd pum CursorMovedC * ++once ++nested
+          \ call pum#close()
   endif
   autocmd pum ModeChanged [ct]:* ++once ++nested
         \ call pum#close()

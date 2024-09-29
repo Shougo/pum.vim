@@ -16,6 +16,7 @@ function pum#_init() abort
   let s:pum = #{
         \   auto_confirm_timer: -1,
         \   buf: -1,
+        \   changedtick: b:changedtick,
         \   items: [],
         \   cursor: -1,
         \   current_word: '',

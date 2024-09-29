@@ -1158,7 +1158,6 @@ function pum#popup#_check_text_changed() abort
   endif
 
   if pum#_row() != pum.startrow || next_input !=# s:prev_next
-        \ || ('g:skkeleton#mode'->exists() && g:skkeleton#mode !=# '')
     call pum#close()
   endif
   let s:prev_next = next_input

@@ -1142,7 +1142,7 @@ function s:auto_confirm() abort
 endfunction
 
 function pum#popup#_check_text_changed() abort
-  const next_input = pum#_getline()['.'->col():]
+  const next_input = pum#_getline()[pum#_col():]
 
   if !'s:prev_next'->exists()
     let s:prev_next = next_input

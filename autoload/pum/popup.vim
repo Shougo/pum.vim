@@ -403,8 +403,10 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   elseif a:mode ==# 'c'
     autocmd pum CmdlineChanged * ++nested
           \ call pum#popup#_check_text_changed()
-    autocmd pum CursorMovedC * ++once ++nested
-          \ call pum#close()
+    if '##CursorMovedC'->exists()
+      autocmd pum CursorMovedC * ++once ++nested
+            \ call pum#close()
+    endif
   endif
   autocmd pum ModeChanged [ct]:* ++once ++nested
         \ call pum#close()

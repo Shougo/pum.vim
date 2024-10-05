@@ -461,7 +461,7 @@ pum#map#confirm_mouse()
 		NOTE: It must not be called in |:map-<expr>|.
 		NOTE: 'mouse' option must be set.
 >
-	inoremap <LeftMouse>  <Cmd>call pum#map#insert_selected_mouse()<CR>
+	inoremap <LeftMouse>  <Cmd>call pum#map#confirm_mouse()<CR>
 <
 
                                                     *pum#map#confirm_suffix()*

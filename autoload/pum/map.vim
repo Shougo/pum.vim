@@ -110,8 +110,7 @@ function pum#map#insert_relative(delta, overflow='empty') abort
   if s:check_textwidth()
     " NOTE: If the input text is longer than 'textwidth', the completed text
     " will be the next line.  It breaks insert behavior.
-    call pum#map#select_relative(a:delta, a:overflow)
-    return
+    return pum#map#select_relative(a:delta, a:overflow)
   endif
 
   let pum = pum#_get()
@@ -243,6 +242,25 @@ function pum#map#confirm_suffix() abort
 
   return ''
 endfunction
+function pum#map#confirm_mouse() abort
+  const mousepos = getmousepos()
+  let pum = pum#_get()
+  if mousepos.winid !=# pum.id || pum.items->len() < mousepos.line
+    return ''
+  endif
+
+  " Get non space characters
+  const word = pum.items[mousepos.line - 1].word->matchstr('^\S\+')
+  call s:insert(word, pum.orig_input,
+        \ { -> s:skip_next_complete('confirm_word') })
+
+  " Reset v:completed_item to prevent CompleteDone is twice
+  autocmd TextChangedI,TextChangedP * ++once ++nested
+        \ let v:completed_item = {}
+
+  return ''
+endfunction
+
 
 function pum#map#cancel() abort
   let pum = pum#_get()

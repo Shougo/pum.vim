@@ -452,8 +452,17 @@ pum#map#cancel()
 
                                                            *pum#map#confirm()*
 pum#map#confirm()
-		Insert the select and close the popup.
+		Insert the selected item and close the popup.
 		NOTE: It must not be called in |:map-<expr>|.
+
+                                                     *pum#map#confirm_mouse()*
+pum#map#confirm_mouse()
+		Insert the mouse selected item and close the popup.
+		NOTE: It must not be called in |:map-<expr>|.
+		NOTE: 'mouse' option must be set.
+>
+	inoremap <LeftMouse>  <Cmd>call pum#map#insert_selected_mouse()<CR>
+<
 
                                                     *pum#map#confirm_suffix()*
 pum#map#confirm_suffix()

@@ -1,4 +1,5 @@
-function pum#map#select_relative(delta, overflow='empty') abort
+function pum#map#select_relative(
+      \ delta, overflow='empty', auto_confirm=v:false) abort
   let pum = pum#_get()
   if pum.id <= 0
     return ''
@@ -88,13 +89,24 @@ function pum#map#select_relative(delta, overflow='empty') abort
           \ })
   endif
 
+  if mode() ==# 'i'
+    augroup pum-confirm
+      autocmd!
+    augroup END
+
+    if a:auto_confirm
+      autocmd pum-confirm InsertCharPre * ++once ++nested
+            \ call s:auto_confirm()
+    elseif !pum#_options().commit_characters->empty()
+      autocmd pum-confirm InsertCharPre * ++once ++nested
+            \ : if pum#_options().commit_characters->index(v:char) > 0
+            \ |   call s:auto_confirm()
+            \ | endif
+    endif
+  endif
+
   " Close popup menu and CompleteDone if user input
   call s:check_user_input({ -> pum#close() })
-
-  if mode() ==# 'i' && !pum#_options().commit_characters->empty()
-    autocmd pum InsertCharPre * ++once ++nested
-          \ call s:check_commit_characters()
-  endif
 
   call pum#popup#_reset_auto_confirm(mode())
 
@@ -282,9 +294,11 @@ function pum#map#cancel() abort
   return ''
 endfunction
 
-function pum#map#select_relative_page(delta, overflow='empty') abort
+function pum#map#select_relative_page(
+      \ delta, overflow='empty', auto_confirm=v:false) abort
   call pum#map#select_relative(
-        \ (a:delta * pum#_get().height)->float2nr(), a:overflow)
+        \ (a:delta * pum#_get().height)->float2nr(),
+        \ a:overflow, a:auto_confirm)
   return ''
 endfunction
 function pum#map#insert_relative_page(delta, overflow='empty') abort
@@ -446,8 +460,8 @@ function s:check_user_input(callback) abort
           \ call pum#close()
   endif
 endfunction
-function s:check_commit_characters() abort
-  if pum#_options().commit_characters->index(v:char) < 0 || !pum#visible()
+function s:auto_confirm() abort
+  if !pum#visible()
     return
   endif
 

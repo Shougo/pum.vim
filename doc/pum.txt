@@ -517,17 +517,20 @@ pum#map#scroll_preview({delta})
 		NOTE: It must not be called in |:map-<expr>|.
 
                                                    *pum#map#select_relative()*
-pum#map#select_relative({delta}[, {overflow}])
+pum#map#select_relative({delta}[, {overflow}[, {auto_confirm}]])
 		Move forward or backward {delta} number and select the
 		candidate.
 		{overflow} is same with |pum#map#insert_relative()|.
+		{auto_confirm} is enable auto confirm feature when user input
+		text.
 		NOTE: It must not be called in |:map-<expr>|.
 
                                               *pum#map#select_relative_page()*
-pum#map#select_relative_page({delta}[, {overflow}])
+pum#map#select_relative_page({delta}[, {overflow}[, {auto_confirm}]])
 		Move forward or backward "{delta} * page height" number and
 		select the candidate.
 		{overflow} is same with |pum#map#insert_relative()|.
+		{auto_confirm} is same with |pum#map#select_relative()|.
 		NOTE: It must not be called in |:map-<expr>|.
 
 

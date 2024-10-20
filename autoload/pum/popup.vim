@@ -1022,17 +1022,33 @@ function s:open_preview() abort
     if previewer.kind ==# 'help'
       call pum#popup#_close_preview()
 
+      const save_window = win_getid()
+      const help_save = range(1, winnr('$'))
+            \ ->filter({ _, val -> val->getwinvar('&buftype') ==# 'help'})
+            \ ->map({ _, val -> [val, val->winbufnr(), val->getcurpos()]})
+
       try
         " Create dummy help buffer
         " NOTE: ":help" does not work in popup window.
         execute 'help' previewer.tag
         const help_bufnr = bufnr()
         const firstline = '.'->line()
-        helpclose
       catch
         call pum#popup#_close_preview()
         return
       endtry
+
+      if help_save->empty()
+        helpclose
+      else
+        for save in help_save
+          execute save[0] 'wincmd w'
+          execute 'buffer' save[1][0]
+          call setpos('.', save[2])
+        endfor
+
+        call win_gotoid(save_window)
+      endif
 
       " Set firstline to display tag
       let winopts.firstline = firstline

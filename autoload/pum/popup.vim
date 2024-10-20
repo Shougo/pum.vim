@@ -403,7 +403,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   elseif a:mode ==# 'c'
     autocmd pum CmdlineChanged * ++nested
           \ call pum#popup#_check_text_changed()
-    if '##CursorMovedC'->exists()
+    if has('nvim') && '##CursorMovedC'->exists()
+      " NOTE: In Vim, CursorMovedC check is broken...
       autocmd pum CursorMovedC * ++once ++nested
             \ call pum#close()
     endif

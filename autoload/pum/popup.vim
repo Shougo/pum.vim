@@ -1089,18 +1089,22 @@ function s:open_preview() abort
     doautocmd <nomodeline> User PumPreview
   endif
 
+  let pum.preview = v:true
+
   call pum#popup#_redraw()
 endfunction
 function pum#popup#_close_preview() abort
   let pum = pum#_get()
 
   if pum.preview_id < 0
+    let pum.preview = v:false
     return
   endif
 
   call pum#popup#_close_id(pum.preview_id)
 
   let pum.preview_id = -1
+  let pum.preview = v:false
 endfunction
 function s:get_previewer(item) abort
   " In terminal mode, it does not work well.

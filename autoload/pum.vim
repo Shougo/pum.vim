@@ -28,6 +28,7 @@ function pum#_init() abort
         \   namespace: has('nvim') ? nvim_create_namespace('pum') : 0,
         \   orig_input: '',
         \   pos: [],
+        \   preview: v:false,
         \   preview_buf: -1,
         \   preview_id: -1,
         \   reversed: v:false,
@@ -408,9 +409,10 @@ function pum#_reset_skip_complete() abort
 endfunction
 
 function pum#_complete_changed() abort
+  let pum = pum#_get()
   let options = pum#_options()
 
-  if options.preview
+  if pum.preview
     call pum#_stop_debounce_timer('s:debounce_preview_timer')
 
     " NOTE: In terminal mode, the timer does not work well.

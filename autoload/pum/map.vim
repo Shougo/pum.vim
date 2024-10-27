@@ -273,7 +273,6 @@ function pum#map#confirm_mouse() abort
   return ''
 endfunction
 
-
 function pum#map#cancel() abort
   let pum = pum#_get()
 
@@ -319,6 +318,19 @@ function pum#map#scroll_preview(delta) abort
   call win_execute(pum.preview_id, command)
   call pum#popup#_redraw_preview()
   return ''
+endfunction
+
+function pum#map#toggle_preview() abort
+  if !pum#visible()
+    return
+  endif
+
+  let pum = pum#_get()
+  if pum.preview
+    call pum#popup#_close_preview()
+  else
+    call pum#popup#_preview()
+  endif
 endfunction
 
 function s:skip_next_complete(event = 'complete_done') abort

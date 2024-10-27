@@ -270,7 +270,7 @@ padding
 
                                                           *pum-option-preview*
 preview
-		Enable preview window.
+		Enable pum.vim builtin preview window.
 		It prints "info" attribute in current item or prints previewer
 		information from |ddc#get_previewer()|.
 
@@ -533,6 +533,9 @@ pum#map#select_relative_page({delta}[, {overflow}[, {auto_confirm}]])
 		{auto_confirm} is same with |pum#map#select_relative()|.
 		NOTE: It must not be called in |:map-<expr>|.
 
+                                                    *pum#map#toggle_preview()*
+pum#map#toggle_preview()
+		Toggle pum.vim builtin preview window(|pum-option-preview|).
 
 ------------------------------------------------------------------------------
 AUTOCMDS                                                        *pum-autocmds*

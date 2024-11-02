@@ -170,7 +170,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
         \  spos.col - 1]
 
   if a:mode ==# 'c'
-    if '*cmdline#_get'->exists() && !cmdline#_get().pos->empty()
+    if s:is_cmdline_vim_window()
       const [cmdline_left, cmdline_top, cmdline_right, cmdline_bottom]
             \ = s:get_border_size(cmdline#_options().border)
 
@@ -403,14 +403,17 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   elseif a:mode ==# 'c'
     autocmd pum CmdlineChanged * ++nested
           \ call pum#popup#_check_text_changed()
-    if has('nvim') && '##CursorMovedC'->exists()
+    if has('nvim') && '##CursorMovedC'->exists() && !s:is_cmdline_vim_window()
       " NOTE: In Vim, CursorMovedC check is broken...
       autocmd pum CursorMovedC * ++once ++nested
             \ call pum#close()
     endif
+    autocmd pum CmdlineLeave * ++once ++nested
+          \ call pum#close()
+  elseif a:mode ==# 't'
+    autocmd pum ModeChanged t:* ++once ++nested
+          \ call pum#close()
   endif
-  autocmd pum ModeChanged [ct]:* ++once ++nested
-        \ call pum#close()
   autocmd pum CmdWinEnter,CmdWinLeave * ++once ++nested
         \ call pum#close()
   autocmd pum CursorHold * ++once ++nested
@@ -1211,4 +1214,8 @@ function s:uniq_by_word_or_dup(items) abort
     endif
   endfor
   return ret
+endfunction
+
+function s:is_cmdline_vim_window() abort
+  return '*cmdline#_get'->exists() && !cmdline#_get().pos->empty()
 endfunction

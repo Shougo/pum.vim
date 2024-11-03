@@ -1020,6 +1020,7 @@ function s:open_preview() abort
           \   maxwidth: width,
           \   maxheight: height,
           \   highlight: options.highlight_preview,
+          \   scrollbarhighlight: options.highlight_scrollbar,
           \ }
 
     if previewer.kind ==# 'help'

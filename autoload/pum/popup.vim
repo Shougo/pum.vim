@@ -1089,6 +1089,15 @@ function s:open_preview() abort
   call setbufvar(pum.preview_buf, '&wrap', v:true)
   call setwinvar(pum.preview_id, '&foldenable', v:false)
 
+  if previewer->has_key('lineNr')
+    try
+      call win_execute(pum.preview_id, previewer.lineNr)
+    catch
+      call pum#popup#_close_preview()
+      return
+    endtry
+  endif
+
   if '#User#PumPreview'->exists()
     doautocmd <nomodeline> User PumPreview
   endif

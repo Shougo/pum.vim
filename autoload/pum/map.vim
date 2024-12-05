@@ -296,6 +296,9 @@ function pum#map#cancel() abort
   let pum.cursor = -1
 
   if current_cursor > 0 && current_word !=# ''
+    " Create new undo point
+    let &undolevels = &undolevels
+
     call s:insert(pum.orig_input, current_word,
           \ { -> s:skip_next_complete() })
   else

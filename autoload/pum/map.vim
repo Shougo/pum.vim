@@ -186,9 +186,6 @@ function pum#map#confirm() abort
   let pum = pum#_get()
 
   if pum.cursor > 0 && pum.current_word ==# ''
-    " Create new undo point
-    let &undolevels = &undolevels
-
     call s:insert_current_word(pum.orig_input,
           \ { -> s:skip_next_complete('confirm') })
   else
@@ -205,9 +202,6 @@ function pum#map#confirm_word() abort
   let pum = pum#_get()
 
   if pum.cursor > 0
-    " Create new undo point
-    let &undolevels = &undolevels
-
     " Get non space characters
     const word = pum.items[pum.cursor - 1].word->matchstr('^\S\+')
     call s:insert(word, pum.orig_input,
@@ -245,9 +239,6 @@ function pum#map#confirm_suffix() abort
       return pum#map#confirm()
     endif
 
-    " Create new undo point
-    let &undolevels = &undolevels
-
     call s:insert_next_input(
           \ word[: -1 - suffix->len()] .. suffix,
           \ pum.orig_input,
@@ -269,9 +260,6 @@ function pum#map#confirm_mouse() abort
   if mousepos.winid !=# pum.id || pum.items->len() < mousepos.line
     return ''
   endif
-
-  " Create new undo point
-  let &undolevels = &undolevels
 
   " Get non space characters
   const word = pum.items[mousepos.line - 1].word->matchstr('^\S\+')
@@ -296,9 +284,6 @@ function pum#map#cancel() abort
   let pum.cursor = -1
 
   if current_cursor > 0 && current_word !=# ''
-    " Create new undo point
-    let &undolevels = &undolevels
-
     call s:insert(pum.orig_input, current_word,
           \ { -> s:skip_next_complete() })
   else

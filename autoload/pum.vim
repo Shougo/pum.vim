@@ -378,6 +378,9 @@ function s:complete_done(completed_item, event) abort
     doautocmd <nomodeline> User PumCompleteDonePre
   endif
 
+  " Create new undo point
+  let &l:undolevels = &l:undolevels
+
   let v:completed_item = g:pum#completed_item
 
   if mode() ==# 'i' && v:completed_item ==# g:pum#completed_item

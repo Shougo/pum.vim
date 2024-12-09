@@ -1,6 +1,7 @@
 const s:priority_highlight_item = 2
 const s:priority_highlight_column = 1
 const s:priority_highlight_selected = 0
+const s:priority_highlight_lead = 0
 const s:priority_highlight_horizontal_separator = 1
 
 function pum#popup#_open(startcol, items, mode, insert) abort
@@ -582,7 +583,7 @@ function s:highlight_items(items, max_columns) abort
         call s:highlight(
               \ hl.hl_group, hl.name,
               \ s:priority_highlight_item,
-              \ row, start + hl.col - 1, hl.width)
+              \ pum.buf, row, start + hl.col - 1, hl.width)
       endfor
 
       " NOTE: The byte length of multibyte characters may be larger than
@@ -597,7 +598,7 @@ function s:highlight_items(items, max_columns) abort
         call s:highlight(
               \ highlight_column, 'pum_' .. order,
               \ s:priority_highlight_column,
-              \ row, start, width)
+              \ pum.buf, row, start, width)
       endif
 
       let start += width
@@ -605,7 +606,7 @@ function s:highlight_items(items, max_columns) abort
   endfor
 endfunction
 
-function s:highlight(highlight, prop_type, priority, row, col, length) abort
+function s:highlight(highlight, prop_type, priority, buf, row, col, length) abort
   let pum = pum#_get()
 
   let col = a:col
@@ -621,7 +622,7 @@ function s:highlight(highlight, prop_type, priority, row, col, length) abort
 
   if has('nvim')
     return nvim_buf_set_extmark(
-          \ pum.buf, pum.namespace, a:row - 1, col - 1, #{
+          \ a:buf, pum.namespace, a:row - 1, col - 1, #{
           \   end_col: col - 1 + a:length,
           \   hl_group: a:highlight,
           \   priority: a:priority,
@@ -637,7 +638,7 @@ function s:highlight(highlight, prop_type, priority, row, col, length) abort
     call prop_add(a:row, col, #{
           \   length: a:length,
           \   type: a:prop_type,
-          \   bufnr: pum.buf,
+          \   bufnr: a:buf,
           \ })
     return -1
   endif
@@ -665,10 +666,11 @@ function pum#popup#_redraw_selected() abort
   let col = pum#_options().padding && (mode() ==# 'c' || pum.startcol != 1)
         \ ? 0 : 1
   let pum.selected_id = s:highlight(
-        \ pum#_options().highlight_selected,
-        \ prop_type,
-        \ s:priority_highlight_selected,
-        \ pum.cursor, col, length)
+        \   pum#_options().highlight_selected,
+        \   prop_type,
+        \   s:priority_highlight_selected,
+        \   pum.buf, pum.cursor, col, length
+        \ )
 endfunction
 
 function pum#popup#_redraw_horizontal_menu() abort
@@ -883,17 +885,101 @@ function pum#popup#_redraw_horizontal_menu() abort
           \ options.highlight_selected,
           \ 'pum_highlight_selected',
           \ s:priority_highlight_selected,
-          \ 1, 1, items[0]->get('abbr', items[0].word)->strlen())
+          \ pum.buf, 1, 1, items[0]->get('abbr', items[0].word)->strlen())
   endif
   if separator
     call s:highlight(
           \ options.highlight_horizontal_separator,
           \ 'pum_highlight_separator',
           \ s:priority_highlight_selected,
-          \ 1, items[0]->get('abbr', items[0].word)->strlen() + 2, 1)
+          \ pum.buf, 1, items[0]->get('abbr', items[0].word)->strlen() + 2, 1)
   endif
 
   call pum#popup#_redraw()
+endfunction
+
+function pum#popup#_redraw_inserted() abort
+  let pum = pum#_get()
+
+  if pum.cursor <= 0 || pum.current_word ==# ''
+    call pum#popup#_close_inserted()
+    return
+  endif
+
+  let options = pum#_options()
+
+  if has('nvim')
+    if pum.inserted_buf < 0
+      let pum.inserted_buf = nvim_create_buf(v:false, v:true)
+    endif
+    call nvim_buf_set_lines(
+          \ pum.inserted_buf, 0, -1, v:true, [pum.current_word])
+
+    let winopts = #{
+          \   relative: 'editor',
+          \   width: pum.current_word->strlen(),
+          \   height: 1,
+          \   row: pum.pos[0] - 1,
+          \   col: pum.pos[1],
+          \   anchor: 'NW',
+          \   style: 'minimal',
+          \   zindex: options.zindex,
+          \ }
+
+    if pum.inserted_id > 0
+      " Reuse window
+      call nvim_win_set_config(pum.inserted_id, winopts)
+    else
+      " NOTE: It cannot set in nvim_win_set_config()
+      let winopts.noautocmd = v:true
+
+      " Create new window
+      const id = nvim_open_win(pum.inserted_buf, v:false, winopts)
+
+      call s:set_float_window_options(id, options, 'inserted')
+
+      let pum.inserted_id = id
+    endif
+  else
+    let winopts = #{
+          \   pos: 'topleft',
+          \   line: pum.pos[0],
+          \   col: pum.pos[1] + 1,
+          \   maxwidth: pum.current_word->strlen(),
+          \   maxheight: 1,
+          \   highlight: options.highlight_inserted,
+          \ }
+
+    if pum.inserted_id > 0
+      call popup_move(pum.inserted_id, winopts)
+      call popup_settext(pum.inserted_id, [pum.current_word])
+    else
+      let pum.inserted_id = popup_create([pum.current_word], winopts)
+      let pum.inserted_buf = pum.inserted_id->winbufnr()
+    endif
+  endif
+
+  " Highlight the lead text
+  if pum.orig_input !=# '' && pum.current_word->stridx(pum.orig_input) == 0
+    call s:highlight(
+          \ options.highlight_lead,
+          \ 'pum_highlight_lead',
+          \ s:priority_highlight_lead,
+          \ pum.inserted_buf, 1, 1, pum.orig_input->strlen())
+  endif
+
+  call pum#popup#_redraw()
+endfunction
+function pum#popup#_close_inserted() abort
+  let pum = pum#_get()
+
+  if pum.inserted_id < 0
+    return
+  endif
+
+  call pum#popup#_close_id(pum.inserted_id)
+
+  let pum.inserted_id = -1
 endfunction
 
 function pum#popup#_preview() abort

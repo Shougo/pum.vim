@@ -23,6 +23,8 @@ function pum#_init() abort
         \   height: -1,
         \   horizontal_menu: v:false,
         \   id: -1,
+        \   inserted_buf: -1,
+        \   inserted_id: -1,
         \   len: 0,
         \   matched_id: 70,
         \   namespace: has('nvim') ? nvim_create_namespace('pum') : 0,
@@ -56,13 +58,18 @@ function pum#_init_options() abort
         \   highlight_columns: {},
         \   highlight_horizontal_menu: '',
         \   highlight_horizontal_separator: 'PmenuSbar',
+        \   highlight_inserted: 'PmenuMatchIns',
+        \   highlight_lead: 'PmenuMatchLead',
         \   highlight_matches: '',
         \   highlight_normal_menu: 'Pmenu',
         \   highlight_preview: '',
         \   highlight_scrollbar: 'PmenuSbar',
         \   highlight_selected: 'PmenuSel',
         \   horizontal_menu: v:false,
-        \   item_orders: ['abbr', 'space', 'kind', 'space', 'menu'],
+        \   insert_preview: v:false,
+        \   item_orders: [
+        \     'abbr', 'space', 'kind', 'space', 'menu',
+        \   ],
         \   max_columns: #{
         \     kind: 10,
         \     menu: 20,
@@ -194,6 +201,8 @@ function pum#close(event = 'complete_done', close_window = v:true) abort
 
   call pum#_stop_debounce_timer('s:debounce_preview_timer')
   call pum#popup#_close_preview()
+
+  call pum#popup#_close_inserted()
 
   if pum.cursor >= 0 && pum.current_word !=# ''
         \ && pum.items->len() >= pum.cursor

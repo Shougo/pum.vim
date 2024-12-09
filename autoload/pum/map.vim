@@ -144,6 +144,10 @@ function pum#map#insert_relative(delta, overflow='empty') abort
     call pum#popup#_redraw_horizontal_menu()
   endif
 
+  if pum#_options().insert_preview
+    call pum#popup#_redraw_inserted()
+  endif
+
   " Close popup menu and CompleteDone if user input
   call s:check_user_input({ -> pum#close() })
 

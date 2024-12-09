@@ -153,6 +153,20 @@ highlight_horizontal_separator
 
 		Default: "PmenuSbar"
 
+                                            *pum-option-highlight_inserted*
+highlight_inserted
+		The highlight of the inserted text when
+		|pum#map#insert_relative()|.
+
+		Default: "PmenuMatchIns"
+
+                                            *pum-option-highlight_lead*
+highlight_lead
+		The highlight of the lead text when
+		|pum#map#insert_relative()|.
+
+		Default: "PmenuMatchLead"
+
                                                 *pum-option-highlight_matches*
 highlight_matches
 		The input matches highlight of candidates.
@@ -189,6 +203,13 @@ horizontal_menu
 		Use horizontal menu instead of vertical popup menu.
 		NOTE: The feature does not support custom highlights and
 		columns.
+
+		Default: v:false
+
+                                                   *pum-option-insert_preview*
+insert_preview
+		Enable inserted text highlight when
+		|pum#map#insert_relative()|.
 
 		Default: v:false
 

@@ -481,7 +481,7 @@ pum#map#confirm_mouse()
 		Insert the mouse selected item and close the popup.
 		NOTE: It must not be called in |:map-<expr>|.
 		NOTE: 'mouse' option must be set.
->
+>vim
 	inoremap <LeftMouse>  <Cmd>call pum#map#confirm_mouse()<CR>
 <
 
@@ -595,7 +595,7 @@ PumPreview
 
 ==============================================================================
 EXAMPLES                                                        *pum-examples*
->
+>vim
 	inoremap <C-n>   <Cmd>call pum#map#insert_relative(+1)<CR>
 	inoremap <C-p>   <Cmd>call pum#map#insert_relative(-1)<CR>
 	inoremap <C-y>   <Cmd>call pum#map#confirm()<CR>
@@ -665,14 +665,14 @@ Q: Auto import or auto snippet expansion does not work in pum.vim.
 A: pum.vim does not support |CompleteDone| autocmd.  You need to emulate the
 event like this.
 
-NOTE: It is for ale plugin. >
+NOTE: It is for ale plugin. >vim
 	 autocmd User PumCompleteDone
 	 \ call ale#completion#HandleUserData(g:pum#completed_item)
 <
                                                                    *pum-faq-5*
 Q: I want to use j/k keys to navigate popup menu when only entered popup menu.
 
-A: >
+A: >vim
 	inoremap <expr> j   pum#entered() ?
 	      \ '<Cmd> call pum#map#insert_relative(+1)<CR>' : 'j'
 	inoremap <expr> k   pum#entered() ?
@@ -684,7 +684,7 @@ Q: The popup window does not close when enter |command-line-window|.
 A: In |command-line-window|, the popup window cannot be closed.  It is
 Vim/neovim's feature.  The window is closed after you have leaved
 |command-line-window|.  You can use the mapping like this.
->
+>vim
 	cnoremap <C-f> <Cmd>call pum#close()<CR><C-f>
 <
 
@@ -692,7 +692,7 @@ NOTE: The problem is fixed in neovim 0.10+.
                                                                    *pum-faq-7*
 Q: I want to move to the first/last item by Home/End keys.
 
-A: >
+A: >vim
 	inoremap <Home>
 	\ <Cmd>call pum#map#insert_relative(-9999, 'ignore')<CR>
 	inoremap <End>
@@ -710,7 +710,7 @@ https://github.com/neovim/neovim/issues/17810
 Q: I want to enter the documentation window.
 
 A: You can use |pum#get_preview_buf()| for it.
->
+>vim
 	execute pum#get_preview_buf() .. 'buffer'
 <
 

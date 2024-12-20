@@ -116,6 +116,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     let height = [height, options.min_height]->max()
   endif
 
+  let direction = options.direction
   if a:mode !=# 'c'
     " Adjust to screen row
     let minheight_below = [
@@ -129,14 +130,13 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       " Use above window
       let spos.row -= height + padding_height
       let height = minheight_above
-      const direction = 'above'
+      let direction = 'above'
     else
       " Use below window
       let height = minheight_below
-      const direction = 'below'
+      let direction = 'below'
     endif
   else
-    const direction = 'above'
     let height = [height, &lines - [&cmdheight, 1]->max()]->min()
   endif
   let height = [height, 1]->max()
@@ -170,7 +170,12 @@ function pum#popup#_open(startcol, items, mode, insert) abort
         \  spos.col - 1]
 
   if a:mode ==# 'c'
-    if s:is_cmdline_vim_window()
+    const check_cmdline = s:is_cmdline_vim_window()
+    const check_noice = has('nvim') && pum#util#_luacheck('noice')
+          \ && 'require("noice").api.get_cmdline_position()'
+          \    ->luaeval()->type() != v:null->type()
+
+    if check_cmdline
       const [cmdline_left, cmdline_top, cmdline_right, cmdline_bottom]
             \ = s:get_border_size(cmdline#_options().border)
 
@@ -183,24 +188,39 @@ function pum#popup#_open(startcol, items, mode, insert) abort
             \        -options.offset_row : options.offset_row)
 
       let pos[1] += cmdline#_get().prompt->strlen() + cmdline_pos[1]
-    elseif has('nvim') && pum#util#_luacheck('noice')
-          \ && 'require("noice").api.get_cmdline_position()'
-          \    ->luaeval()->type() != v:null->type()
+    elseif check_noice
       " Use noice cursor
-      let noice_pos = luaeval(
-            \ 'require("noice").api.get_cmdline_position()').screenpos
+      let noice_pos = 'require("noice").api.get_cmdline_position()'
+            \ ->luaeval().screenpos
 
-      let noice_view = luaeval('require("noice.config").options.cmdline.view')
-      if noice_view !=# 'cmdline'
-        let pos[0] = noice_pos.row
-        let pos[0] += (direction ==# 'above' ?
-              \        -options.offset_row : options.offset_row)
+      let noice_view = 'require("noice.config").options.cmdline.view'
+            \ ->luaeval()
+      if noice_view ==# 'cmdline'
+        let direction = 'above'
       endif
+
+      let pos[0] = noice_pos.row
+      let pos[0] += (direction ==# 'above' ?
+            \        -options.offset_row : options.offset_row)
 
       let pos[1] += noice_pos.col - 1
     else
       " Use getcmdscreenpos() for adjustment
+      let direction = 'above'
       let pos[1] += (getcmdscreenpos() - 1) - getcmdpos()
+    endif
+
+    if check_cmdline || check_noice
+      " NOTE: height must be adjusted.
+      let height = [
+            \   height,
+            \     direction ==# 'above'
+            \   ? pos[0] - 1
+            \   : &lines - &cmdheight - pos[0]
+            \ ]->min()
+      if direction ==# 'above'
+        let pos[0] -= height + 1
+      endif
     endif
   endif
 

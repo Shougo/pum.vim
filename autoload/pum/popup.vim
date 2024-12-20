@@ -183,8 +183,9 @@ function pum#popup#_open(startcol, items, mode, insert) abort
             \        -options.offset_row : options.offset_row)
 
       let pos[1] += cmdline#_get().prompt->strlen() + cmdline_pos[1]
-    elseif has('nvim') && pum#util#_luacheck('noice') && luaeval(
-            \ 'require("noice").api.get_cmdline_position()') != v:null
+    elseif has('nvim') && pum#util#_luacheck('noice')
+          \ && 'require("noice").api.get_cmdline_position()'
+          \    ->luaeval()->type() != v:null->type()
       " Use noice cursor
       let noice_pos = luaeval(
             \ 'require("noice").api.get_cmdline_position()').screenpos

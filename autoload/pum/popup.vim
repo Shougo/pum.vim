@@ -336,12 +336,19 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \ }
 
     if options.border->type() ==# v:t_string
-      if options.border ==# 'double'
-        let winopts.border = [2, 2, 2, 2]
-      elseif options.border !=# 'none'
+      if options.border !=# 'none'
         let winopts.border = [1, 1, 1, 1]
       endif
+
+      if &ambiwidth ==# 'single' && &encoding ==# 'utf-8'
+        if options.border ==# 'single'
+          let winopts.borderchars = ["─", "│", "─", "│", "┌", "┐", "┘", "└"]
+        elseif options.border ==# 'double'
+          let winopts.borderchars = ['═', '║', '═', '║', '╔', '╗', '╝', '╚']
+        endif
+      endif
     else
+      let winopts.border = [1, 1, 1, 1]
       let winopts.borderchars = options.border
     endif
 

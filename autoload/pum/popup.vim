@@ -337,10 +337,14 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
     if options.border->type() ==# v:t_string
       if options.border !=# 'none'
+        " The border property only recognizes 0 or non-zero values
         let winopts.border = [1, 1, 1, 1]
       endif
 
       if &ambiwidth ==# 'single' && &encoding ==# 'utf-8'
+        " NOTE: If 'ambiwidth' is not single or 'encoding' is not "utf-8", it
+        " will not render correctly, so Vim's default border display of ASCII
+        " characters will be used.
         if options.border ==# 'single'
           let winopts.borderchars = ["─", "│", "─", "│", "┌", "┐", "┘", "└"]
         elseif options.border ==# 'double'
@@ -406,7 +410,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     " Simple highlight matches
     silent! call matchdelete(pum.matched_id, pum.id)
     if options.highlight_matches !=# ''
-      let pattern = pum.orig_input->escape('~"*\.^$[]')
+      let pattern = pum.orig_input
+            \ ->escape('~"*\.^$[]')
             \ ->substitute('\w\ze.', '\0[^\0]\\{-}', 'g')
       call matchadd(
             \ options.highlight_matches, pattern, 0, pum.matched_id,

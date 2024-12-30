@@ -102,8 +102,8 @@ border
 		"shadow": neovim only.
 		array: Specifify the eight chars building up the border.
 
-		NOTE: If you use "single" or "double" in Vim,
-		'ambiwidth' must be "single" and 'encoding' must be "utf-8".
+		NOTE: If you use "single" or "double" in Vim, 'ambiwidth' must
+		be "single" and 'encoding' must be "utf-8".
 
 		Default: "none"
 

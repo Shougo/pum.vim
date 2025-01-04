@@ -672,6 +672,10 @@ NOTE: It is for ale plugin. >vim
 	 autocmd User PumCompleteDone
 	 \ call ale#completion#HandleUserData(g:pum#completed_item)
 <
+
+NOTE: If you use "ddc-source-lsp" source, you don't need to add the event
+manually. Because, it register the event automatically.
+
                                                                    *pum-faq-5*
 Q: I want to use j/k keys to navigate popup menu when only entered popup menu.
 

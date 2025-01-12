@@ -234,6 +234,14 @@ function pum#visible() abort
   return (pum#_get().id > 0)->s:to_bool()
 endfunction
 
+function pum#preview_visible() abort
+  return (pum#_get().preview_id > 0)->s:to_bool()
+endfunction
+
+function pum#open_preview() abort
+  return pum#popup#_preview()
+endfunction
+
 function pum#entered() abort
   const info = pum#complete_info()
   const selected = (!pum#_options().auto_select && info.selected == 0)

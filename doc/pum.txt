@@ -420,6 +420,16 @@ pum#open({startcol}, {items})
 		NOTE: If 'completeopt' contains "noinsert", the first item is
 		selected automatically, but it increases screen flicker.
 
+                                                          *pum#open_preview()*
+pum#open_preview()
+		Open preview window for current item.
+		It works even |pum-option-preview| is false.
+
+                                                       *pum#preview_visible()*
+pum#preview_visible()
+		Returns |v:true| if the preview window is visible in pum.vim.
+
+
                                                      *pum#set_buffer_option()*
 pum#set_buffer_option({option-name}, {value})
 pum#set_buffer_option({dict})

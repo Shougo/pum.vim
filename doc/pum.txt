@@ -364,7 +364,7 @@ FUNCTIONS                                                      *pum-functions*
 
                                                                  *pum#close()*
 pum#close()
-		Close current popup menu.
+		Close current popup menu and preview window.
 
                                                          *pum#complete_info()*
 pum#complete_info([{what}])

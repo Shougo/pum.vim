@@ -432,7 +432,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   if a:mode ==# 'i'
     autocmd pum InsertLeave * ++once ++nested
           \ call pum#close()
-    autocmd pum TextChangedI,CursorMovedI * ++nested
+    autocmd pum TextChangedI,CursorMovedI,CursorHoldI * ++nested
           \ call pum#popup#_check_text_changed()
   elseif a:mode ==# 'c'
     autocmd pum CmdlineChanged * ++nested
@@ -448,9 +448,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     autocmd pum ModeChanged t:* ++once ++nested
           \ call pum#close()
   endif
-  autocmd pum CmdWinEnter,CmdWinLeave * ++once ++nested
-        \ call pum#close()
-  autocmd pum CursorHold * ++once ++nested
+  autocmd pum CmdWinEnter,CmdWinLeave,CursorHold * ++once ++nested
         \ call pum#close()
 
   call pum#popup#_reset_auto_confirm(a:mode)

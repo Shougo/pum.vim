@@ -551,7 +551,7 @@ function s:insert_line_complete(text) abort
 
   " NOTE: Hide native popup menu.
   " Because native popup menu disables user insert mappings.
-  call feedkeys("\<C-x>\<C-z>", 'in')
+  call complete(pum#_get().startcol, [])
 endfunction
 
 function s:insert_line_jobsend(text) abort

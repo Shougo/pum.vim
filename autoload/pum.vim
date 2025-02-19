@@ -58,9 +58,9 @@ function pum#_init_options() abort
         \   highlight_columns: {},
         \   highlight_horizontal_menu: '',
         \   highlight_horizontal_separator: 'PmenuSbar',
-        \   highlight_inserted: 'PmenuMatchIns',
+        \   highlight_inserted: 'ComplMatchIns',
         \   highlight_lead: 'PmenuMatchLead',
-        \   highlight_matches: '',
+        \   highlight_matches: 'PmenuMatchSel',
         \   highlight_normal_menu: 'Pmenu',
         \   highlight_preview: '',
         \   highlight_scrollbar: 'PmenuSbar',
@@ -199,10 +199,10 @@ function pum#close(event = 'complete_done', close_window = v:true) abort
 
   call pum#_reset_skip_complete()
 
+  call pum#popup#_close_inserted()
+
   call pum#_stop_debounce_timer('s:debounce_preview_timer')
   call pum#popup#_close_preview()
-
-  call pum#popup#_close_inserted()
 
   if pum.cursor >= 0 && pum.current_word !=# ''
         \ && pum.items->len() >= pum.cursor

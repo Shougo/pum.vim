@@ -161,7 +161,7 @@ highlight_inserted
 		The highlight of the inserted text when
 		|pum#map#insert_relative()|.
 
-		Default: "PmenuMatchIns"
+		Default: "ComplMatchIns"
 
                                             *pum-option-highlight_lead*
 highlight_lead
@@ -174,7 +174,7 @@ highlight_lead
 highlight_matches
 		The input matches highlight of candidates.
 
-		Default: ""
+		Default: "PmenuMatchSel"
 
                                             *pum-option-highlight_normal_menu*
 highlight_normal_menu

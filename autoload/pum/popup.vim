@@ -1,7 +1,7 @@
 const s:priority_highlight_item = 2
 const s:priority_highlight_column = 1
 const s:priority_highlight_selected = 0
-const s:priority_highlight_lead = 0
+const s:priority_highlight_lead = 1
 const s:priority_highlight_horizontal_separator = 1
 
 function pum#popup#_open(startcol, items, mode, insert) abort
@@ -639,6 +639,10 @@ function s:highlight_items(items, max_columns) abort
 endfunction
 
 function s:highlight(highlight, prop_type, priority, buf, row, col, length) abort
+  if a:highlight ==# ''
+    return
+  endif
+
   let pum = pum#_get()
 
   let col = a:col
@@ -1317,7 +1321,11 @@ function pum#popup#_check_text_changed() abort
 endfunction
 
 function s:set_float_window_options(id, options, highlight) abort
-  let highlight = 'NormalFloat:' .. a:options['highlight_' .. a:highlight]
+  let highlight = 'NormalFloat:' ..
+        \ (   a:highlight ==# ''
+        \   ? 'None'
+        \   : a:options['highlight_' .. a:highlight]
+        \ )
   let highlight ..= ',FloatBorder:FloatBorder,CursorLine:Visual'
   if &hlsearch
     " Disable 'hlsearch' highlight

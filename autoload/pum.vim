@@ -60,7 +60,7 @@ function pum#_init_options() abort
         \   highlight_horizontal_separator: 'PmenuSbar',
         \   highlight_inserted: 'ComplMatchIns',
         \   highlight_lead: 'PmenuMatchLead',
-        \   highlight_matches: 'PmenuMatchSel',
+        \   highlight_matches: 'PmenuMatch',
         \   highlight_normal_menu: 'Pmenu',
         \   highlight_preview: '',
         \   highlight_scrollbar: 'PmenuSbar',

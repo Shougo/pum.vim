@@ -174,7 +174,7 @@ highlight_lead
 highlight_matches
 		The input matches highlight of candidates.
 
-		Default: "PmenuMatchSel"
+		Default: "PmenuMatch"
 
                                             *pum-option-highlight_normal_menu*
 highlight_normal_menu

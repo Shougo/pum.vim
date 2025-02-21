@@ -301,6 +301,10 @@ function pum#get_preview_buf() abort
   return pum#_get().preview_buf
 endfunction
 
+function pum#get_direction() abort
+  return pum#_get().direction
+endfunction
+
 function pum#skip_complete() abort
   let pum = pum#_get()
   let skip = pum.skip_complete

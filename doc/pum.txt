@@ -381,6 +381,10 @@ pum#entered()
 		Returns |v:true| if you have selected or inserted popup menu.
 		NOTE: It does not work for auto selection feature.
 
+                                                         *pum#get_direction()*
+pum#get_direction()
+		Get popup menu current direction.
+
                                                                *pum#get_pos()*
 pum#get_pos()
 		Returns like |pum_getpos()| result.

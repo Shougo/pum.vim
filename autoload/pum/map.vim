@@ -533,13 +533,13 @@ endfunction
 function s:insert_line_complete(text) abort
   " complete() implementation
 
-  const hl_normal = has('nvim') ?
-        \ nvim_get_hl(0, #{ name: 'Normal'}) : 'Normal'->hlget()
-  const s:save_hl_insert = has('nvim') ?
-        \ nvim_get_hl(0, #{ name: 'ComplMatchIns'}) : 'ComplMatchIns'->hlget()
-
+  let s:save_hl_insert =
+        \   has('nvim')
+        \ ? nvim_get_hl(0, #{ name: 'ComplMatchIns'})
+        \ : 'ComplMatchIns'->hlget()
   let s:save_completeopt = &completeopt
   let s:save_eventignore = &eventignore
+
   setlocal completeopt=menu
   set eventignore=CompleteDone
 
@@ -548,6 +548,11 @@ function s:insert_line_complete(text) abort
   " NOTE: Hide native popup menu.
   " Because native popup menu disables user insert mappings.
   call feedkeys("\<C-x>\<C-z>", 'in')
+
+  const hl_normal =
+        \   has('nvim')
+        \ ? nvim_get_hl(0, #{ name: 'Normal'})
+        \ : 'Normal'->hlget()
 
   " Overwrite ComplMatchIns highlight
   " NOTE: Because complete() uses "ComplMatchIns" highlight.
@@ -564,8 +569,12 @@ function s:insert_line_complete(text) abort
         \ : if 's:save_completeopt'->exists()
         \ |   let &l:completeopt = s:save_completeopt
         \ |   unlet! s:save_completeopt
+        \ | endif
+        \ | if 's:save_eventignore'->exists()
         \ |   let &eventignore = s:save_eventignore
         \ |   unlet! s:save_eventignore
+        \ | endif
+        \ | if 's:save_hl_insert'->exists()
         \ |   if has('nvim')
         \ |     call nvim_set_hl(0, 'ComplMatchIns', s:save_hl_insert)
         \ |   else

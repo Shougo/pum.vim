@@ -397,10 +397,10 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let pum.reversed = reversed
   let pum.startcol = a:startcol
   let pum.startrow = pum#_row()
-  let pum.current_line = '.'->getline()
+  let pum.current_line = pum#_getline()
   let pum.col = pum#_col()
   let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
-  let pum.orig_line = '.'->getline()
+  let pum.orig_line = pum#_getline()
   let pum.changedtick = b:changedtick
 
   if !pum.horizontal_menu
@@ -437,10 +437,9 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   elseif a:mode ==# 'c'
     autocmd pum CmdlineChanged * ++nested
           \ call pum#popup#_check_text_changed()
-    if has('nvim') && '##CursorMovedC'->exists() && !s:is_cmdline_vim_window()
-      " NOTE: In Vim, CursorMovedC check is broken...
+    if '##CursorMovedC'->exists() && !s:is_cmdline_vim_window()
       autocmd pum CursorMovedC * ++once ++nested
-            \ call pum#close()
+            \ call pum#popup#_check_cursor_moved()
     endif
     autocmd pum CmdlineLeave * ++once ++nested
           \ call pum#close()
@@ -1318,6 +1317,13 @@ function pum#popup#_check_text_changed() abort
     call pum#close()
   endif
   let s:prev_next = next_input
+endfunction
+
+function pum#popup#_check_cursor_moved() abort
+  let pum = pum#_get()
+  if pum#_col() != pum.col && pum#_getline() ==# pum.orig_line
+    call pum#close()
+  endif
 endfunction
 
 function s:set_float_window_options(id, options, highlight) abort

@@ -533,14 +533,10 @@ endfunction
 function s:insert_line_complete(text) abort
   " complete() implementation
 
-  " NOTE: Restore completeopt is needed after complete()
-  autocmd TextChangedI,TextChangedP * ++once ++nested
-        \ : if 's:save_completeopt'->exists()
-        \ |   let &l:completeopt = s:save_completeopt
-        \ |   unlet! s:save_completeopt
-        \ |   let &eventignore = s:save_eventignore
-        \ |   unlet! s:save_eventignore
-        \ | endif
+  const hl_normal = has('nvim') ?
+        \ nvim_get_hl(0, #{ name: 'Normal'}) : 'Normal'->hlget()
+  const s:save_hl_insert = has('nvim') ?
+        \ nvim_get_hl(0, #{ name: 'ComplMatchIns'}) : 'ComplMatchIns'->hlget()
 
   let s:save_completeopt = &completeopt
   let s:save_eventignore = &eventignore
@@ -551,7 +547,32 @@ function s:insert_line_complete(text) abort
 
   " NOTE: Hide native popup menu.
   " Because native popup menu disables user insert mappings.
-  call complete(pum#_get().startcol, [])
+  call feedkeys("\<C-x>\<C-z>", 'in')
+
+  " Overwrite ComplMatchIns highlight
+  " NOTE: Because complete() uses "ComplMatchIns" highlight.
+  if has('nvim')
+    call nvim_set_hl(0, 'ComplMatchIns', hl_normal)
+  else
+    let hl_insert = hl_normal[0]->copy()
+    let hl_insert.name = 'ComplMatchIns'
+    call hlset([hl_insert])
+  endif
+
+  " NOTE: Restore after complete()
+  autocmd TextChangedI,TextChangedP * ++once ++nested
+        \ : if 's:save_completeopt'->exists()
+        \ |   let &l:completeopt = s:save_completeopt
+        \ |   unlet! s:save_completeopt
+        \ |   let &eventignore = s:save_eventignore
+        \ |   unlet! s:save_eventignore
+        \ |   if has('nvim')
+        \ |     call nvim_set_hl(0, 'ComplMatchIns', s:save_hl_insert)
+        \ |   else
+        \ |     call hlset(s:save_hl_insert)
+        \ |   endif
+        \ |   unlet! s:save_hl_insert
+        \ | endif
 endfunction
 
 function s:insert_line_jobsend(text) abort

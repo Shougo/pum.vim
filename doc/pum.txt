@@ -493,6 +493,13 @@ pum#map#confirm()
 		Insert the selected item and close the popup.
 		NOTE: It must not be called in |:map-<expr>|.
 
+                                           *pum#map#confirm_matched_pattern()*
+pum#map#confirm_matched_pattern({pattern})
+		Insert only the portions of the selected word that match the
+		provided {pattern}.
+		It is useful if you want to complete word by word.
+		NOTE: It must not be called in |:map-<expr>|.
+
                                                      *pum#map#confirm_mouse()*
 pum#map#confirm_mouse()
 		Insert the mouse selected item and close the popup.
@@ -508,13 +515,6 @@ pum#map#confirm_suffix()
 		It is useful if you want to edit suffix.
 		NOTE: It must not be called in |:map-<expr>|.
 		NOTE: It does not work in |:terminal|.
-
-                                                      *pum#map#confirm_word()*
-pum#map#confirm_word()
-		Insert the select word and close the popup.
-		The word means non spaces charaters.
-		It is useful if you want to complete word by word.
-		NOTE: It must not be called in |:map-<expr>|.
 
                                                    *pum#map#insert_relative()*
 pum#map#insert_relative({delta}[, {overflow}])
@@ -737,6 +737,9 @@ A: You can use |pum#get_preview_buf()| for it.
 
 ==============================================================================
 COMPATIBILITY                                              *pum-compatibility*
+
+2025.03.27
+* Rename "pum#map#confirm_word()" to "pum#map#confirm_matched_pattern()".
 
 2023.12.06
 * "use_complete" is default behavior.

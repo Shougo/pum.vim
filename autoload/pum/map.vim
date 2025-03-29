@@ -34,6 +34,7 @@ function pum#map#select_relative(
       " Reset scroll bar
       if pum.scroll_id > 0 && has('nvim') && pum.scroll_id->winbufnr() > 0
         call nvim_win_set_config(pum.scroll_id, #{
+              \   border: 'none',
               \   relative: 'editor',
               \   row: pum.scroll_row,
               \   col: pum.scroll_col,

@@ -262,6 +262,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     const scroll_row = pos[0] + border_top
     const scroll_col = pos[1] + width + border_right
     let scroll_winopts = #{
+          \   border: 'none',
           \   relative: 'editor',
           \   width: options.scrollbar_char->strwidth(),
           \   height: scroll_height,
@@ -379,6 +380,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
     if has('nvim')
       call nvim_win_set_config(pum.scroll_id, #{
+            \   border: 'none',
             \   relative: 'editor',
             \   row: pum.scroll_row + height - 1,
             \   col: pum.scroll_col,
@@ -951,6 +953,7 @@ function pum#popup#_redraw_inserted() abort
           \ pum.inserted_buf, 0, -1, v:true, [pum.current_word])
 
     let winopts = #{
+          \   border: 'none',
           \   relative: 'editor',
           \   width: pum.current_word->strlen(),
           \   height: 1,

@@ -191,6 +191,9 @@ function pum#map#confirm() abort
   let pum = pum#_get()
 
   if pum.cursor > 0 && pum.current_word ==# ''
+    " Create new undo point
+    let &undolevels = &undolevels
+
     call s:insert_current_word(pum.orig_input,
           \ { -> s:skip_next_complete('confirm') })
   else
@@ -207,11 +210,14 @@ function pum#map#confirm_matched_pattern(pattern) abort
   let pum = pum#_get()
 
   if pum.cursor > 0
+    " Create new undo point
+    let &undolevels = &undolevels
+
     const word = pum.items[pum.cursor - 1].word->matchstr(a:pattern)
     call s:insert(word, pum.orig_input,
-          \ { -> s:skip_next_complete('confirm_word') })
+          \ { -> s:skip_next_complete('confirm') })
   else
-    call s:skip_next_complete('confirm_word')
+    call s:skip_next_complete('confirm')
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice
@@ -243,13 +249,16 @@ function pum#map#confirm_suffix() abort
       return pum#map#confirm()
     endif
 
+    " Create new undo point
+    let &undolevels = &undolevels
+
     call s:insert_next_input(
           \ word[: -1 - suffix->len()] .. suffix,
           \ pum.orig_input,
-          \ { -> s:skip_next_complete('confirm_word') },
+          \ { -> s:skip_next_complete('confirm') },
           \ next_input[suffix->len():])
   else
-    call s:skip_next_complete('confirm_suffix')
+    call s:skip_next_complete('confirm')
   endif
 
   " Reset v:completed_item to prevent CompleteDone is twice

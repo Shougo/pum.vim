@@ -388,6 +388,10 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     endif
   endif
 
+  if '#User#PumOpen'->exists()
+    doautocmd <nomodeline> User PumOpen
+  endif
+
   let pum.items = items->copy()
   let pum.cursor = 0
   let pum.direction = direction

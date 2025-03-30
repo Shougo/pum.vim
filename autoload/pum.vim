@@ -297,6 +297,10 @@ function pum#get_pos() abort
         \ }
 endfunction
 
+function pum#get_buf() abort
+  return pum#_get().buf
+endfunction
+
 function pum#get_preview_buf() abort
   return pum#_get().preview_buf
 endfunction

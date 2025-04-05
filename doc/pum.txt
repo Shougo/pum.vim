@@ -610,6 +610,7 @@ PumCompleteDonePre
                                                                      *PumOpen*
 PumOpen
 		It is called before completion menu is opened.
+		You can get buffer number by |pum#get_buf()|.
 
                                                                   *PumPreview*
 PumPreview

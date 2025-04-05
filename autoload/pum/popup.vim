@@ -408,6 +408,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
   let pum.orig_line = pum#_getline()
   let pum.changedtick = b:changedtick
+  let pum.preview = options.preview
 
   if !pum.horizontal_menu
     " Highlight

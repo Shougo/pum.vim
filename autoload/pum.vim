@@ -32,7 +32,9 @@ function pum#_init() abort
         \   pos: [],
         \   preview: v:false,
         \   preview_buf: -1,
+        \   preview_col: 0,
         \   preview_id: -1,
+        \   preview_row: 0,
         \   reversed: v:false,
         \   scroll_buf: -1,
         \   scroll_id: -1,
@@ -88,6 +90,7 @@ function pum#_init_options() abort
         \   preview_border: 'none',
         \   preview_delay: 500,
         \   preview_height: &previewheight,
+        \   preview_remains: v:false,
         \   preview_width: &pumwidth / 2,
         \   reversed: v:false,
         \   scrollbar_char: '|',
@@ -201,7 +204,9 @@ function pum#close(event = 'complete_done', close_window = v:true) abort
 
   call pum#popup#_close_inserted()
 
-  call pum#popup#_close_preview()
+  if !pum#_options().preview_remains
+    call pum#popup#_close_preview()
+  endif
 
   if pum.cursor >= 0 && pum.current_word !=# ''
         \ && pum.items->len() >= pum.cursor

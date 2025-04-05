@@ -321,6 +321,14 @@ preview_height
 
 		Default: 'previewheight' value
 
+                                                  *pum-option-preview_remains*
+preview_remains
+		pum.vim does not close preview window when the popup is
+		closed. It is useful if you want to read the documentation as
+		possible.
+
+		Default: v:false
+
                                                     *pum-option-preview_width*
 preview_width
 		The maximum width of the preview window.

@@ -1229,8 +1229,25 @@ function s:open_preview() abort
     doautocmd <nomodeline> User PumPreview
   endif
 
-  autocmd ModeChanged * ++once ++nested
+  augroup pum-preview
+    autocmd!
+  augroup END
+
+  autocmd pum-preview ModeChanged * ++nested
           \ call pum#popup#_close_preview()
+  if mode() ==# 'c'
+    autocmd pum-preview CursorMovedC * ++nested
+          \ call s:check_preview()
+  elseif mode() ==# 't'
+    autocmd pum-preview CursorMovedT * ++nested
+          \ call s:check_preview()
+  else
+    autocmd pum-preview CursorMovedI * ++nested
+          \ call s:check_preview()
+  endif
+
+  let pum.preview_row = row
+  let pum.preview_col = col
 
   call pum#popup#_redraw()
 endfunction
@@ -1241,10 +1258,15 @@ function pum#popup#_close_preview() abort
     return
   endif
 
-  call pum#_stop_debounce_timer('s:debounce_preview_timer')
+  augroup pum-preview
+    autocmd!
+  augroup END
+
   call pum#popup#_close_id(pum.preview_id)
 
   let pum.preview_id = -1
+  let pum.preview_row = 0
+  let pum.preview_col = 0
 endfunction
 function s:get_previewer(item) abort
   " In terminal mode, it does not work well.
@@ -1262,6 +1284,19 @@ function s:get_previewer(item) abort
         \   kind: 'text',
         \   contents: info->substitute('\r\n\?', '\n', 'g')->split('\n'),
         \ }
+endfunction
+function s:check_preview() abort
+  let pum = pum#_get()
+
+  if pum.preview_id < 0
+    return
+  endif
+
+  if mode() ==# 'c' && pum#_col() >= pum.preview_col - 1
+    call pum#popup#_close_preview()
+  elseif pum#_row() >= pum.preview_row && pum#_col() >= pum.preview_col
+    call pum#popup#_close_preview()
+  endif
 endfunction
 
 function pum#popup#_reset_auto_confirm(mode) abort

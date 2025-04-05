@@ -201,7 +201,6 @@ function pum#close(event = 'complete_done', close_window = v:true) abort
 
   call pum#popup#_close_inserted()
 
-  call pum#_stop_debounce_timer('s:debounce_preview_timer')
   call pum#popup#_close_preview()
 
   if pum.cursor >= 0 && pum.current_word !=# ''

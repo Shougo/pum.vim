@@ -479,7 +479,6 @@ function pum#popup#_close(id) abort
   let pum.current_word = ''
   let pum.id = -1
   let pum.scroll_id = -1
-  let pum.preview_id = -1
   let pum.cursor = -1
 
   let g:pum#completed_item = {}
@@ -1230,7 +1229,8 @@ function s:open_preview() abort
     doautocmd <nomodeline> User PumPreview
   endif
 
-  let pum.preview = v:true
+  autocmd ModeChanged * ++once ++nested
+          \ call pum#popup#_close_preview()
 
   call pum#popup#_redraw()
 endfunction
@@ -1238,14 +1238,13 @@ function pum#popup#_close_preview() abort
   let pum = pum#_get()
 
   if pum.preview_id < 0
-    let pum.preview = v:false
     return
   endif
 
+  call pum#_stop_debounce_timer('s:debounce_preview_timer')
   call pum#popup#_close_id(pum.preview_id)
 
   let pum.preview_id = -1
-  let pum.preview = v:false
 endfunction
 function s:get_previewer(item) abort
   " In terminal mode, it does not work well.

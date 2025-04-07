@@ -1238,9 +1238,6 @@ function s:open_preview() abort
   if mode() ==# 'c'
     autocmd pum-preview CursorMovedC * ++nested
           \ call s:check_preview()
-  elseif mode() ==# 't'
-    autocmd pum-preview CursorMovedT * ++nested
-          \ call s:check_preview()
   else
     autocmd pum-preview CursorMovedI * ++nested
           \ call s:check_preview()

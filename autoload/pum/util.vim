@@ -61,7 +61,7 @@ function s:strwidthpart_reverse(str, width) abort
 endfunction
 
 function pum#util#_luacheck(module) abort
-  return has('nvim') && luaeval(
-        \ 'type(select(2, pcall(require, _A.module))) == "table"',
-        \ #{ module: a:module })
+  return has('nvim') &&
+        \ 'type(select(2, pcall(require, _A.module))) == "table"'
+        \ ->luaeval(#{ module: a:module })
 endfunction

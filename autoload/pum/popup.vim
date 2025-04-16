@@ -847,10 +847,10 @@ function pum#popup#_redraw_horizontal_menu() abort
       let pos[1] += cmdline#_get().prompt->strlen() + cmdline_pos[1]
     elseif has('nvim') && pum#util#_luacheck('noice')
       " Use noice cursor
-      let noice_pos = luaeval(
-            \ 'require("noice").api.get_cmdline_position()').screenpos
-
-      let noice_view = luaeval('require("noice.config").options.cmdline.view')
+      let noice_pos = 'require("noice").api.get_cmdline_position()'
+            \ ->luaeval().screenpos
+      let noice_view =
+            \ 'require("noice.config").options.cmdline.view'->luaeval()
       if noice_view !=# 'cmdline'
         let pos[0] = noice_pos.row
         let pos[0] += (direction ==# 'above' ?

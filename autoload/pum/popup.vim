@@ -187,7 +187,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       let pos[0] += (direction ==# 'above' ?
             \        -options.offset_row : options.offset_row)
 
-      let pos[1] += cmdline#_get().prompt->len() + cmdline_pos[1]
+      let pos[1] += cmdline_pos[1]
       " Use getcmdscreenpos() for adjustment
       let pos[1] += getcmdscreenpos() - getcmdpos()
     elseif check_noice
@@ -848,7 +848,7 @@ function pum#popup#_redraw_horizontal_menu() abort
       let pos[0] += (direction ==# 'above' ?
             \        -options.offset_row : options.offset_row)
 
-      let pos[1] += cmdline#_get().prompt->len() + cmdline_pos[1]
+      let pos[1] += cmdline_pos[1]
       " Use getcmdscreenpos() for adjustment
       let pos[1] += getcmdscreenpos() - getcmdpos()
     elseif has('nvim') && pum#util#_luacheck('noice')

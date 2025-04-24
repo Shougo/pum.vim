@@ -187,9 +187,14 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       let pos[0] += (direction ==# 'above' ?
             \        -options.offset_row : options.offset_row)
 
-      let pos[1] += cmdline_pos[1]
       " Use getcmdscreenpos() for adjustment
-      let pos[1] += getcmdscreenpos() - getcmdpos()
+      const adjustment = getcmdscreenpos() - getcmdpos()
+
+      let pos[1] += cmdline_pos[1]
+      let pos[1] += adjustment
+      if !has('nvim') && adjustment ==# 0
+        let pos[1] += 1
+      endif
     elseif check_noice
       " Use noice cursor
       let noice_pos = 'require("noice").api.get_cmdline_position()'

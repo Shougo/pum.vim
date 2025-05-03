@@ -187,7 +187,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       let pos[0] += (direction ==# 'above' ?
             \        -options.offset_row : options.offset_row)
 
-      const adjustment = getcmdprompt()->len()
+      const adjustment = [getcmdprompt()->len(), 1]->max()
 
       let pos[1] += cmdline_pos[1]
       let pos[1] += adjustment
@@ -210,10 +210,10 @@ function pum#popup#_open(startcol, items, mode, insert) abort
             \        -options.offset_row : options.offset_row)
 
       let pos[1] += noice_pos.col - 1
-      let pos[1] += getcmdprompt()->len()
+      let pos[1] += [getcmdprompt()->len(), 1]->max()
     else
       let direction = 'above'
-      let pos[1] += getcmdprompt()->len()
+      let pos[1] += [getcmdprompt()->len(), 1]->max() - 1
     endif
 
     if check_cmdline || check_noice
@@ -851,7 +851,7 @@ function pum#popup#_redraw_horizontal_menu() abort
             \        -options.offset_row : options.offset_row)
 
       let pos[1] += cmdline_pos[1]
-      let pos[1] += getcmdprompt()->len()
+      let pos[1] += [getcmdprompt()->len(), 1]->max()
     elseif has('nvim') && pum#util#_luacheck('noice')
       " Use noice cursor
       let noice_pos = 'require("noice").api.get_cmdline_position()'
@@ -865,9 +865,9 @@ function pum#popup#_redraw_horizontal_menu() abort
       endif
 
       let pos[1] += noice_pos.col - 1
-      let pos[1] += getcmdprompt()->len()
+      let pos[1] += [getcmdprompt()->len(), 1]->max()
     else
-      let pos[1] += getcmdprompt()->len()
+      let pos[1] += [getcmdprompt()->len(), 1]->max()
     endif
   endif
 

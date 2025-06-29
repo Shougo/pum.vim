@@ -192,7 +192,9 @@ function pum#map#confirm() abort
 
   if pum.cursor > 0 && pum.current_word ==# ''
     " Create new undo point
-    let &undolevels = &undolevels
+    if &l:undolevels > 0
+      let &l:undolevels = &l:undolevels
+    endif
 
     call s:insert_current_word(pum.orig_input,
           \ { -> s:skip_next_complete('confirm') })
@@ -211,7 +213,9 @@ function pum#map#confirm_matched_pattern(pattern) abort
 
   if pum.cursor > 0
     " Create new undo point
-    let &undolevels = &undolevels
+    if &l:undolevels > 0
+      let &l:undolevels = &l:undolevels
+    endif
 
     const word = pum.items[pum.cursor - 1].word->matchstr(a:pattern)
     call s:insert(word, pum.orig_input,
@@ -250,7 +254,9 @@ function pum#map#confirm_suffix() abort
     endif
 
     " Create new undo point
-    let &undolevels = &undolevels
+    if &l:undolevels > 0
+      let &l:undolevels = &l:undolevels
+    endif
 
     call s:insert_next_input(
           \ word[: -1 - suffix->len()] .. suffix,

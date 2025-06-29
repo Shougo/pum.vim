@@ -408,7 +408,9 @@ function s:complete_done(completed_item, event) abort
   endif
 
   " Create new undo point
-  let &l:undolevels = &l:undolevels
+  if &l:undolevels > 0
+    let &l:undolevels = &l:undolevels
+  endif
 
   let v:completed_item = g:pum#completed_item
 

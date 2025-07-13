@@ -164,7 +164,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let pos = a:mode ==# 'c' ?
         \ [&lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
         \  options.follow_cursor ? getcmdpos() :
-        \  a:startcol - padding_left + options.offset_cmdcol] :
+        \  a:startcol - 1 - padding_left + options.offset_cmdcol] :
         \ [spos.row + (direction ==# 'above' ?
         \              -options.offset_row : options.offset_row),
         \  spos.col - 1]
@@ -175,46 +175,20 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \ && 'require("noice").api.get_cmdline_position()'
           \    ->luaeval()->type() != v:null->type()
 
-    if check_cmdline
-      const [cmdline_left, cmdline_top, cmdline_right, cmdline_bottom]
-            \ = s:get_border_size(cmdline#_options().border)
+    const adjustment = [getcmdprompt()->len(), 1]->max()
 
-      let cmdline_pos = cmdline#_get().pos->copy()
-      let cmdline_pos[0] += cmdline_top + cmdline_bottom
-      let cmdline_pos[1] += cmdline_left
-
-      let pos[0] = cmdline_pos[0]
-      let pos[0] += (direction ==# 'above' ?
-            \        -options.offset_row : options.offset_row)
-
-      const adjustment = [getcmdprompt()->len(), 1]->max()
-
-      let pos[1] += cmdline_pos[1]
-      let pos[1] += adjustment
+    const cmdline_pos = s:get_cmdline_pos(options, direction)
+    if cmdline_pos->empty()
+      let direction = 'above'
+    else
+      let pos[0] = cmdline_pos.row
+      let pos[1] += cmdline_pos.col
       if !has('nvim') && adjustment ==# 0
         let pos[1] += 1
       endif
-    elseif check_noice
-      " Use noice cursor
-      let noice_pos = 'require("noice").api.get_cmdline_position()'
-            \ ->luaeval().screenpos
-
-      let noice_view = 'require("noice.config").options.cmdline.view'
-            \ ->luaeval()
-      if noice_view ==# 'cmdline'
-        let direction = 'above'
-      endif
-
-      let pos[0] = noice_pos.row
-      let pos[0] += (direction ==# 'above' ?
-            \        -options.offset_row : options.offset_row)
-
-      let pos[1] += noice_pos.col - 1
-      let pos[1] += [getcmdprompt()->len(), 1]->max()
-    else
-      let direction = 'above'
-      let pos[1] += [getcmdprompt()->len(), 1]->max() - 1
     endif
+
+    let pos[1] += adjustment
 
     if check_cmdline || check_noice
       " NOTE: height must be adjusted.
@@ -838,37 +812,13 @@ function pum#popup#_redraw_horizontal_menu() abort
         \  options.offset_col]
 
   if mode() ==# 'c'
-    if '*cmdline#_get'->exists() && !cmdline#_get().pos->empty()
-      const [cmdline_left, cmdline_top, cmdline_right, cmdline_bottom]
-            \ = s:get_border_size(cmdline#_options().border)
-
-      let cmdline_pos = cmdline#_get().pos->copy()
-      let cmdline_pos[0] += cmdline_top + cmdline_bottom
-      let cmdline_pos[1] += cmdline_left
-
-      let pos[0] = cmdline_pos[0]
-      let pos[0] += (direction ==# 'above' ?
-            \        -options.offset_row : options.offset_row)
-
-      let pos[1] += cmdline_pos[1]
-      let pos[1] += [getcmdprompt()->len(), 1]->max()
-    elseif has('nvim') && pum#util#_luacheck('noice')
-      " Use noice cursor
-      let noice_pos = 'require("noice").api.get_cmdline_position()'
-            \ ->luaeval().screenpos
-      let noice_view =
-            \ 'require("noice.config").options.cmdline.view'->luaeval()
-      if noice_view !=# 'cmdline'
-        let pos[0] = noice_pos.row
-        let pos[0] += (direction ==# 'above' ?
-              \        -options.offset_row : options.offset_row)
-      endif
-
-      let pos[1] += noice_pos.col - 1
-      let pos[1] += [getcmdprompt()->len(), 1]->max()
-    else
-      let pos[1] += [getcmdprompt()->len(), 1]->max()
+    const cmdline_pos = s:get_cmdline_pos(options, direction)
+    if !cmdline_pos->empty()
+      let pos[0] = cmdline_pos.row
+      let pos[1] += cmdline_pos.col
     endif
+
+    let pos[1] += [getcmdprompt()->len(), 1]->max()
   endif
 
   if has('nvim')
@@ -1405,4 +1355,36 @@ endfunction
 
 function s:is_cmdline_vim_window() abort
   return '*cmdline#_get'->exists() && !cmdline#_get().pos->empty()
+endfunction
+
+function s:get_cmdline_pos(options, direction) abort
+  let pos = {}
+
+  if s:is_cmdline_vim_window()
+    const [cmdline_left, cmdline_top, cmdline_right, cmdline_bottom]
+          \ = s:get_border_size(cmdline#_options().border)
+
+    let cmdline_pos = cmdline#_get().pos->copy()
+    let cmdline_pos[0] += cmdline_top + cmdline_bottom
+    let cmdline_pos[1] += cmdline_left
+
+    let pos.row = cmdline_pos[0]
+    let pos.row += (a:direction ==# 'above' ?
+          \        -a:options.offset_row : a:options.offset_row)
+
+    let pos.col = cmdline_pos[1]
+  elseif has('nvim') && pum#util#_luacheck('noice')
+    " Use noice cursor
+    let noice_pos = 'require("noice").api.get_cmdline_position()'
+          \ ->luaeval().screenpos
+    let noice_view =
+          \ 'require("noice.config").options.cmdline.view'->luaeval()
+    let pos.row = noice_pos.row
+    let pos.row += (a:direction ==# 'above' ?
+          \        -a:options.offset_row : a:options.offset_row)
+
+    let pos.col = noice_pos.col - 1
+  endif
+
+  return pos
 endfunction

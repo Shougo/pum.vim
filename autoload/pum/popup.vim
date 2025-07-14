@@ -1372,7 +1372,7 @@ function s:get_cmdline_pos(options, direction) abort
     let pos.row += (a:direction ==# 'above' ?
           \        -a:options.offset_row : a:options.offset_row)
 
-    let pos.col = cmdline_pos[1]
+    let pos.col = cmdline_pos[1] + 1
   elseif has('nvim') && pum#util#_luacheck('noice')
     " Use noice cursor
     let noice_pos = 'require("noice").api.get_cmdline_position()'

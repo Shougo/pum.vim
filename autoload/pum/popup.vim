@@ -161,13 +161,20 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     let spos.col = 1
   endif
 
-  let pos = a:mode ==# 'c' ?
-        \ [&lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
+  let pos =
+        \   a:mode ==# 'c'
+        \ ? [
+        \  &lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
         \  options.follow_cursor ? getcmdpos() :
-        \  a:startcol - 1 - padding_left + options.offset_cmdcol] :
-        \ [spos.row + (direction ==# 'above' ?
+        \  (a:startcol > 2 ? getcmdline()[: a:startcol - 2]->strdisplaywidth()
+        \                  : a:startcol - 1)
+        \  - padding_left + options.offset_cmdcol,
+        \ ]
+        \ : [
+        \  spos.row + (direction ==# 'above' ?
         \              -options.offset_row : options.offset_row),
-        \  spos.col - 1]
+        \  spos.col - 1,
+        \ ]
 
   if a:mode ==# 'c'
     const check_cmdline = s:is_cmdline_vim_window()

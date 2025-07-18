@@ -211,6 +211,12 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     endif
   endif
 
+  " Adjust pos
+  if direction ==# 'above'
+    let pos[0] -= border_top + border_bottom
+  endif
+  let pos[1] += border_left
+
   if options.horizontal_menu
     let pum.horizontal_menu = v:true
     let pum.cursor = 0

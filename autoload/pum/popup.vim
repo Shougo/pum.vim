@@ -208,6 +208,12 @@ function pum#popup#_open(startcol, items, mode, insert) abort
       if direction ==# 'above'
         let pos[0] -= height + 1
       endif
+
+      if len(lines) > height
+        let height -= border_top + border_bottom
+      else
+        let pos[0] -= border_top + border_bottom
+      endif
     endif
   endif
 

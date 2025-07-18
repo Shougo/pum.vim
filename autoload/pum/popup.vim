@@ -1398,6 +1398,5 @@ function s:get_cmdline_pos(options, direction, cmdline_row) abort
     let pos.col = noice_pos.col - 1
   endif
 
-  echomsg pos
   return pos
 endfunction

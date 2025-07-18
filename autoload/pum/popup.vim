@@ -184,7 +184,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
     const adjustment = [getcmdprompt()->len(), 1]->max()
 
-    const cmdline_pos = s:get_cmdline_pos(options, direction)
+    const cmdline_pos = s:get_cmdline_pos(options, direction, pos[0])
     if cmdline_pos->empty()
       let direction = 'above'
     else
@@ -819,7 +819,7 @@ function pum#popup#_redraw_horizontal_menu() abort
         \  options.offset_col]
 
   if mode() ==# 'c'
-    const cmdline_pos = s:get_cmdline_pos(options, direction)
+    const cmdline_pos = s:get_cmdline_pos(options, direction, pos[0])
     if !cmdline_pos->empty()
       let pos[0] = cmdline_pos.row
       let pos[1] += cmdline_pos.col
@@ -1364,7 +1364,7 @@ function s:is_cmdline_vim_window() abort
   return '*cmdline#_get'->exists() && !cmdline#_get().pos->empty()
 endfunction
 
-function s:get_cmdline_pos(options, direction) abort
+function s:get_cmdline_pos(options, direction, cmdline_row) abort
   let pos = {}
 
   if s:is_cmdline_vim_window()
@@ -1386,12 +1386,18 @@ function s:get_cmdline_pos(options, direction) abort
           \ ->luaeval().screenpos
     let noice_view =
           \ 'require("noice.config").options.cmdline.view'->luaeval()
-    let pos.row = noice_pos.row
-    let pos.row += (a:direction ==# 'above' ?
-          \        -a:options.offset_row : a:options.offset_row)
+    if noice_view ==# 'cmdline'
+      " NOTE: Use default command line row.
+      let pos.row = a:cmdline_row
+    else
+      let pos.row = noice_pos.row
+      let pos.row += (a:direction ==# 'above' ?
+            \        -a:options.offset_row : a:options.offset_row)
+    endif
 
     let pos.col = noice_pos.col - 1
   endif
 
+  echomsg pos
   return pos
 endfunction

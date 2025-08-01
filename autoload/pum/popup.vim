@@ -516,13 +516,7 @@ function pum#popup#_close_id(id) abort
 endfunction
 
 function pum#popup#_redraw() abort
-  if mode() ==# 'c' && &incsearch
-        \ && (getcmdtype() ==# '/' || getcmdtype() ==# '?')
-    " Redraw without breaking 'incsearch' in search commands
-    call feedkeys("\<C-r>\<BS>", 'n')
-  else
-    redraw
-  endif
+  redraw
 endfunction
 
 function pum#popup#_redraw_scroll() abort

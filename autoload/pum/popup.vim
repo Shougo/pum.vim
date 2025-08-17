@@ -1203,7 +1203,7 @@ function s:open_preview() abort
     autocmd!
   augroup END
 
-  autocmd pum-preview ModeChanged * ++nested
+  autocmd pum-preview ModeChanged *:n ++nested
           \ call pum#popup#_close_preview()
   if mode() ==# 'c'
     autocmd pum-preview CursorMovedC * ++nested

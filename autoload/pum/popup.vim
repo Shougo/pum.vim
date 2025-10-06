@@ -31,16 +31,16 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   for column in options.item_orders
     let max_column =
           \   column ==# 'space' ? 1 :
-          \   column ==# 'abbr' ? items->copy()->map({ _, val ->
+          \   column ==# 'abbr' ? items->mapnew({ _, val ->
           \     val->get('abbr', val.word)->strdisplaywidth()
           \   })->max() :
-          \   column ==# 'kind' ? items->copy()->map({ _, val ->
+          \   column ==# 'kind' ? items->mapnew({ _, val ->
           \     val->get('kind', '')->strdisplaywidth()
           \   })->max() :
-          \   column ==# 'menu' ? items->copy()->map({ _, val ->
+          \   column ==# 'menu' ? items->mapnew({ _, val ->
           \     val->get('menu', '')->strdisplaywidth()
           \   })->max() :
-          \   items->copy()->map({ _, val ->
+          \   items->mapnew({ _, val ->
           \     val->get('columns', {})->get(column, '')
           \     ->strdisplaywidth()
           \   })->max()
@@ -239,7 +239,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
     call nvim_buf_set_lines(pum.buf, 0, -1, v:true, lines)
 
-    let scroll_lines = lines->copy()->map({ _ -> options.scrollbar_char })
+    let scroll_lines = lines->mapnew({ _ -> options.scrollbar_char })
     call nvim_buf_set_lines(pum.scroll_buf, 0, -1, v:true, scroll_lines)
 
     let winopts = #{
@@ -807,7 +807,7 @@ function pum#popup#_redraw_horizontal_menu() abort
     const direction = 'above'
   endif
 
-  let width = lines->copy()->map({ _, val -> val->strwidth() })->max()
+  let width = lines->mapnew({ _, val -> val->strwidth() })->max()
   if options.min_width > 0
     let width = [width, options.min_width]->max()
   endif
@@ -1034,7 +1034,7 @@ function s:open_preview() abort
 
   if previewer->has_key('contents')
     let width = previewer.contents
-          \ ->copy()->map({ _, val -> val->strwidth() })->max()
+          \ ->mapnew({ _, val -> val->strwidth() })->max()
     let width = [width, options.preview_width]->min()
 
     " Calculate height with an algorithm derived from

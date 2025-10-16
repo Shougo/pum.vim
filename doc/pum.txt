@@ -105,7 +105,7 @@ border
 		NOTE: If you use "single" or "double" in Vim, 'ambiwidth' must
 		be "single" and 'encoding' must be "utf-8".
 
-		Default: "none"
+		Default: 'pumborder' value
 
                                                 *pum-option-commit_characters*
 commit_characters

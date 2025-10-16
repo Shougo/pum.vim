@@ -52,8 +52,14 @@ function pum#_init_options() abort
   let s:options = #{
         \   auto_confirm_time: 0,
         \   auto_select: &completeopt =~# 'noinsert',
-        \   blend: '+pumblend'->exists() ? &pumblend : 0,
-        \   border: 'none',
+        \   blend:
+        \        '+pumblend'->exists()
+        \      ? &pumblend
+        \      : 0,
+        \   border:
+        \        '+pumborder'->exists() && &pumborder !=# ''
+        \      ? &pumborder
+        \      : 'none',
         \   commit_characters: [],
         \   direction: 'auto',
         \   follow_cursor: v:false,
@@ -70,7 +76,11 @@ function pum#_init_options() abort
         \   horizontal_menu: v:false,
         \   insert_preview: v:false,
         \   item_orders: [
-        \     'abbr', 'space', 'kind', 'space', 'menu',
+        \     'abbr',
+        \     'space',
+        \     'kind',
+        \     'space',
+        \     'menu',
         \   ],
         \   max_columns: #{
         \     kind: 10,

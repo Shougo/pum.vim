@@ -34,6 +34,7 @@ function pum#_init() abort
         \   preview_buf: -1,
         \   preview_col: 0,
         \   preview_id: -1,
+        \   preview_kind: '',
         \   preview_row: 0,
         \   reversed: v:false,
         \   scroll_buf: -1,

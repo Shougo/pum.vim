@@ -1082,7 +1082,7 @@ function s:open_preview() abort
           \   zindex: options.zindex + 1,
           \ }
 
-    if pum.preview_id > 0
+    if pum.preview_id > 0 && previewer.kind ==# pum.preview_kind
       " Reuse window
       call nvim_win_set_config(pum.preview_id, winopts)
     else
@@ -1215,6 +1215,7 @@ function s:open_preview() abort
 
   let pum.preview_row = row
   let pum.preview_col = col
+  let pum.preview_kind = previewer.kind
 
   call pum#popup#_redraw()
 endfunction

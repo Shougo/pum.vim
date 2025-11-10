@@ -1082,7 +1082,7 @@ function s:open_preview() abort
           \   zindex: options.zindex + 1,
           \ }
 
-    if pum.preview_id > 0 && previewer.kind ==# pum.preview_kind
+    if pum.preview_id > 0
       " Reuse window
       call nvim_win_set_config(pum.preview_id, winopts)
     else
@@ -1101,6 +1101,11 @@ function s:open_preview() abort
     endif
 
     if previewer.kind ==# 'help'
+      if previewer.kind !=# pum.preview_kind
+        " Create new buffer for help
+        let pum.preview_buf = nvim_create_buf(v:false, v:true)
+      endif
+
       try
         call win_execute(pum.preview_id,
               \ 'setlocal buftype=help | help ' .. previewer.tag)

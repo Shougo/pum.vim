@@ -21,8 +21,8 @@ It works both insert mode and command line mode.
 
 ## Install
 
-**Note:** pum.vim requires Neovim (0.8.0+ and of course, **latest** is
-recommended) or Vim 9.0.1276+.
+**Note:** pum.vim requires Neovim (0.11.0+ and of course, **latest** is
+recommended) or Vim 9.1.0741+.
 
 pum.vim detects if "noice.nvim" is installed.
 https://github.com/folke/noice.nvim

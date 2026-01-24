@@ -1,13 +1,6 @@
-PATH := ./vim-themis/bin:$(PATH)
-export THEMIS_VIM  := nvim
-export THEMIS_ARGS := -e -s --headless
-export THEMIS_HOME := ./vim-themis
+VIM ?= vim
 
-test: vim-themis
-	themis --version
-	themis test/
-
-vim-themis:
-	git clone https://github.com/thinca/vim-themis vim-themis
+test:
+	$(VIM) -u NONE -N -U NONE -V1 -e -s -S test/run_tests.vim
 
 .PHONY: test

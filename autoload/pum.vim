@@ -190,6 +190,8 @@ function pum#open(startcol, items, mode = mode(), insert = v:false) abort
 
   if a:items->empty() || pumvisible() || wildmenumode()
     call pum#close()
+    call pum#_init()
+
     return
   endif
 

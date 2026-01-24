@@ -1,0 +1,77 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  test:
+    name: Test on ${{ matrix.editor }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        editor:
+          - vim
+          - neovim
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Vim
+        if: matrix.editor == 'vim'
+        uses: rhysd/action-setup-vim@v1
+        with:
+          version: v9.1.0900
+          
+      - name: Setup Neovim
+        if: matrix.editor == 'neovim'
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: v0.10.0
+
+      - name: Verify Vim version
+        if: matrix.editor == 'vim'
+        run: |
+          vim --version
+          echo "Vim version info:"
+          vim --version | head -3
+
+      - name: Verify Neovim version
+        if: matrix.editor == 'neovim'
+        run: |
+          nvim --version
+          echo "Neovim version info:"
+          nvim --version | head -3
+
+      - name: Run tests (Vim)
+        if: matrix.editor == 'vim'
+        run: make test
+        env:
+          VIM: vim
+
+      - name: Run tests (Neovim)
+        if: matrix.editor == 'neovim'
+        run: make test
+        env:
+          VIM: nvim
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.editor }}-${{ matrix.os }}
+          path: |
+            test/*.log
+            *.log
+          if-no-files-found: ignore
+          retention-days: 7

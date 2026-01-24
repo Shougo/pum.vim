@@ -1,5 +1,6 @@
 # pum.vim
 
+[![Test](https://github.com/Shougo/pum.vim/actions/workflows/test.yml/badge.svg)](https://github.com/Shougo/pum.vim/actions/workflows/test.yml)
 [![Doc](https://img.shields.io/badge/doc-%3Ah%20pum-orange.svg)](doc/pum.txt)
 
 Please read [help](doc/pum.txt) for details.

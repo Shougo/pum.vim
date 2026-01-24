@@ -5,7 +5,7 @@
 func Setup()
   call pum#_init()
   call pum#_init_options()
-  silent! normal! ggVGd
+  normal! ggVGd
 endfunc
 
 " Test pum#open() function

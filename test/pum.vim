@@ -264,7 +264,7 @@ function s:suite.set_options() abort
   " Test set_local_option
   call pum#set_local_option('i', 'padding', v:true)
   " Local options are tested through _options()
-  
+
   " Reset to defaults
   call pum#_init_options()
 endfunction

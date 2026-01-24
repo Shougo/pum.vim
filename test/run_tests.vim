@@ -15,7 +15,7 @@ silent! function
 redir END
 
 for line in split(s:functions_output, "\n")
-  let match = matchstr(line, '^function Test_\zs\w\+')
+  let match = matchstr(line, 'function Test_\zs\w\+')
   if match != ''
     call add(s:test_functions, 'Test_' . match)
   endif
@@ -33,31 +33,36 @@ for test_func in s:test_functions
   " Clear any previous errors
   let v:errors = []
   
+  " Calculate current test number
+  let test_num = s:passed + s:failed + 1
+  
   try
     " Run the test
     execute 'call ' . test_func . '()'
     
     if len(v:errors) == 0
       let s:passed += 1
-      echo 'ok ' . (s:passed + s:failed) . ' - ' . test_func
+      echo 'ok ' . test_num . ' - ' . test_func
     else
       let s:failed += 1
-      echo 'not ok ' . (s:passed + s:failed) . ' - ' . test_func
+      echo 'not ok ' . test_num . ' - ' . test_func
       for err in v:errors
         echo '  # ' . err
       endfor
     endif
   catch
     let s:failed += 1
-    echo 'not ok ' . (s:passed + s:failed) . ' - ' . test_func
+    echo 'not ok ' . test_num . ' - ' . test_func
     echo '  # Exception: ' . v:exception
   endtry
 endfor
 
+" Display summary
+let s:separator_width = 60
 echo ''
-echo '# ' . repeat('=', 58)
+echo '# ' . repeat('=', s:separator_width - 2)
 echo '# Tests: ' . s:total_tests . ' | Passed: ' . s:passed . ' | Failed: ' . s:failed
-echo '# ' . repeat('=', 58)
+echo '# ' . repeat('=', s:separator_width - 2)
 
 if s:failed > 0
   echo ''

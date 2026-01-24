@@ -1,13 +1,10 @@
-PATH := ./vim-themis/bin:$(PATH)
-export THEMIS_VIM  := nvim
-export THEMIS_ARGS := -e -s --headless
-export THEMIS_HOME := ./vim-themis
+VIM ?= vim
 
-test: vim-themis
-	themis --version
-	themis test/
-
-vim-themis:
-	git clone https://github.com/thinca/vim-themis vim-themis
+test:
+	@echo "Running tests with Vim's native assert API..."
+	@$(VIM) -u NONE -N -U NONE \
+		--cmd 'set runtimepath+=.' \
+		-S test/pum.vim \
+		-c 'if len(v:errors) == 0 | echo "All tests passed!" | qall! | else | echo "Tests failed:" | for err in v:errors | echo err | endfor | cquit | endif'
 
 .PHONY: test

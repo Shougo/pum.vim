@@ -1,6 +1,6 @@
 VIM ?= vim
 
 test:
-	$(VIM) -u NONE -N -U NONE -S test/run_tests.vim
+	$(VIM) -u NONE -N -U NONE -V1 -e -s -S test/run_tests.vim
 
 .PHONY: test

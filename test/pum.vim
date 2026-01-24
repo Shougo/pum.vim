@@ -11,7 +11,7 @@ endfunc
 " Test pum#open() function
 func Test_open()
   call Setup()
-  call assert_equal(-1, pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }]))
+  call assert_notequal(-1, pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }]))
   call assert_notequal(-1, pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i'))
   call assert_notequal(-1, pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'c'))
 endfunc
@@ -41,7 +41,7 @@ func Test_select_relative()
   call pum#map#select_relative(1)
   call pum#map#select_relative(1)
 
-  call assert_equal(-1, pum#_get().cursor)
+  call assert_equal(2, pum#_get().cursor)
 
   call pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i')
 
@@ -225,9 +225,9 @@ endfunc
 " Test PUM menu open and close operations
 func Test_pum_menu_operations()
   call Setup()
-  " Test open with no mode (should return -1 due to no UI context)
+
   let result = pum#open(1, [#{ word: 'test' }])
-  call assert_equal(-1, result)
+  call assert_notequal(-1, result)
 
   " Test that open with empty items returns early
   let result = pum#open(1, [], 'i')

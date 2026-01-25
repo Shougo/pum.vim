@@ -68,9 +68,11 @@ echo '# ' . '='->repeat(s:separator_width - 2)
 if s:failed > 0
   echo ''
   echo 'FAILED - ' .. s:failed .. ' test(s) failed'
+  echo ''
   cquit
 else
   echo ''
   echo 'SUCCESS - All tests passed!'
+  echo ''
   qall!
 endif

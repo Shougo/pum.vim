@@ -36,12 +36,12 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let items = s:uniq_by_word_or_dup(a:items)
 
   " Calculate column widths and dimensions
-  let [max_columns, raw_width, non_abbr_length] =
+  let [max_columns, total_width, non_abbr_length] =
         \ s:calculate_column_widths(items, options)
 
   let pum = pum#_get()
   let dimensions = s:calculate_dimensions(
-        \ items, max_columns, raw_width, non_abbr_length,
+        \ items, max_columns, total_width, non_abbr_length,
         \ options, a:mode, a:startcol, pum)
 
   " Get cursor/screen position
@@ -1136,7 +1136,7 @@ endfunction
 " Args:
 "   items: List of completion items
 "   max_columns: Column width information from s:calculate_column_widths()
-"   raw_width: Unpadded total width
+"   total_width: Total width of all columns combined (before padding)
 "   non_abbr_length: Width of non-abbr columns
 "   options: PUM options
 "   mode: Mode character ('i', 'c', 't')
@@ -1145,14 +1145,14 @@ endfunction
 "
 " Returns:
 "   Dictionary with width, height, padding info, border sizes, and formatted lines
-function s:calculate_dimensions(items, max_columns, raw_width, non_abbr_length,
+function s:calculate_dimensions(items, max_columns, total_width, non_abbr_length,
       \ options, mode, startcol, pum) abort
   " Calculate padding based on mode
   const padding = a:options.padding ?
         \ (a:mode ==# 'c' || a:startcol != 1) ? 2 : 1 : 0
 
   " Apply width constraints
-  let width = a:raw_width + padding
+  let width = a:total_width + padding
   if a:options.min_width > 0
     let width = [width, a:options.min_width]->max()
   endif
@@ -1231,21 +1231,24 @@ endfunction
 function s:calculate_position(spos, dimensions, options, mode, items, startcol) abort
   let height = a:dimensions.height
   let direction = a:options.direction
+  
+  " Create local copy of spos to avoid mutating the parameter
+  let spos_copy = deepcopy(a:spos)
 
   " Adjust position and height based on available screen space
   if a:mode !=# 'c'
     let minheight_below = [
-          \ height, &lines - a:spos.row - a:dimensions.padding_height - a:options.offset_row
+          \ height, &lines - spos_copy.row - a:dimensions.padding_height - a:options.offset_row
           \ ]->min()
     let minheight_above = [
-          \ height, a:spos.row - a:dimensions.padding_height - a:options.offset_row
+          \ height, spos_copy.row - a:dimensions.padding_height - a:options.offset_row
           \ ]->min()
 
     " Choose direction based on available space
     if (minheight_below < minheight_above && a:options.direction ==# 'auto')
           \ || (minheight_above >= 1 && a:options.direction ==# 'above')
       " Use above window
-      let a:spos.row -= height + a:dimensions.padding_height
+      let spos_copy.row -= height + a:dimensions.padding_height
       let height = minheight_above
       let direction = 'above'
     else
@@ -1261,21 +1264,21 @@ function s:calculate_position(spos, dimensions, options, mode, items, startcol) 
 
   " Reverse items if showing above and reversed option is enabled
   const reversed = direction ==# 'above' && a:options.reversed
-  let items = reversed ? a:items->reverse() : a:items
-  let lines = reversed ? a:dimensions.lines->reverse() : a:dimensions.lines
+  let items = reversed ? a:items->copy()->reverse() : a:items
+  let lines = reversed ? a:dimensions.lines->copy()->reverse() : a:dimensions.lines
 
   " Adjust column position to fit within screen
-  const rest_width = &columns - a:spos.col - a:dimensions.padding_width
+  const rest_width = &columns - spos_copy.col - a:dimensions.padding_width
   if rest_width < a:dimensions.width
-    let a:spos.col -= a:dimensions.width - rest_width
+    let spos_copy.col -= a:dimensions.width - rest_width
   endif
 
   " Apply padding adjustment
-  let a:spos.col -= a:dimensions.padding_left
+  let spos_copy.col -= a:dimensions.padding_left
 
   " Ensure column is within bounds
-  if a:spos.col <= 0
-    let a:spos.col = 1
+  if spos_copy.col <= 0
+    let spos_copy.col = 1
   endif
 
   " Calculate final position
@@ -1289,9 +1292,9 @@ function s:calculate_position(spos, dimensions, options, mode, items, startcol) 
         \  - a:dimensions.padding_left + a:options.offset_cmdcol,
         \ ]
         \ : [
-        \  a:spos.row + (direction ==# 'above' ?
+        \  spos_copy.row + (direction ==# 'above' ?
         \              -a:options.offset_row : a:options.offset_row),
-        \  a:spos.col - 1,
+        \  spos_copy.col - 1,
         \ ]
 
   return [pos, direction, height, reversed, items, lines]

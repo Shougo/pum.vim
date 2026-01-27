@@ -4,6 +4,20 @@ const s:priority_highlight_selected = 0
 const s:priority_highlight_lead = 1
 const s:priority_highlight_horizontal_separator = 1
 
+" Opens a popup menu for completion/suggestions
+" 
+" This function creates a floating/popup window displaying completion items.
+" It handles positioning, sizing, highlighting, and platform-specific rendering
+" for both Neovim and Vim.
+"
+" Args:
+"   startcol: Column where completion starts
+"   items: List of completion items
+"   mode: Mode character ('i' = insert, 'c' = command-line, 't' = terminal)
+"   insert: If true, automatically insert first item
+"
+" Returns:
+"   Window ID of created popup, or -1 on error
 function pum#popup#_open(startcol, items, mode, insert) abort
   " Validate mode parameter
   if a:mode !~# '[ict]'
@@ -1054,8 +1068,20 @@ function s:get_cmdline_pos(options, direction, cmdline_row) abort
   return pos
 endfunction
 
-" Calculate column widths and return column information
-" Returns: [max_columns, width, non_abbr_length]
+" Calculate column widths for popup menu items
+"
+" Determines the maximum display width needed for each column type (abbr, kind,
+" menu, custom columns) across all items, respecting configured constraints.
+"
+" Args:
+"   items: List of completion items
+"   options: PUM options containing item_orders and max_columns
+"
+" Returns:
+"   [max_columns, width, non_abbr_length]
+"   - max_columns: List of [column_name, max_width] pairs
+"   - width: Total width of all columns combined
+"   - non_abbr_length: Width of all non-abbr columns
 function s:calculate_column_widths(items, options) abort
   let max_columns = []
   let width = 0
@@ -1102,8 +1128,23 @@ function s:calculate_column_widths(items, options) abort
   return [max_columns, width, non_abbr_length]
 endfunction
 
-" Calculate final dimensions (width, height, padding, etc.)
-" Returns: dictionary with width, height, padding info, and formatted lines
+" Calculate final popup dimensions and format display lines
+"
+" Applies padding, width/height constraints, calculates border sizes, and
+" formats all items into display lines ready for rendering.
+"
+" Args:
+"   items: List of completion items
+"   max_columns: Column width information from s:calculate_column_widths()
+"   raw_width: Unpadded total width
+"   non_abbr_length: Width of non-abbr columns
+"   options: PUM options
+"   mode: Mode character ('i', 'c', 't')
+"   startcol: Starting column
+"   pum: PUM state object
+"
+" Returns:
+"   Dictionary with width, height, padding info, border sizes, and formatted lines
 function s:calculate_dimensions(items, max_columns, raw_width, non_abbr_length,
       \ options, mode, startcol, pum) abort
   " Calculate padding based on mode
@@ -1166,8 +1207,26 @@ function s:calculate_dimensions(items, max_columns, raw_width, non_abbr_length,
         \ }
 endfunction
 
-" Calculate popup position and determine direction
-" Returns: [pos, direction, height, reversed]
+" Calculate popup position and determine display direction
+"
+" Determines where the popup should appear (above/below cursor), adjusts for
+" screen boundaries, and handles item reversal for above-cursor display.
+"
+" Args:
+"   spos: Screen position (row, col)
+"   dimensions: Dimension info from s:calculate_dimensions()
+"   options: PUM options
+"   mode: Mode character ('i', 'c', 't')
+"   items: List of completion items
+"
+" Returns:
+"   [pos, direction, height, reversed, items, lines]
+"   - pos: Final [row, col] position
+"   - direction: 'above' or 'below'
+"   - height: Final height after adjustments
+"   - reversed: Whether items were reversed
+"   - items: Possibly reversed items list
+"   - lines: Possibly reversed display lines
 function s:calculate_position(spos, dimensions, options, mode, items) abort
   let height = a:dimensions.height
   let direction = a:options.direction
@@ -1237,8 +1296,21 @@ function s:calculate_position(spos, dimensions, options, mode, items) abort
   return [pos, direction, height, reversed, items, lines]
 endfunction
 
-" Adjust position for command-line mode
-" Returns: [pos, height, direction]
+" Adjust position for command-line mode with special plugin support
+"
+" Handles position adjustments for command-line mode, including support for
+" vim-cmdline and Noice.nvim plugins that provide custom command-line windows.
+"
+" Args:
+"   pos: Initial position [row, col]
+"   height: Initial height
+"   direction: Initial direction ('above' or 'below')
+"   options: PUM options
+"   dimensions: Dimension info from s:calculate_dimensions()
+"   lines: Formatted display lines
+"
+" Returns:
+"   [pos, height, direction] - Adjusted values for command-line mode
 function s:adjust_cmdline_position(pos, height, direction, options, dimensions, lines) abort
   const check_cmdline = s:is_cmdline_vim_window()
   const check_noice = has('nvim') && pum#util#_luacheck('noice')
@@ -1286,8 +1358,23 @@ function s:adjust_cmdline_position(pos, height, direction, options, dimensions, 
   return [pos, height, direction]
 endfunction
 
-" Create or update Neovim floating window
-" Returns: pum object
+" Create or update Neovim floating window for popup menu
+"
+" Manages Neovim floating windows including the main popup and optional scrollbar.
+" Reuses existing windows when possible to minimize flickering.
+"
+" Args:
+"   pum: PUM state object
+"   pos: Position [row, col]
+"   dimensions: Dimension info from s:calculate_dimensions()
+"   options: PUM options
+"   items: List of completion items
+"   lines: Formatted display lines
+"   direction: Display direction ('above' or 'below')
+"   height: Window height
+"
+" Returns:
+"   Updated pum object with window IDs and state
 function s:create_nvim_window(pum, pos, dimensions, options, items, lines, direction, height) abort
   " Create buffers if needed
   if a:pum.buf < 0
@@ -1384,8 +1471,21 @@ function s:create_nvim_window(pum, pos, dimensions, options, items, lines, direc
   return a:pum
 endfunction
 
-" Create or update Vim popup window
-" Returns: pum object
+" Create or update Vim popup window for popup menu
+"
+" Manages Vim popup windows with proper border styling and character sets.
+" Reuses existing popups when possible.
+"
+" Args:
+"   pum: PUM state object
+"   pos: Position [row, col]
+"   dimensions: Dimension info from s:calculate_dimensions()
+"   options: PUM options
+"   lines: Formatted display lines
+"   height: Window height
+"
+" Returns:
+"   Updated pum object with window IDs and state
 function s:create_vim_popup(pum, pos, dimensions, options, lines, height) abort
   " Configure popup options
   let winopts = #{
@@ -1436,7 +1536,24 @@ function s:create_vim_popup(pum, pos, dimensions, options, lines, height) abort
   return a:pum
 endfunction
 
-" Setup autocmds and store state
+" Setup autocmds for popup lifecycle and store popup state
+"
+" Configures mode-specific autocmds for automatic popup closing and text change
+" tracking. Stores all popup state including items, position, and dimensions.
+" Applies highlighting and handles initial item selection.
+"
+" Args:
+"   pum: PUM state object
+"   items: List of completion items
+"   direction: Display direction ('above' or 'below')
+"   reversed: Whether items are reversed
+"   startcol: Starting column
+"   options: PUM options
+"   mode: Mode character ('i', 'c', 't')
+"   insert: If true, automatically insert first item
+"   max_columns: Column width information
+"   height: Window height
+"   dimensions: Dimension info from s:calculate_dimensions()
 function s:setup_autocmds_and_state(pum, items, direction, reversed, startcol,
       \ options, mode, insert, max_columns, height, dimensions) abort
   " Store popup state

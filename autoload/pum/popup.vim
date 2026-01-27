@@ -60,7 +60,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   " Calculate position and direction
   let [pos, direction, height, reversed, items, lines] =
-        \ s:calculate_position(spos, dimensions, options, a:mode, items)
+        \ s:calculate_position(spos, dimensions, options, a:mode, items, a:startcol)
 
   " Apply command-line specific adjustments
   if a:mode ==# 'c'
@@ -1218,6 +1218,7 @@ endfunction
 "   options: PUM options
 "   mode: Mode character ('i', 'c', 't')
 "   items: List of completion items
+"   startcol: Starting column for completion
 "
 " Returns:
 "   [pos, direction, height, reversed, items, lines]
@@ -1227,7 +1228,7 @@ endfunction
 "   - reversed: Whether items were reversed
 "   - items: Possibly reversed items list
 "   - lines: Possibly reversed display lines
-function s:calculate_position(spos, dimensions, options, mode, items) abort
+function s:calculate_position(spos, dimensions, options, mode, items, startcol) abort
   let height = a:dimensions.height
   let direction = a:options.direction
 

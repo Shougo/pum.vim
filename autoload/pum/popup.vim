@@ -5,7 +5,7 @@ const s:priority_highlight_lead = 1
 const s:priority_highlight_horizontal_separator = 1
 
 " Opens a popup menu for completion/suggestions
-" 
+"
 " This function creates a floating/popup window displaying completion items.
 " It handles positioning, sizing, highlighting, and platform-specific rendering
 " for both Neovim and Vim.
@@ -60,7 +60,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   " Calculate position and direction
   let [pos, direction, height, reversed, items, lines] =
-        \ s:calculate_position(spos, dimensions, options, a:mode, items, a:startcol)
+        \ s:calculate_position(spos, dimensions, options, a:mode, items,
+        \                      a:startcol)
 
   " Apply command-line specific adjustments
   if a:mode ==# 'c'
@@ -83,7 +84,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     call pum#popup#_redraw_horizontal_menu()
   elseif has('nvim')
     let pum = s:create_nvim_window(pum, pos, dimensions, options, items,
-          \                         lines, direction, height)
+          \                        lines, direction, height)
   else
     let pum = s:create_vim_popup(pum, pos, dimensions, options, lines, height)
   endif
@@ -110,8 +111,8 @@ function pum#popup#_open(startcol, items, mode, insert) abort
 
   " Setup autocmds and store state
   call s:setup_autocmds_and_state(pum, items, direction, reversed, a:startcol,
-        \                          options, a:mode, a:insert, max_columns,
-        \                          height, dimensions)
+        \                         options, a:mode, a:insert, max_columns,
+        \                         height, dimensions)
 
   return pum.id
 endfunction
@@ -1107,8 +1108,10 @@ function s:calculate_column_widths(items, options) abort
           \   })->max()
 
     " Apply max column constraints
-    let max_column =
-          \ [max_column, a:options.max_columns->get(column, max_column)]->min()
+    let max_column = [
+          \  max_column,
+          \  a:options.max_columns->get(column, max_column)
+          \ ]->min()
 
     " Skip columns with zero width or space after zero-width column
     if max_column <= 0 || (column ==# 'space' && prev_column_length ==# 0)
@@ -1144,8 +1147,10 @@ endfunction
 "   pum: PUM state object
 "
 " Returns:
-"   Dictionary with width, height, padding info, border sizes, and formatted lines
-function s:calculate_dimensions(items, max_columns, total_width, non_abbr_length,
+"   Dictionary with width, height, padding info, border sizes, and formatted
+"   lines
+function s:calculate_dimensions(
+      \ items, max_columns, total_width, non_abbr_length,
       \ options, mode, startcol, pum) abort
   " Calculate padding based on mode
   const padding = a:options.padding ?
@@ -1228,20 +1233,25 @@ endfunction
 "   - reversed: Whether items were reversed
 "   - items: Possibly reversed items list
 "   - lines: Possibly reversed display lines
-function s:calculate_position(spos, dimensions, options, mode, items, startcol) abort
+function s:calculate_position(
+      \ spos, dimensions, options, mode, items, startcol) abort
   let height = a:dimensions.height
   let direction = a:options.direction
-  
+
   " Create local copy of spos to avoid mutating the parameter
   let spos_copy = deepcopy(a:spos)
 
   " Adjust position and height based on available screen space
   if a:mode !=# 'c'
     let minheight_below = [
-          \ height, &lines - spos_copy.row - a:dimensions.padding_height - a:options.offset_row
+          \ height,
+          \ &lines - spos_copy.row -
+          \ a:dimensions.padding_height - a:options.offset_row
           \ ]->min()
     let minheight_above = [
-          \ height, spos_copy.row - a:dimensions.padding_height - a:options.offset_row
+          \ height,
+          \ spos_copy.row -
+          \ a:dimensions.padding_height - a:options.offset_row
           \ ]->min()
 
     " Choose direction based on available space
@@ -1264,8 +1274,14 @@ function s:calculate_position(spos, dimensions, options, mode, items, startcol) 
 
   " Reverse items if showing above and reversed option is enabled
   const reversed = direction ==# 'above' && a:options.reversed
-  let items = reversed ? a:items->copy()->reverse() : a:items
-  let lines = reversed ? a:dimensions.lines->copy()->reverse() : a:dimensions.lines
+  let items =
+        \   reversed
+        \ ? a:items->copy()->reverse()
+        \ : a:items
+  let lines =
+        \   reversed
+        \ ? a:dimensions.lines->copy()->reverse()
+        \ : a:dimensions.lines
 
   " Adjust column position to fit within screen
   const rest_width = &columns - spos_copy.col - a:dimensions.padding_width
@@ -1315,7 +1331,8 @@ endfunction
 "
 " Returns:
 "   [pos, height, direction] - Adjusted values for command-line mode
-function s:adjust_cmdline_position(pos, height, direction, options, dimensions, lines) abort
+function s:adjust_cmdline_position(
+      \ pos, height, direction, options, dimensions, lines) abort
   const check_cmdline = s:is_cmdline_vim_window()
   const check_noice = has('nvim') && pum#util#_luacheck('noice')
         \ && 'require("noice").api.get_cmdline_position()'
@@ -1364,8 +1381,8 @@ endfunction
 
 " Create or update Neovim floating window for popup menu
 "
-" Manages Neovim floating windows including the main popup and optional scrollbar.
-" Reuses existing windows when possible to minimize flickering.
+" Manages Neovim floating windows including the main popup and optional
+" scrollbar. Reuses existing windows when possible to minimize flickering.
 "
 " Args:
 "   pum: PUM state object
@@ -1379,7 +1396,8 @@ endfunction
 "
 " Returns:
 "   Updated pum object with window IDs and state
-function s:create_nvim_window(pum, pos, dimensions, options, items, lines, direction, height) abort
+function s:create_nvim_window(
+      \ pum, pos, dimensions, options, items, lines, direction, height) abort
   " Create buffers if needed
   if a:pum.buf < 0
     let a:pum.buf = nvim_create_buf(v:false, v:true)
@@ -1409,8 +1427,8 @@ function s:create_nvim_window(pum, pos, dimensions, options, items, lines, direc
 
   " Calculate scrollbar position
   const scroll_height = [
-        \ (a:height * ((a:height + 0.0) / a:lines->len()) + 0.5
-        \ )->floor()->float2nr(), 1]->max()
+        \ (a:height * ((a:height + 0.0) / a:lines->len()) + 0.5)
+        \ ->floor()->float2nr(), 1]->max()
   const scroll_row = a:pos[0] + a:dimensions.border_top
   const scroll_col = a:pos[1] + a:dimensions.width + a:dimensions.border_right
   let scroll_winopts = #{
@@ -1566,8 +1584,10 @@ function s:setup_autocmds_and_state(pum, items, direction, reversed, startcol,
   let a:pum.direction = a:direction
   let a:pum.height = a:height
   let a:pum.width = a:dimensions.width
-  let a:pum.border_width = a:dimensions.border_left + a:dimensions.border_right
-  let a:pum.border_height = a:dimensions.border_top + a:dimensions.border_bottom
+  let a:pum.border_width =
+        \ a:dimensions.border_left + a:dimensions.border_right
+  let a:pum.border_height =
+        \ a:dimensions.border_top + a:dimensions.border_bottom
   let a:pum.len = a:items->len()
   let a:pum.reversed = a:reversed
   let a:pum.startcol = a:startcol

@@ -4,13 +4,27 @@ const s:priority_highlight_selected = 0
 const s:priority_highlight_lead = 1
 const s:priority_highlight_horizontal_separator = 1
 
+" Opens a popup menu for completion/suggestions
+"
+" This function creates a floating/popup window displaying completion items.
+" It handles positioning, sizing, highlighting, and platform-specific rendering
+" for both Neovim and Vim.
+"
+" Args:
+"   startcol: Column where completion starts
+"   items: List of completion items
+"   mode: Mode character ('i' = insert, 'c' = command-line, 't' = terminal)
+"   insert: If true, automatically insert first item
+"
+" Returns:
+"   Window ID of created popup, or -1 on error
 function pum#popup#_open(startcol, items, mode, insert) abort
+  " Validate mode parameter
   if a:mode !~# '[ict]'
-    " Invalid mode
     return -1
   endif
 
-  " Reset
+  " Reset autocmd groups
   augroup pum
     autocmd!
   augroup END
@@ -19,72 +33,18 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   augroup END
 
   let options = pum#_options()
-
-  " Remove dup
   let items = s:uniq_by_word_or_dup(a:items)
 
-  " Calc max columns
-  let max_columns = []
-  let width = 0
-  let non_abbr_length = 0
-  let prev_column_length = 0
-  for column in options.item_orders
-    let max_column =
-          \   column ==# 'space' ? 1 :
-          \   column ==# 'abbr' ? items->mapnew({ _, val ->
-          \     val->get('abbr', val.word)->strdisplaywidth()
-          \   })->max() :
-          \   column ==# 'kind' ? items->mapnew({ _, val ->
-          \     val->get('kind', '')->strdisplaywidth()
-          \   })->max() :
-          \   column ==# 'menu' ? items->mapnew({ _, val ->
-          \     val->get('menu', '')->strdisplaywidth()
-          \   })->max() :
-          \   items->mapnew({ _, val ->
-          \     val->get('columns', {})->get(column, '')
-          \     ->strdisplaywidth()
-          \   })->max()
-
-    let max_column =
-          \ [max_column, options.max_columns->get(column, max_column)]->min()
-
-    if max_column <= 0 || (column ==# 'space' && prev_column_length ==# 0)
-      let prev_column_length = 0
-      continue
-    endif
-
-    let width += max_column
-    call add(max_columns, [column, max_column])
-
-    if column !=# 'abbr'
-      let non_abbr_length += max_column
-    endif
-    let prev_column_length = max_column
-  endfor
-
-  " Padding
-  const padding = options.padding ?
-        \ (a:mode ==# 'c' || a:startcol != 1) ? 2 : 1 : 0
-  let width += padding
-  if options.min_width > 0
-    let width = [width, options.min_width]->max()
-  endif
-  if options.max_width > 0
-    let width = [width, options.max_width]->min()
-  endif
-
-  " NOTE: abbr is the rest column
-  const abbr_width = width - non_abbr_length - padding
-
-  let lines = items->copy()
-        \ ->map({ _, val ->
-        \   pum#_format_item(
-        \     val, options, a:mode, a:startcol, max_columns, abbr_width
-        \   )
-        \ })
+  " Calculate column widths and dimensions
+  let [max_columns, total_width, non_abbr_length] =
+        \ s:calculate_column_widths(items, options)
 
   let pum = pum#_get()
+  let dimensions = s:calculate_dimensions(
+        \ items, max_columns, total_width, non_abbr_length,
+        \ options, a:mode, a:startcol, pum)
 
+  " Get cursor/screen position
   if !has('nvim') && a:mode ==# 't'
     const cursor = '%'->bufnr()->term_getcursor()
     let spos = #{
@@ -98,282 +58,39 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \ )
   endif
 
-  const [border_left, border_top, border_right, border_bottom]
-        \ = s:get_border_size(options.border)
-  let padding_height = 1 + border_top + border_bottom
-  let padding_width = 1 + border_left + border_right
-  let padding_left = border_left
-  if options.padding && (a:mode ==# 'c' || a:startcol != 1)
-    let padding_width += 2
-    let padding_left += 1
-  endif
+  " Calculate position and direction
+  let [pos, direction, height, reversed, items, lines] =
+        \ s:calculate_position(spos, dimensions, options, a:mode, items,
+        \                      a:startcol)
 
-  let height = items->len()
-  if options.max_height > 0
-    let height = [height, options.max_height]->min()
-  endif
-  if options.min_height > 0
-    let height = [height, options.min_height]->max()
-  endif
-
-  let direction = options.direction
-  if a:mode !=# 'c'
-    " Adjust to screen row
-    let minheight_below = [
-          \ height, &lines - spos.row - padding_height - options.offset_row
-          \ ]->min()
-    let minheight_above = [
-          \ height, spos.row - padding_height - options.offset_row
-          \ ]->min()
-    if (minheight_below < minheight_above && options.direction ==# 'auto')
-          \ || (minheight_above >= 1 && options.direction ==# 'above')
-      " Use above window
-      let spos.row -= height + padding_height
-      let height = minheight_above
-      let direction = 'above'
-    else
-      " Use below window
-      let height = minheight_below
-      let direction = 'below'
-    endif
-  else
-    let height = [height, &lines - [&cmdheight, 1]->max()]->min()
-  endif
-  let height = [height, 1]->max()
-
-  " Reversed
-  const reversed = direction ==# 'above' && options.reversed
-  if reversed
-    let lines = lines->reverse()
-    let items = items->reverse()
-  endif
-
-  " Adjust to screen col
-  const rest_width = &columns - spos.col - padding_width
-  if rest_width < width
-    let spos.col -= width - rest_width
-  endif
-
-  " Adjust to padding
-  let spos.col -= padding_left
-
-  if spos.col <= 0
-    let spos.col = 1
-  endif
-
-  let pos =
-        \   a:mode ==# 'c'
-        \ ? [
-        \  &lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
-        \  options.follow_cursor ? getcmdpos() :
-        \  (a:startcol > 2 ? getcmdline()[: a:startcol - 2]->strdisplaywidth()
-        \                  : a:startcol - 1)
-        \  - padding_left + options.offset_cmdcol,
-        \ ]
-        \ : [
-        \  spos.row + (direction ==# 'above' ?
-        \              -options.offset_row : options.offset_row),
-        \  spos.col - 1,
-        \ ]
-
+  " Apply command-line specific adjustments
   if a:mode ==# 'c'
-    const check_cmdline = s:is_cmdline_vim_window()
-    const check_noice = has('nvim') && pum#util#_luacheck('noice')
-          \ && 'require("noice").api.get_cmdline_position()'
-          \    ->luaeval()->type() != v:null->type()
-
-    const adjustment = [getcmdprompt()->len(), 1]->max()
-
-    const cmdline_pos = s:get_cmdline_pos(options, direction, pos[0])
-    if cmdline_pos->empty()
-      let direction = 'above'
-    else
-      let pos[0] = cmdline_pos.row
-      let pos[1] += cmdline_pos.col
-      if !has('nvim') && adjustment ==# 0
-        let pos[1] += 1
-      endif
-    endif
-
-    let pos[1] += adjustment
-
-    if check_cmdline || check_noice
-      " NOTE: height must be adjusted.
-      let height = [
-            \   height,
-            \     direction ==# 'above'
-            \   ? pos[0] - 1
-            \   : &lines - &cmdheight - pos[0]
-            \ ]->min()
-      if direction ==# 'above'
-        let pos[0] -= height + 1
-      endif
-
-      if len(lines) > height
-        let height -= border_top + border_bottom
-      else
-        let pos[0] -= border_top + border_bottom
-      endif
-    endif
+    let [pos, height, direction] =
+          \ s:adjust_cmdline_position(pos, height, direction, options,
+          \                           dimensions, dimensions.lines)
   endif
 
-  " Adjust pos
+  " Adjust position for borders
   if direction ==# 'above'
-    let pos[0] -= border_top + border_bottom
+    let pos[0] -= dimensions.border_top + dimensions.border_bottom
   endif
-  let pos[1] += border_left
+  let pos[1] += dimensions.border_left
 
+  " Create popup window based on menu type and platform
   if options.horizontal_menu
     let pum.horizontal_menu = v:true
     let pum.cursor = 0
     let pum.items = items->copy()
-
     call pum#popup#_redraw_horizontal_menu()
   elseif has('nvim')
-    if pum.buf < 0
-      let pum.buf = nvim_create_buf(v:false, v:true)
-    endif
-    if pum.scroll_buf < 0
-      let pum.scroll_buf = nvim_create_buf(v:false, v:true)
-    endif
-
-    call nvim_buf_set_lines(pum.buf, 0, -1, v:true, lines)
-
-    let scroll_lines = lines->mapnew({ _ -> options.scrollbar_char })
-    call nvim_buf_set_lines(pum.scroll_buf, 0, -1, v:true, scroll_lines)
-
-    let winopts = #{
-          \   border: options.border,
-          \   relative: 'editor',
-          \   width: width,
-          \   height: height,
-          \   row: pos[0],
-          \   col: pos[1],
-          \   anchor: 'NW',
-          \   style: 'minimal',
-          \   zindex: options.zindex,
-          \ }
-
-    " NOTE: scroll_height must be positive
-    const scroll_height = [
-          \ (height * ((height + 0.0) / lines->len()) + 0.5
-          \ )->floor()->float2nr(), 1]->max()
-    const scroll_row = pos[0] + border_top
-    const scroll_col = pos[1] + width + border_right
-    let scroll_winopts = #{
-          \   border: 'none',
-          \   relative: 'editor',
-          \   width: options.scrollbar_char->strwidth(),
-          \   height: scroll_height,
-          \   row: scroll_row,
-          \   col: scroll_col,
-          \   anchor: 'NW',
-          \   style: 'minimal',
-          \   zindex: options.zindex + 1,
-          \ }
-
-    let pum.scroll_row = scroll_winopts.row
-    let pum.scroll_col = scroll_winopts.col
-    let pum.scroll_height = scroll_winopts.height
-
-    if pum.id > 0
-      call pum#close('complete_done', v:false)
-
-      if pos == pum.pos
-        " Resize window
-        call nvim_win_set_width(pum.id, width)
-        call nvim_win_set_height(pum.id, height)
-      else
-        " Reuse window
-        call nvim_win_set_config(pum.id, winopts)
-      endif
-    else
-      call pum#close()
-
-      " NOTE: It cannot set in nvim_win_set_config()
-      let winopts.noautocmd = v:true
-
-      " Create new window
-      const id = nvim_open_win(pum.buf, v:false, winopts)
-
-      call s:set_float_window_options(id, options, 'normal_menu')
-
-      let pum.id = id
-    endif
-
-    if options.scrollbar_char !=# '' && len(lines) > height
-      if pum.scroll_id > 0
-        " Reuse window
-        call nvim_win_set_config(pum.scroll_id, scroll_winopts)
-      else
-        " NOTE: It cannot set in nvim_win_set_config()
-        let scroll_winopts.noautocmd = v:true
-
-        let scroll_id = nvim_open_win(
-              \ pum.scroll_buf, v:false, scroll_winopts)
-        call s:set_float_window_options(scroll_id, options, 'scrollbar')
-
-        let pum.scroll_id = scroll_id
-      endif
-    elseif pum.scroll_id > 0
-      call pum#popup#_close_id(pum.scroll_id)
-      let pum.scroll_id = -1
-    endif
-
-    let pum.pos = pos
-    let pum.horizontal_menu = v:false
+    let pum = s:create_nvim_window(pum, pos, dimensions, options, items,
+          \                        lines, direction, height)
   else
-    let winopts = #{
-          \   pos: 'topleft',
-          \   line: pos[0] + 1,
-          \   col: pos[1] + 1,
-          \   highlight: options.highlight_normal_menu,
-          \   maxwidth: width,
-          \   maxheight: height,
-          \   scroll: options.scrollbar_char !=# '',
-          \   wrap: 0,
-          \   zindex: options.zindex,
-          \ }
-
-    if options.border->type() ==# v:t_string
-      if options.border !=# 'none'
-        " The border property only recognizes 0 or non-zero values
-        let winopts.border = [1, 1, 1, 1]
-      endif
-
-      if &ambiwidth ==# 'single' && &encoding ==# 'utf-8'
-        " NOTE: If 'ambiwidth' is not single or 'encoding' is not "utf-8", it
-        " will not render correctly, so Vim's default border display of ASCII
-        " characters will be used.
-        if options.border ==# 'single'
-          let winopts.borderchars = ["─", "│", "─", "│", "┌", "┐", "┘", "└"]
-        elseif options.border ==# 'double'
-          let winopts.borderchars = ['═', '║', '═', '║', '╔', '╗', '╝', '╚']
-        endif
-      endif
-    else
-      let winopts.border = [1, 1, 1, 1]
-      let winopts.borderchars = options.border
-    endif
-
-    if pum.id > 0
-      call pum#close('complete_done', v:false)
-
-      call popup_move(pum.id, winopts)
-      call popup_settext(pum.id, lines)
-    else
-      call pum#close()
-
-      let pum.id = lines->popup_create(winopts)
-      let pum.buf = pum.id->winbufnr()
-    endif
-
-    let pum.pos = pos
-    let pum.horizontal_menu = v:false
+    let pum = s:create_vim_popup(pum, pos, dimensions, options, lines, height)
   endif
 
+  " Adjust scrollbar position for reversed menus
   if reversed && pum.scroll_id > 0
-    " The cursor must be end
     call win_execute(pum.id, 'call cursor("$", 0)')
     call pum#popup#_redraw_scroll()
 
@@ -387,76 +104,15 @@ function pum#popup#_open(startcol, items, mode, insert) abort
     endif
   endif
 
+  " Fire PumOpen event
   if '#User#PumOpen'->exists()
     doautocmd <nomodeline> User PumOpen
   endif
 
-  let pum.items = items->copy()
-  let pum.cursor = 0
-  let pum.direction = direction
-  let pum.height = height
-  let pum.width = width
-  let pum.border_width = border_left + border_right
-  let pum.border_height = border_top + border_bottom
-  let pum.len = items->len()
-  let pum.reversed = reversed
-  let pum.startcol = a:startcol
-  let pum.startrow = pum#_row()
-  let pum.current_line = pum#_getline()
-  let pum.col = pum#_col()
-  let pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
-  let pum.orig_line = pum#_getline()
-  let pum.changedtick = b:changedtick
-  let pum.preview = options.preview
-
-  if !pum.horizontal_menu
-    " Highlight
-    call s:highlight_items(items, max_columns)
-
-    " Simple highlight matches
-    silent! call matchdelete(pum.matched_id, pum.id)
-    if options.highlight_matches !=# ''
-      let pattern = pum.orig_input
-            \ ->escape('~"*\.^$[]')
-            \ ->substitute('\w\ze.', '\0[^\0]\\{-}', 'g')
-      call matchadd(
-            \ options.highlight_matches, pattern, 0, pum.matched_id,
-            \ #{ window: pum.id })
-    endif
-  endif
-
-  if a:insert
-    call pum#map#insert_relative(+1)
-  elseif options.auto_select
-    call pum#map#select_relative(+1)
-  else
-    call pum#popup#_redraw()
-  endif
-
-  " Close popup automatically
-  " NOTE: ModeChanged i:[^i]* does not work well when html lsp
-  if a:mode ==# 'i'
-    autocmd pum InsertLeave * ++once ++nested
-          \ call pum#close()
-    autocmd pum TextChangedI,CursorMovedI,CursorHoldI * ++nested
-          \ call pum#popup#_check_text_changed()
-  elseif a:mode ==# 'c'
-    autocmd pum CmdlineChanged * ++nested
-          \ call pum#popup#_check_text_changed()
-    if '##CursorMovedC'->exists() && !s:is_cmdline_vim_window()
-      autocmd pum CursorMovedC * ++once ++nested
-            \ call pum#popup#_check_cursor_moved()
-    endif
-    autocmd pum CmdlineLeave * ++once ++nested
-          \ call pum#close()
-  elseif a:mode ==# 't'
-    autocmd pum ModeChanged t:* ++once ++nested
-          \ call pum#close()
-  endif
-  autocmd pum CmdWinEnter,CmdWinLeave,CursorHold * ++once ++nested
-        \ call pum#close()
-
-  call pum#popup#_reset_auto_confirm(a:mode)
+  " Setup autocmds and store state
+  call s:setup_autocmds_and_state(pum, items, direction, reversed, a:startcol,
+        \                         options, a:mode, a:insert, max_columns,
+        \                         height, dimensions)
 
   return pum.id
 endfunction
@@ -1411,4 +1067,584 @@ function s:get_cmdline_pos(options, direction, cmdline_row) abort
   endif
 
   return pos
+endfunction
+
+" Calculate column widths for popup menu items
+"
+" Determines the maximum display width needed for each column type (abbr, kind,
+" menu, custom columns) across all items, respecting configured constraints.
+"
+" Args:
+"   items: List of completion items
+"   options: PUM options containing item_orders and max_columns
+"
+" Returns:
+"   [max_columns, width, non_abbr_length]
+"   - max_columns: List of [column_name, max_width] pairs
+"   - width: Total width of all columns combined
+"   - non_abbr_length: Width of all non-abbr columns
+function s:calculate_column_widths(items, options) abort
+  let max_columns = []
+  let width = 0
+  let non_abbr_length = 0
+  let prev_column_length = 0
+
+  for column in a:options.item_orders
+    " Calculate max width for each column type
+    let max_column =
+          \   column ==# 'space' ? 1 :
+          \   column ==# 'abbr' ? a:items->mapnew({ _, val ->
+          \     val->get('abbr', val.word)->strdisplaywidth()
+          \   })->max() :
+          \   column ==# 'kind' ? a:items->mapnew({ _, val ->
+          \     val->get('kind', '')->strdisplaywidth()
+          \   })->max() :
+          \   column ==# 'menu' ? a:items->mapnew({ _, val ->
+          \     val->get('menu', '')->strdisplaywidth()
+          \   })->max() :
+          \   a:items->mapnew({ _, val ->
+          \     val->get('columns', {})->get(column, '')
+          \     ->strdisplaywidth()
+          \   })->max()
+
+    " Apply max column constraints
+    let max_column = [
+          \  max_column,
+          \  a:options.max_columns->get(column, max_column)
+          \ ]->min()
+
+    " Skip columns with zero width or space after zero-width column
+    if max_column <= 0 || (column ==# 'space' && prev_column_length ==# 0)
+      let prev_column_length = 0
+      continue
+    endif
+
+    let width += max_column
+    call add(max_columns, [column, max_column])
+
+    if column !=# 'abbr'
+      let non_abbr_length += max_column
+    endif
+    let prev_column_length = max_column
+  endfor
+
+  return [max_columns, width, non_abbr_length]
+endfunction
+
+" Calculate final popup dimensions and format display lines
+"
+" Applies padding, width/height constraints, calculates border sizes, and
+" formats all items into display lines ready for rendering.
+"
+" Args:
+"   items: List of completion items
+"   max_columns: Column width information from s:calculate_column_widths()
+"   total_width: Total width of all columns combined (before padding)
+"   non_abbr_length: Width of non-abbr columns
+"   options: PUM options
+"   mode: Mode character ('i', 'c', 't')
+"   startcol: Starting column
+"   pum: PUM state object
+"
+" Returns:
+"   Dictionary with width, height, padding info, border sizes, and formatted
+"   lines
+function s:calculate_dimensions(
+      \ items, max_columns, total_width, non_abbr_length,
+      \ options, mode, startcol, pum) abort
+  " Calculate padding based on mode
+  const padding = a:options.padding ?
+        \ (a:mode ==# 'c' || a:startcol != 1) ? 2 : 1 : 0
+
+  " Apply width constraints
+  let width = a:total_width + padding
+  if a:options.min_width > 0
+    let width = [width, a:options.min_width]->max()
+  endif
+  if a:options.max_width > 0
+    let width = [width, a:options.max_width]->min()
+  endif
+
+  " Calculate abbr width (abbr takes remaining space)
+  const abbr_width = width - a:non_abbr_length - padding
+
+  " Format items into display lines
+  let lines = a:items->copy()
+        \ ->map({ _, val ->
+        \   pum#_format_item(
+        \     val, a:options, a:mode, a:startcol, a:max_columns, abbr_width
+        \   )
+        \ })
+
+  " Calculate border dimensions
+  const [border_left, border_top, border_right, border_bottom]
+        \ = s:get_border_size(a:options.border)
+  let padding_height = 1 + border_top + border_bottom
+  let padding_width = 1 + border_left + border_right
+  let padding_left = border_left
+  if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)
+    let padding_width += 2
+    let padding_left += 1
+  endif
+
+  " Calculate height with constraints
+  let height = a:items->len()
+  if a:options.max_height > 0
+    let height = [height, a:options.max_height]->min()
+  endif
+  if a:options.min_height > 0
+    let height = [height, a:options.min_height]->max()
+  endif
+
+  return #{
+        \   width: width,
+        \   height: height,
+        \   padding: padding,
+        \   padding_height: padding_height,
+        \   padding_width: padding_width,
+        \   padding_left: padding_left,
+        \   border_left: border_left,
+        \   border_top: border_top,
+        \   border_right: border_right,
+        \   border_bottom: border_bottom,
+        \   abbr_width: abbr_width,
+        \   lines: lines,
+        \ }
+endfunction
+
+" Calculate popup position and determine display direction
+"
+" Determines where the popup should appear (above/below cursor), adjusts for
+" screen boundaries, and handles item reversal for above-cursor display.
+"
+" Args:
+"   spos: Screen position (row, col)
+"   dimensions: Dimension info from s:calculate_dimensions()
+"   options: PUM options
+"   mode: Mode character ('i', 'c', 't')
+"   items: List of completion items
+"   startcol: Starting column for completion
+"
+" Returns:
+"   [pos, direction, height, reversed, items, lines]
+"   - pos: Final [row, col] position
+"   - direction: 'above' or 'below'
+"   - height: Final height after adjustments
+"   - reversed: Whether items were reversed
+"   - items: Possibly reversed items list
+"   - lines: Possibly reversed display lines
+function s:calculate_position(
+      \ spos, dimensions, options, mode, items, startcol) abort
+  let height = a:dimensions.height
+  let direction = a:options.direction
+
+  " Create local copy of spos to avoid mutating the parameter
+  let spos_copy = deepcopy(a:spos)
+
+  " Adjust position and height based on available screen space
+  if a:mode !=# 'c'
+    let minheight_below = [
+          \ height,
+          \ &lines - spos_copy.row -
+          \ a:dimensions.padding_height - a:options.offset_row
+          \ ]->min()
+    let minheight_above = [
+          \ height,
+          \ spos_copy.row -
+          \ a:dimensions.padding_height - a:options.offset_row
+          \ ]->min()
+
+    " Choose direction based on available space
+    if (minheight_below < minheight_above && a:options.direction ==# 'auto')
+          \ || (minheight_above >= 1 && a:options.direction ==# 'above')
+      " Use above window
+      let spos_copy.row -= height + a:dimensions.padding_height
+      let height = minheight_above
+      let direction = 'above'
+    else
+      " Use below window
+      let height = minheight_below
+      let direction = 'below'
+    endif
+  else
+    " Command-line mode
+    let height = [height, &lines - [&cmdheight, 1]->max()]->min()
+  endif
+  let height = [height, 1]->max()
+
+  " Reverse items if showing above and reversed option is enabled
+  const reversed = direction ==# 'above' && a:options.reversed
+  let items =
+        \   reversed
+        \ ? a:items->copy()->reverse()
+        \ : a:items
+  let lines =
+        \   reversed
+        \ ? a:dimensions.lines->copy()->reverse()
+        \ : a:dimensions.lines
+
+  " Adjust column position to fit within screen
+  const rest_width = &columns - spos_copy.col - a:dimensions.padding_width
+  if rest_width < a:dimensions.width
+    let spos_copy.col -= a:dimensions.width - rest_width
+  endif
+
+  " Apply padding adjustment
+  let spos_copy.col -= a:dimensions.padding_left
+
+  " Ensure column is within bounds
+  if spos_copy.col <= 0
+    let spos_copy.col = 1
+  endif
+
+  " Calculate final position
+  let pos =
+        \   a:mode ==# 'c'
+        \ ? [
+        \  &lines - height - [1, &cmdheight]->max() - a:options.offset_cmdrow,
+        \  a:options.follow_cursor ? getcmdpos() :
+        \  (a:startcol > 2 ? getcmdline()[: a:startcol - 2]->strdisplaywidth()
+        \                  : a:startcol - 1)
+        \  - a:dimensions.padding_left + a:options.offset_cmdcol,
+        \ ]
+        \ : [
+        \  spos_copy.row + (direction ==# 'above' ?
+        \              -a:options.offset_row : a:options.offset_row),
+        \  spos_copy.col - 1,
+        \ ]
+
+  return [pos, direction, height, reversed, items, lines]
+endfunction
+
+" Adjust position for command-line mode with special plugin support
+"
+" Handles position adjustments for command-line mode, including support for
+" vim-cmdline and Noice.nvim plugins that provide custom command-line windows.
+"
+" Args:
+"   pos: Initial position [row, col]
+"   height: Initial height
+"   direction: Initial direction ('above' or 'below')
+"   options: PUM options
+"   dimensions: Dimension info from s:calculate_dimensions()
+"   lines: Formatted display lines
+"
+" Returns:
+"   [pos, height, direction] - Adjusted values for command-line mode
+function s:adjust_cmdline_position(
+      \ pos, height, direction, options, dimensions, lines) abort
+  const check_cmdline = s:is_cmdline_vim_window()
+  const check_noice = has('nvim') && pum#util#_luacheck('noice')
+        \ && 'require("noice").api.get_cmdline_position()'
+        \    ->luaeval()->type() != v:null->type()
+
+  const adjustment = [getcmdprompt()->len(), 1]->max()
+  const cmdline_pos = s:get_cmdline_pos(a:options, a:direction, a:pos[0])
+
+  let direction = a:direction
+  let pos = a:pos
+  let height = a:height
+
+  if cmdline_pos->empty()
+    let direction = 'above'
+  else
+    let pos[0] = cmdline_pos.row
+    let pos[1] += cmdline_pos.col
+    if !has('nvim') && adjustment ==# 0
+      let pos[1] += 1
+    endif
+  endif
+
+  let pos[1] += adjustment
+
+  if check_cmdline || check_noice
+    " Adjust height to fit available space
+    let height = [
+          \   height,
+          \     direction ==# 'above'
+          \   ? pos[0] - 1
+          \   : &lines - &cmdheight - pos[0]
+          \ ]->min()
+    if direction ==# 'above'
+      let pos[0] -= height + 1
+    endif
+
+    if len(a:lines) > height
+      let height -= a:dimensions.border_top + a:dimensions.border_bottom
+    else
+      let pos[0] -= a:dimensions.border_top + a:dimensions.border_bottom
+    endif
+  endif
+
+  return [pos, height, direction]
+endfunction
+
+" Create or update Neovim floating window for popup menu
+"
+" Manages Neovim floating windows including the main popup and optional
+" scrollbar. Reuses existing windows when possible to minimize flickering.
+"
+" Args:
+"   pum: PUM state object
+"   pos: Position [row, col]
+"   dimensions: Dimension info from s:calculate_dimensions()
+"   options: PUM options
+"   items: List of completion items
+"   lines: Formatted display lines
+"   direction: Display direction ('above' or 'below')
+"   height: Window height
+"
+" Returns:
+"   Updated pum object with window IDs and state
+function s:create_nvim_window(
+      \ pum, pos, dimensions, options, items, lines, direction, height) abort
+  " Create buffers if needed
+  if a:pum.buf < 0
+    let a:pum.buf = nvim_create_buf(v:false, v:true)
+  endif
+  if a:pum.scroll_buf < 0
+    let a:pum.scroll_buf = nvim_create_buf(v:false, v:true)
+  endif
+
+  " Set buffer content
+  call nvim_buf_set_lines(a:pum.buf, 0, -1, v:true, a:lines)
+
+  let scroll_lines = a:lines->mapnew({ _ -> a:options.scrollbar_char })
+  call nvim_buf_set_lines(a:pum.scroll_buf, 0, -1, v:true, scroll_lines)
+
+  " Configure main window options
+  let winopts = #{
+        \   border: a:options.border,
+        \   relative: 'editor',
+        \   width: a:dimensions.width,
+        \   height: a:height,
+        \   row: a:pos[0],
+        \   col: a:pos[1],
+        \   anchor: 'NW',
+        \   style: 'minimal',
+        \   zindex: a:options.zindex,
+        \ }
+
+  " Calculate scrollbar position
+  const scroll_height = [
+        \ (a:height * ((a:height + 0.0) / a:lines->len()) + 0.5)
+        \ ->floor()->float2nr(), 1]->max()
+  const scroll_row = a:pos[0] + a:dimensions.border_top
+  const scroll_col = a:pos[1] + a:dimensions.width + a:dimensions.border_right
+  let scroll_winopts = #{
+        \   border: 'none',
+        \   relative: 'editor',
+        \   width: a:options.scrollbar_char->strwidth(),
+        \   height: scroll_height,
+        \   row: scroll_row,
+        \   col: scroll_col,
+        \   anchor: 'NW',
+        \   style: 'minimal',
+        \   zindex: a:options.zindex + 1,
+        \ }
+
+  let a:pum.scroll_row = scroll_winopts.row
+  let a:pum.scroll_col = scroll_winopts.col
+  let a:pum.scroll_height = scroll_winopts.height
+
+  " Create or update main window
+  if a:pum.id > 0
+    call pum#close('complete_done', v:false)
+
+    if a:pos == a:pum.pos
+      " Resize existing window
+      call nvim_win_set_width(a:pum.id, a:dimensions.width)
+      call nvim_win_set_height(a:pum.id, a:height)
+    else
+      " Reuse window with new config
+      call nvim_win_set_config(a:pum.id, winopts)
+    endif
+  else
+    call pum#close()
+
+    " Create new window
+    let winopts.noautocmd = v:true
+    const id = nvim_open_win(a:pum.buf, v:false, winopts)
+    call s:set_float_window_options(id, a:options, 'normal_menu')
+    let a:pum.id = id
+  endif
+
+  " Create or update scrollbar window
+  if a:options.scrollbar_char !=# '' && len(a:lines) > a:height
+    if a:pum.scroll_id > 0
+      " Reuse scrollbar window
+      call nvim_win_set_config(a:pum.scroll_id, scroll_winopts)
+    else
+      " Create new scrollbar window
+      let scroll_winopts.noautocmd = v:true
+      let scroll_id = nvim_open_win(
+            \ a:pum.scroll_buf, v:false, scroll_winopts)
+      call s:set_float_window_options(scroll_id, a:options, 'scrollbar')
+      let a:pum.scroll_id = scroll_id
+    endif
+  elseif a:pum.scroll_id > 0
+    call pum#popup#_close_id(a:pum.scroll_id)
+    let a:pum.scroll_id = -1
+  endif
+
+  let a:pum.pos = a:pos
+  let a:pum.horizontal_menu = v:false
+
+  return a:pum
+endfunction
+
+" Create or update Vim popup window for popup menu
+"
+" Manages Vim popup windows with proper border styling and character sets.
+" Reuses existing popups when possible.
+"
+" Args:
+"   pum: PUM state object
+"   pos: Position [row, col]
+"   dimensions: Dimension info from s:calculate_dimensions()
+"   options: PUM options
+"   lines: Formatted display lines
+"   height: Window height
+"
+" Returns:
+"   Updated pum object with window IDs and state
+function s:create_vim_popup(pum, pos, dimensions, options, lines, height) abort
+  " Configure popup options
+  let winopts = #{
+        \   pos: 'topleft',
+        \   line: a:pos[0] + 1,
+        \   col: a:pos[1] + 1,
+        \   highlight: a:options.highlight_normal_menu,
+        \   maxwidth: a:dimensions.width,
+        \   maxheight: a:height,
+        \   scroll: a:options.scrollbar_char !=# '',
+        \   wrap: 0,
+        \   zindex: a:options.zindex,
+        \ }
+
+  " Handle border configuration
+  if a:options.border->type() ==# v:t_string
+    if a:options.border !=# 'none'
+      let winopts.border = [1, 1, 1, 1]
+    endif
+
+    if &ambiwidth ==# 'single' && &encoding ==# 'utf-8'
+      " Use Unicode border characters for better appearance
+      if a:options.border ==# 'single'
+        let winopts.borderchars = ["─", "│", "─", "│", "┌", "┐", "┘", "└"]
+      elseif a:options.border ==# 'double'
+        let winopts.borderchars = ['═', '║', '═', '║', '╔', '╗', '╝', '╚']
+      endif
+    endif
+  else
+    let winopts.border = [1, 1, 1, 1]
+    let winopts.borderchars = a:options.border
+  endif
+
+  " Create or update popup
+  if a:pum.id > 0
+    call pum#close('complete_done', v:false)
+    call popup_move(a:pum.id, winopts)
+    call popup_settext(a:pum.id, a:lines)
+  else
+    call pum#close()
+    let a:pum.id = a:lines->popup_create(winopts)
+    let a:pum.buf = a:pum.id->winbufnr()
+  endif
+
+  let a:pum.pos = a:pos
+  let a:pum.horizontal_menu = v:false
+
+  return a:pum
+endfunction
+
+" Setup autocmds for popup lifecycle and store popup state
+"
+" Configures mode-specific autocmds for automatic popup closing and text change
+" tracking. Stores all popup state including items, position, and dimensions.
+" Applies highlighting and handles initial item selection.
+"
+" Args:
+"   pum: PUM state object
+"   items: List of completion items
+"   direction: Display direction ('above' or 'below')
+"   reversed: Whether items are reversed
+"   startcol: Starting column
+"   options: PUM options
+"   mode: Mode character ('i', 'c', 't')
+"   insert: If true, automatically insert first item
+"   max_columns: Column width information
+"   height: Window height
+"   dimensions: Dimension info from s:calculate_dimensions()
+function s:setup_autocmds_and_state(pum, items, direction, reversed, startcol,
+      \ options, mode, insert, max_columns, height, dimensions) abort
+  " Store popup state
+  let a:pum.items = a:items->copy()
+  let a:pum.cursor = 0
+  let a:pum.direction = a:direction
+  let a:pum.height = a:height
+  let a:pum.width = a:dimensions.width
+  let a:pum.border_width =
+        \ a:dimensions.border_left + a:dimensions.border_right
+  let a:pum.border_height =
+        \ a:dimensions.border_top + a:dimensions.border_bottom
+  let a:pum.len = a:items->len()
+  let a:pum.reversed = a:reversed
+  let a:pum.startcol = a:startcol
+  let a:pum.startrow = pum#_row()
+  let a:pum.current_line = pum#_getline()
+  let a:pum.col = pum#_col()
+  let a:pum.orig_input = pum#_getline()[a:startcol - 1 : pum#_col() - 2]
+  let a:pum.orig_line = pum#_getline()
+  let a:pum.changedtick = b:changedtick
+  let a:pum.preview = a:options.preview
+
+  if !a:pum.horizontal_menu
+    " Apply highlighting to items
+    call s:highlight_items(a:items, a:max_columns)
+
+    " Highlight matching text
+    silent! call matchdelete(a:pum.matched_id, a:pum.id)
+    if a:options.highlight_matches !=# ''
+      let pattern = a:pum.orig_input
+            \ ->escape('~"*\.^$[]')
+            \ ->substitute('\w\ze.', '\0[^\0]\\{-}', 'g')
+      call matchadd(
+            \ a:options.highlight_matches, pattern, 0, a:pum.matched_id,
+            \ #{ window: a:pum.id })
+    endif
+  endif
+
+  " Handle initial selection
+  if a:insert
+    call pum#map#insert_relative(+1)
+  elseif a:options.auto_select
+    call pum#map#select_relative(+1)
+  else
+    call pum#popup#_redraw()
+  endif
+
+  " Setup mode-specific autocmds for automatic closing
+  if a:mode ==# 'i'
+    autocmd pum InsertLeave * ++once ++nested
+          \ call pum#close()
+    autocmd pum TextChangedI,CursorMovedI,CursorHoldI * ++nested
+          \ call pum#popup#_check_text_changed()
+  elseif a:mode ==# 'c'
+    autocmd pum CmdlineChanged * ++nested
+          \ call pum#popup#_check_text_changed()
+    if '##CursorMovedC'->exists() && !s:is_cmdline_vim_window()
+      autocmd pum CursorMovedC * ++once ++nested
+            \ call pum#popup#_check_cursor_moved()
+    endif
+    autocmd pum CmdlineLeave * ++once ++nested
+          \ call pum#close()
+  elseif a:mode ==# 't'
+    autocmd pum ModeChanged t:* ++once ++nested
+          \ call pum#close()
+  endif
+  autocmd pum CmdWinEnter,CmdWinLeave,CursorHold * ++once ++nested
+        \ call pum#close()
+
+  call pum#popup#_reset_auto_confirm(a:mode)
 endfunction

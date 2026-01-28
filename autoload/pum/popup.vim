@@ -252,6 +252,101 @@ function s:get_borderchar_width(ch) abort
   endif
 endfunction
 
+" Calculate border and padding dimensions for popup windows
+"
+" Computes padding and border sizes based on options and mode. This is used
+" across different popup types (main menu, horizontal menu, preview).
+"
+" Args:
+"   border: Border specification from options
+"   options: PUM options dictionary
+"   mode: Mode character ('i', 'c', 't')
+"   startcol: Starting column (used to determine padding)
+"
+" Returns:
+"   Dictionary with:
+"     - border_left, border_top, border_right, border_bottom: Individual sizes
+"     - padding_height: Total vertical padding (1 + borders)
+"     - padding_width: Total horizontal padding (1 + borders + optional padding)
+"     - padding_left: Left padding offset
+function s:calculate_border_padding(border, options, mode, startcol) abort
+  const [border_left, border_top, border_right, border_bottom]
+        \ = s:get_border_size(a:border)
+  let padding_height = 1 + border_top + border_bottom
+  let padding_width = 1 + border_left + border_right
+  let padding_left = border_left
+
+  " Add extra horizontal padding for command-line or non-first-column
+  if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)
+    let padding_width += 2
+    let padding_left += 1
+  endif
+
+  return #{
+        \   border_left: border_left,
+        \   border_top: border_top,
+        \   border_right: border_right,
+        \   border_bottom: border_bottom,
+        \   padding_height: padding_height,
+        \   padding_width: padding_width,
+        \   padding_left: padding_left,
+        \ }
+endfunction
+
+" Get current screen position based on mode
+"
+" Retrieves the screen position of the cursor, handling different modes
+" and terminal mode quirks.
+"
+" Args:
+"   mode: Mode character ('i', 'c', 't')
+"
+" Returns:
+"   Dictionary with row and col representing screen position
+function s:get_screen_position(mode) abort
+  if !has('nvim') && a:mode ==# 't'
+    const cursor = bufnr('%')->term_getcursor()
+    return #{ row: cursor[0], col: '.'->col() }
+  else
+    return screenpos(0, '.'->line(), '.'->col())
+  endif
+endfunction
+
+" Determine popup direction based on available screen space
+"
+" Chooses whether to display popup above or below cursor based on available
+" space and user preferences.
+"
+" Args:
+"   spos: Screen position (dictionary with row)
+"   height: Desired popup height
+"   padding_height: Total vertical padding
+"   options: PUM options (direction, offset_row)
+"   mode: Mode character
+"
+" Returns:
+"   String: 'above' or 'below'
+function s:determine_direction(spos, height, padding_height, options, mode) abort
+  if a:mode ==# 'c'
+    return 'above'
+  endif
+
+  let minheight_below = [
+        \   a:height, &lines - a:spos.row -
+        \   a:padding_height - a:options.offset_row
+        \ ]->min()
+  let minheight_above = [
+        \   a:height, a:spos.row - a:padding_height - a:options.offset_row
+        \ ]->min()
+
+  if (minheight_below < minheight_above && a:options.direction ==# 'auto')
+        \ || (minheight_above >= 1 && a:options.direction ==# 'above')
+    return 'above'
+  else
+    return 'below'
+  endif
+endfunction
+
 function s:highlight_items(items, max_columns) abort
   let pum = pum#_get()
   let options = pum#_options()
@@ -371,7 +466,7 @@ function pum#popup#_redraw_horizontal_menu() abort
     return
   endif
 
-  " Adjust cursor
+  " Reorder items to place cursor item first (for horizontal scrolling)
   if pum.cursor == 0
     let items = pum.items->copy()
   else
@@ -385,7 +480,7 @@ function pum#popup#_redraw_horizontal_menu() abort
 
   let options = pum#_options()
 
-  " Adjust height
+  " Build horizontal menu lines with items separated by ' | '
   let lines = []
   let height = 0
   let item_count = 0
@@ -422,47 +517,25 @@ function pum#popup#_redraw_horizontal_menu() abort
     let height += 1
   endif
 
+  " Apply height constraints
   if options.min_height > 0
     let height = [height, options.min_height]->max()
   endif
 
-  const [border_left, border_top, border_right, border_bottom]
-        \ = s:get_border_size(options.border)
-  let padding_height = 1 + border_top + border_bottom
-  let padding_width = 1 + border_left + border_right
-  let padding_left = border_left
-  if options.padding && (a:mode ==# 'c' || a:startcol != 1)
-    let padding_width += 2
-    let padding_left += 1
-  endif
+  " Calculate border and padding using shared helper
+  const current_mode = mode()
+  const border_padding =
+        \ s:calculate_border_padding(options.border, options,
+        \                            current_mode, pum.startcol)
 
-  if !has('nvim') && mode() ==# 't'
-    const cursor = bufnr('%')->term_getcursor()
-    let spos = #{ row: cursor[0], col: '.'->col() }
-  else
-    let spos = screenpos(0, '.'->line(), '.'->col())
-  endif
+  " Get current screen position
+  let spos = s:get_screen_position(current_mode)
 
-  if mode() !=# 'c'
-    " Adjust to screen row
-    let minheight_below = [
-          \ height, &lines - spos.row - padding_height - options.offset_row
-          \ ]->min()
-    let minheight_above = [
-          \ height, spos.row - padding_height - options.offset_row
-          \ ]->min()
-    if (minheight_below < minheight_above && options.direction ==# 'auto')
-          \ || (minheight_above >= 1 && options.direction ==# 'above')
-      " Use above window
-      const direction = 'above'
-    else
-      " Use below window
-      const direction = 'below'
-    endif
-  else
-    const direction = 'above'
-  endif
+  " Determine direction (above/below cursor)
+  const direction = s:determine_direction(
+        \ spos, height, border_padding.padding_height, options, current_mode)
 
+  " Calculate width with constraints
   let width = lines->mapnew({ _, val -> val->strwidth() })->max()
   if options.min_width > 0
     let width = [width, options.min_width]->max()
@@ -471,7 +544,8 @@ function pum#popup#_redraw_horizontal_menu() abort
     let width = [width, options.max_width]->min()
   endif
 
-  let pos = mode() ==# 'c' ?
+  " Calculate popup position
+  let pos = current_mode ==# 'c' ?
         \ [&lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
         \  options.follow_cursor ? getcmdpos() + options.offset_cmdcol :
         \  options.offset_cmdcol] :
@@ -480,7 +554,8 @@ function pum#popup#_redraw_horizontal_menu() abort
         \  options.follow_cursor ? spos.col - 1 + options.offset_col :
         \  options.offset_col]
 
-  if mode() ==# 'c'
+  " Apply command-line specific position adjustments
+  if current_mode ==# 'c'
     const cmdline_pos = s:get_cmdline_pos(options, direction, pos[0])
     if !cmdline_pos->empty()
       let pos[0] = cmdline_pos.row
@@ -490,6 +565,7 @@ function pum#popup#_redraw_horizontal_menu() abort
     let pos[1] += [getcmdprompt()->len(), 1]->max()
   endif
 
+  " Create or update popup window (Neovim)
   if has('nvim')
     if pum.buf < 0
       let pum.buf = nvim_create_buf(v:false, v:true)
@@ -525,6 +601,7 @@ function pum#popup#_redraw_horizontal_menu() abort
       let pum.id = id
     endif
   else
+    " Create or update popup window (Vim)
     let winopts = #{
           \   pos: 'topleft',
           \   line: pos[0] + 1,
@@ -546,6 +623,7 @@ function pum#popup#_redraw_horizontal_menu() abort
   let pum.pos = pos
   let pum.width = width
 
+  " Highlight selected item and separator
   if pum.cursor > 0
     " Highlight the first item
     call s:highlight(
@@ -662,9 +740,218 @@ function pum#popup#_preview() abort
 
   call win_gotoid(save_id)
 endfunction
+
+" Calculate dimensions for preview window
+"
+" Computes width and height for preview window based on content and
+" available screen space.
+"
+" Args:
+"   previewer: Previewer dictionary with optional 'contents' key
+"   options: PUM options
+"
+" Returns:
+"   Dictionary with width and height
+function s:calculate_preview_dimensions(previewer, options) abort
+  " Calculate initial dimensions from content or use defaults
+  if a:previewer->has_key('contents')
+    let width = a:previewer.contents
+          \ ->mapnew({ _, val -> val->strwidth() })->max()
+    let width = [width, a:options.preview_width]->min()
+
+    " Calculate height with word wrapping algorithm
+    " Algorithm derived from https://github.com/matsui54/denops-popup-preview.vim
+    " (MIT Licence; Copyright (c) 2021 Haruki Matsui)
+    let height = 0
+    for line in a:previewer.contents
+      let height += [
+            \   1, (line->strdisplaywidth() / (width + 0.0))
+            \      ->ceil()->float2nr()
+            \ ]->max()
+    endfor
+    let height = [height, a:options.preview_height]->min()
+  else
+    let width = a:options.preview_width
+    let height = a:options.preview_height
+  endif
+
+  " Constrain dimensions to reasonable bounds
+  " NOTE: Must be positive and fit within available screen space
+  let width  = [[20, width]->max(),
+        \       (&columns - win_screenpos(0)[1]) / 3]->min()
+  let height = [[1, height]->max(), &lines / 2]->min()
+
+  return #{ width: width, height: height }
+endfunction
+
+" Create or update preview window for Neovim
+"
+" Handles Neovim-specific window creation and configuration for preview.
+"
+" Args:
+"   pum: PUM state object
+"   previewer: Previewer dictionary
+"   options: PUM options
+"   row: Window row position
+"   col: Window column position
+"   dimensions: Dimensions dictionary from s:calculate_preview_dimensions()
+"
+" Returns:
+"   Updated pum object
+function s:create_preview_window_nvim(
+      \ pum, previewer, options, row, col, dimensions) abort
+  " Create buffer if needed
+  if a:pum.preview_buf < 0
+    let a:pum.preview_buf = nvim_create_buf(v:false, v:true)
+  endif
+
+  " Set buffer contents if provided
+  if a:previewer->has_key('contents')
+    call setbufvar(a:pum.preview_buf, '&modifiable', v:true)
+    call setbufvar(a:pum.preview_buf, '&readonly', v:false)
+    call nvim_buf_set_lines(
+          \ a:pum.preview_buf, 0, -1, v:true, a:previewer.contents)
+    call setbufvar(a:pum.preview_buf, '&modified', v:false)
+  endif
+
+  " Configure window options
+  let winopts = #{
+        \   border: a:options.preview_border,
+        \   relative: 'editor',
+        \   row: a:row - 1,
+        \   col: a:col - 1,
+        \   width: a:dimensions.width,
+        \   height: a:dimensions.height,
+        \   anchor: 'NW',
+        \   style: 'minimal',
+        \   zindex: a:options.zindex + 1,
+        \ }
+
+  " Create or update window
+  if a:pum.preview_id > 0
+    " Reuse existing window
+    call nvim_win_set_config(a:pum.preview_id, winopts)
+  else
+    call pum#popup#_close_preview()
+
+    " NOTE: noautocmd cannot be set in nvim_win_set_config()
+    let winopts.noautocmd = v:true
+
+    " Create new window
+    const id = nvim_open_win(a:pum.preview_buf, v:false, winopts)
+
+    call s:set_float_window_options(id, a:options, 'preview')
+
+    let a:pum.preview_id = id
+  endif
+
+  " Handle help previews (requires special buffer setup)
+  if a:previewer.kind ==# 'help'
+    if a:previewer.kind !=# a:pum.preview_kind
+      " Create new buffer for help
+      let a:pum.preview_buf = nvim_create_buf(v:false, v:true)
+    endif
+
+    try
+      call win_execute(a:pum.preview_id,
+            \ 'setlocal buftype=help | help ' .. a:previewer.tag)
+    catch
+      call pum#popup#_close_preview()
+      return a:pum
+    endtry
+  endif
+
+  return a:pum
+endfunction
+
+" Create or update preview window for Vim
+"
+" Handles Vim-specific popup window creation and configuration for preview.
+"
+" Args:
+"   pum: PUM state object
+"   previewer: Previewer dictionary
+"   options: PUM options
+"   row: Window row position
+"   col: Window column position
+"   dimensions: Dimensions dictionary from s:calculate_preview_dimensions()
+"
+" Returns:
+"   Updated pum object
+function s:create_preview_window_vim(
+      \ pum, previewer, options, row, col, dimensions) abort
+  " Configure window options
+  let winopts = #{
+        \   pos: 'topleft',
+        \   line: a:row,
+        \   col: a:col,
+        \   maxwidth: a:dimensions.width,
+        \   maxheight: a:dimensions.height,
+        \   highlight: a:options.highlight_preview,
+        \   scrollbarhighlight: a:options.highlight_scrollbar,
+        \ }
+
+  " Handle help previews (requires special buffer setup in Vim)
+  if a:previewer.kind ==# 'help'
+    call pum#popup#_close_preview()
+
+    const save_window = win_getid()
+    const help_save = range(1, winnr('$'))
+          \ ->filter({ _, val -> val->getwinvar('&buftype') ==# 'help'})
+          \ ->map({ _, val -> [val, val->winbufnr(), val->getcurpos()]})
+
+    try
+      " Create dummy help buffer
+      " NOTE: ":help" does not work in popup window.
+      execute 'help' a:previewer.tag
+      const help_bufnr = bufnr()
+      const firstline = '.'->line()
+    catch
+      call pum#popup#_close_preview()
+      return a:pum
+    endtry
+
+    " Restore previous help windows
+    if help_save->empty()
+      helpclose
+    else
+      for save in help_save
+        execute save[0] 'wincmd w'
+        execute 'buffer' save[1][0]
+        call setpos('.', save[2])
+      endfor
+
+      call win_gotoid(save_window)
+    endif
+
+    " Set firstline to display tag
+    let winopts.firstline = firstline
+
+    let a:pum.preview_id = popup_create(help_bufnr, winopts)
+    let a:pum.preview_buf = help_bufnr
+  elseif a:pum.preview_id > 0
+    " Update existing popup window
+    call popup_move(a:pum.preview_id, winopts)
+    if a:previewer->has_key('contents')
+      call popup_settext(a:pum.preview_id, a:previewer.contents)
+    endif
+  else
+    " Create new popup window
+    if a:previewer->has_key('contents')
+      let a:pum.preview_id = popup_create(a:previewer.contents, winopts)
+    else
+      let a:pum.preview_id = popup_create([], winopts)
+    endif
+    let a:pum.preview_buf = a:pum.preview_id->winbufnr()
+  endif
+
+  return a:pum
+endfunction
+
 function s:open_preview() abort
   let pum = pum#_get()
 
+  " Validate preview requirements
   if pum.cursor <= 0
     call pum#popup#_close_preview()
     return
@@ -672,7 +959,7 @@ function s:open_preview() abort
 
   const item = pum#current_item()
 
-  " Get preview contents
+  " Get preview contents and validate
   const previewer = s:get_previewer(item)
   if previewer->has_key('contents') && previewer.contents->empty()
     call pum#popup#_close_preview()
@@ -681,6 +968,7 @@ function s:open_preview() abort
 
   const options = pum#_options()
 
+  " Calculate preview position (to the right of main popup)
   const pos = pum#get_pos()
   if pos->empty()
     return
@@ -688,150 +976,19 @@ function s:open_preview() abort
   const row = pos.row + 1
   const col = pos.col + pos.width + 2
 
-  if previewer->has_key('contents')
-    let width = previewer.contents
-          \ ->mapnew({ _, val -> val->strwidth() })->max()
-    let width = [width, options.preview_width]->min()
+  " Calculate preview dimensions
+  const dimensions = s:calculate_preview_dimensions(previewer, options)
 
-    " Calculate height with an algorithm derived from
-    " https://github.com/matsui54/denops-popup-preview.vim
-    " (MIT Licence; Copyright (c) 2021 Haruki Matsui)
-    let height = 0
-    for line in previewer.contents
-      let height += [
-            \   1, (line->strdisplaywidth() / (width + 0.0))
-            \      ->ceil()->float2nr()
-            \ ]->max()
-    endfor
-    let height = [height, options.preview_height]->min()
-  else
-    let width = options.preview_width
-    let height = options.preview_height
-  endif
-  " NOTE: Must be positive
-  let width  = [[20, width]->max(),
-        \       (&columns - win_screenpos(0)[1]) / 3]->min()
-  let height = [[1, height]->max(), &lines / 2]->min()
-
+  " Create or update preview window (platform-specific)
   if has('nvim')
-    if pum.preview_buf < 0
-      let pum.preview_buf = nvim_create_buf(v:false, v:true)
-    endif
-
-    if previewer->has_key('contents')
-      call setbufvar(pum.preview_buf, '&modifiable', v:true)
-      call setbufvar(pum.preview_buf, '&readonly', v:false)
-      call nvim_buf_set_lines(
-            \ pum.preview_buf, 0, -1, v:true, previewer.contents)
-      call setbufvar(pum.preview_buf, '&modified', v:false)
-    endif
-
-    let winopts = #{
-          \   border: options.preview_border,
-          \   relative: 'editor',
-          \   row: row - 1,
-          \   col: col - 1,
-          \   width: width,
-          \   height: height,
-          \   anchor: 'NW',
-          \   style: 'minimal',
-          \   zindex: options.zindex + 1,
-          \ }
-
-    if pum.preview_id > 0
-      " Reuse window
-      call nvim_win_set_config(pum.preview_id, winopts)
-    else
-      call pum#popup#_close_preview()
-
-      " NOTE: It cannot set in nvim_win_set_config()
-      let winopts.noautocmd = v:true
-
-      " Create new window
-      const id = nvim_open_win(
-            \ pum.preview_buf, v:false, winopts)
-
-      call s:set_float_window_options(id, options, 'preview')
-
-      let pum.preview_id = id
-    endif
-
-    if previewer.kind ==# 'help'
-      if previewer.kind !=# pum.preview_kind
-        " Create new buffer for help
-        let pum.preview_buf = nvim_create_buf(v:false, v:true)
-      endif
-
-      try
-        call win_execute(pum.preview_id,
-              \ 'setlocal buftype=help | help ' .. previewer.tag)
-      catch
-        call pum#popup#_close_preview()
-        return
-      endtry
-    endif
+    let pum = s:create_preview_window_nvim(
+          \ pum, previewer, options, row, col, dimensions)
   else
-    let winopts = #{
-          \   pos: 'topleft',
-          \   line: row,
-          \   col: col,
-          \   maxwidth: width,
-          \   maxheight: height,
-          \   highlight: options.highlight_preview,
-          \   scrollbarhighlight: options.highlight_scrollbar,
-          \ }
-
-    if previewer.kind ==# 'help'
-      call pum#popup#_close_preview()
-
-      const save_window = win_getid()
-      const help_save = range(1, winnr('$'))
-            \ ->filter({ _, val -> val->getwinvar('&buftype') ==# 'help'})
-            \ ->map({ _, val -> [val, val->winbufnr(), val->getcurpos()]})
-
-      try
-        " Create dummy help buffer
-        " NOTE: ":help" does not work in popup window.
-        execute 'help' previewer.tag
-        const help_bufnr = bufnr()
-        const firstline = '.'->line()
-      catch
-        call pum#popup#_close_preview()
-        return
-      endtry
-
-      if help_save->empty()
-        helpclose
-      else
-        for save in help_save
-          execute save[0] 'wincmd w'
-          execute 'buffer' save[1][0]
-          call setpos('.', save[2])
-        endfor
-
-        call win_gotoid(save_window)
-      endif
-
-      " Set firstline to display tag
-      let winopts.firstline = firstline
-
-      let pum.preview_id = popup_create(help_bufnr, winopts)
-      let pum.preview_buf = help_bufnr
-    elseif pum.preview_id > 0
-      call popup_move(pum.preview_id, winopts)
-      if previewer->has_key('contents')
-        call popup_settext(pum.preview_id, previewer.contents)
-      endif
-    else
-      if previewer->has_key('contents')
-        let pum.preview_id = popup_create(previewer.contents, winopts)
-      else
-        let pum.preview_id = popup_create([], winopts)
-      endif
-      let pum.preview_buf = pum.preview_id->winbufnr()
-    endif
+    let pum = s:create_preview_window_vim(
+          \ pum, previewer, options, row, col, dimensions)
   endif
 
+  " Execute custom command if provided
   if previewer->has_key('command')
     try
       call win_execute(pum.preview_id, previewer.command)
@@ -841,12 +998,14 @@ function s:open_preview() abort
     endtry
   endif
 
+  " Configure window settings
   if previewer.kind ==# 'markdown'
     call setbufvar(pum.preview_buf, '&filetype', 'markdown')
   endif
   call setwinvar(pum.preview_id, '&wrap', v:true)
   call setwinvar(pum.preview_id, '&foldenable', v:false)
 
+  " Navigate to specific line if requested
   if previewer->has_key('lineNr')
     try
       call win_execute(pum.preview_id, previewer.lineNr)
@@ -856,10 +1015,12 @@ function s:open_preview() abort
     endtry
   endif
 
+  " Fire user autocommand event
   if '#User#PumPreview'->exists()
     doautocmd <nomodeline> User PumPreview
   endif
 
+  " Setup autocmds to close preview when cursor moves
   augroup pum-preview
     autocmd!
   augroup END
@@ -874,6 +1035,7 @@ function s:open_preview() abort
           \ call s:check_preview()
   endif
 
+  " Store preview state
   let pum.preview_row = row
   let pum.preview_col = col
   let pum.preview_kind = previewer.kind
@@ -1244,14 +1406,14 @@ function s:calculate_position(
   " Adjust position and height based on available screen space
   if a:mode !=# 'c'
     let minheight_below = [
-          \ height,
-          \ &lines - spos_copy.row -
-          \ a:dimensions.padding_height - a:options.offset_row
+          \   height,
+          \   &lines - spos_copy.row -
+          \   a:dimensions.padding_height - a:options.offset_row,
           \ ]->min()
     let minheight_above = [
-          \ height,
-          \ spos_copy.row -
-          \ a:dimensions.padding_height - a:options.offset_row
+          \   height,
+          \   spos_copy.row -
+          \   a:dimensions.padding_height - a:options.offset_row,
           \ ]->min()
 
     " Choose direction based on available space
@@ -1508,7 +1670,8 @@ endfunction
 "
 " Returns:
 "   Updated pum object with window IDs and state
-function s:create_vim_popup(pum, pos, dimensions, options, lines, height) abort
+function s:create_vim_popup(
+      \ pum, pos, dimensions, options, lines, height) abort
   " Configure popup options
   let winopts = #{
         \   pos: 'topleft',
@@ -1531,9 +1694,15 @@ function s:create_vim_popup(pum, pos, dimensions, options, lines, height) abort
     if &ambiwidth ==# 'single' && &encoding ==# 'utf-8'
       " Use Unicode border characters for better appearance
       if a:options.border ==# 'single'
-        let winopts.borderchars = ["─", "│", "─", "│", "┌", "┐", "┘", "└"]
+        let winopts.borderchars = [
+              \   '─', '│', '─', '│',
+              \   '┌', '┐', '┘', '└',
+              \ ]
       elseif a:options.border ==# 'double'
-        let winopts.borderchars = ['═', '║', '═', '║', '╔', '╗', '╝', '╚']
+        let winopts.borderchars = [
+              \   '═', '║', '═', '║',
+              \   '╔', '╗', '╝', '╚',
+              \ ]
       endif
     endif
   else
@@ -1576,7 +1745,8 @@ endfunction
 "   max_columns: Column width information
 "   height: Window height
 "   dimensions: Dimension info from s:calculate_dimensions()
-function s:setup_autocmds_and_state(pum, items, direction, reversed, startcol,
+function s:setup_autocmds_and_state(
+      \ pum, items, direction, reversed, startcol,
       \ options, mode, insert, max_columns, height, dimensions) abort
   " Store popup state
   let a:pum.items = a:items->copy()

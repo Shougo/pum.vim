@@ -332,10 +332,11 @@ function s:determine_direction(spos, height, padding_height, options, mode) abor
   endif
 
   let minheight_below = [
-        \ a:height, &lines - a:spos.row - a:padding_height - a:options.offset_row
+        \   a:height, &lines - a:spos.row -
+        \   a:padding_height - a:options.offset_row
         \ ]->min()
   let minheight_above = [
-        \ a:height, a:spos.row - a:padding_height - a:options.offset_row
+        \   a:height, a:spos.row - a:padding_height - a:options.offset_row
         \ ]->min()
 
   if (minheight_below < minheight_above && a:options.direction ==# 'auto')
@@ -1405,14 +1406,14 @@ function s:calculate_position(
   " Adjust position and height based on available screen space
   if a:mode !=# 'c'
     let minheight_below = [
-          \ height,
-          \ &lines - spos_copy.row -
-          \ a:dimensions.padding_height - a:options.offset_row
+          \   height,
+          \   &lines - spos_copy.row -
+          \   a:dimensions.padding_height - a:options.offset_row,
           \ ]->min()
     let minheight_above = [
-          \ height,
-          \ spos_copy.row -
-          \ a:dimensions.padding_height - a:options.offset_row
+          \   height,
+          \   spos_copy.row -
+          \   a:dimensions.padding_height - a:options.offset_row,
           \ ]->min()
 
     " Choose direction based on available space
@@ -1669,7 +1670,8 @@ endfunction
 "
 " Returns:
 "   Updated pum object with window IDs and state
-function s:create_vim_popup(pum, pos, dimensions, options, lines, height) abort
+function s:create_vim_popup(
+      \ pum, pos, dimensions, options, lines, height) abort
   " Configure popup options
   let winopts = #{
         \   pos: 'topleft',
@@ -1692,9 +1694,15 @@ function s:create_vim_popup(pum, pos, dimensions, options, lines, height) abort
     if &ambiwidth ==# 'single' && &encoding ==# 'utf-8'
       " Use Unicode border characters for better appearance
       if a:options.border ==# 'single'
-        let winopts.borderchars = ["─", "│", "─", "│", "┌", "┐", "┘", "└"]
+        let winopts.borderchars = [
+              \   '─', '│', '─', '│',
+              \   '┌', '┐', '┘', '└',
+              \ ]
       elseif a:options.border ==# 'double'
-        let winopts.borderchars = ['═', '║', '═', '║', '╔', '╗', '╝', '╚']
+        let winopts.borderchars = [
+              \   '═', '║', '═', '║',
+              \   '╔', '╗', '╝', '╚',
+              \ ]
       endif
     endif
   else
@@ -1737,7 +1745,8 @@ endfunction
 "   max_columns: Column width information
 "   height: Window height
 "   dimensions: Dimension info from s:calculate_dimensions()
-function s:setup_autocmds_and_state(pum, items, direction, reversed, startcol,
+function s:setup_autocmds_and_state(
+      \ pum, items, direction, reversed, startcol,
       \ options, mode, insert, max_columns, height, dimensions) abort
   " Store popup state
   let a:pum.items = a:items->copy()

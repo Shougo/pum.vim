@@ -331,9 +331,9 @@ function pum#map#scroll_preview(delta) abort
     return ''
   endif
 
-  const command = printf('noautocmd silent execute "normal! %s"',
-        \                repeat(a:delta > 0 ? "\<C-e>": "\<C-y>",
-        \                       a:delta > 0 ? a:delta : -a:delta))
+  const keys = (a:delta > 0 ? "\<C-e>": "\<C-y>")
+        \ ->repeat(a:delta > 0 ? a:delta : -a:delta)
+  const command = printf('noautocmd silent execute "normal! %s"', keys)
   call win_execute(pum.preview_id, command)
   call pum#popup#_redraw_preview()
   return ''

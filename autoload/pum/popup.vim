@@ -1318,6 +1318,52 @@ function s:calculate_column_widths(items, options) abort
   return [max_columns, width, non_abbr_length]
 endfunction
 
+" Calculate padding dimensions based on mode and options
+" Returns [padding, padding_height, padding_width, padding_left]
+function s:calculate_padding_dimensions(options, mode, startcol, border) abort
+  const padding = a:options.padding ?
+        \ (a:mode ==# 'c' || a:startcol != 1) ? 2 : 1 : 0
+
+  const [border_left, border_top, border_right, border_bottom] =
+        \ s:get_border_size(a:border)
+  
+  let padding_height = 1 + border_top + border_bottom
+  let padding_width = 1 + border_left + border_right
+  let padding_left = border_left
+  
+  if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)
+    let padding_width += 2
+    let padding_left += 1
+  endif
+
+  return [padding, padding_height, padding_width, padding_left,
+        \ border_left, border_top, border_right, border_bottom]
+endfunction
+
+" Apply width constraints to calculated width
+function s:apply_width_constraints(width, options) abort
+  let result = a:width
+  if a:options.min_width > 0
+    let result = [result, a:options.min_width]->max()
+  endif
+  if a:options.max_width > 0
+    let result = [result, a:options.max_width]->min()
+  endif
+  return result
+endfunction
+
+" Apply height constraints to calculated height
+function s:apply_height_constraints(height, options) abort
+  let result = a:height
+  if a:options.max_height > 0
+    let result = [result, a:options.max_height]->min()
+  endif
+  if a:options.min_height > 0
+    let result = [result, a:options.min_height]->max()
+  endif
+  return result
+endfunction
+
 " Calculate final popup dimensions and format display lines
 "
 " Applies padding, width/height constraints, calculates border sizes, and
@@ -1339,18 +1385,14 @@ endfunction
 function s:calculate_dimensions(
       \ items, max_columns, total_width, non_abbr_length,
       \ options, mode, startcol, pum) abort
-  " Calculate padding based on mode
-  const padding = a:options.padding ?
-        \ (a:mode ==# 'c' || a:startcol != 1) ? 2 : 1 : 0
+  " Calculate padding dimensions
+  let [padding, padding_height, padding_width, padding_left,
+        \ border_left, border_top, border_right, border_bottom] =
+        \ s:calculate_padding_dimensions(a:options, a:mode, a:startcol,
+        \                                 a:options.border)
 
   " Apply width constraints
-  let width = a:total_width + padding
-  if a:options.min_width > 0
-    let width = [width, a:options.min_width]->max()
-  endif
-  if a:options.max_width > 0
-    let width = [width, a:options.max_width]->min()
-  endif
+  let width = s:apply_width_constraints(a:total_width + padding, a:options)
 
   " Calculate abbr width (abbr takes remaining space)
   const abbr_width = width - a:non_abbr_length - padding
@@ -1363,25 +1405,8 @@ function s:calculate_dimensions(
         \   )
         \ })
 
-  " Calculate border dimensions
-  const [border_left, border_top, border_right, border_bottom]
-        \ = s:get_border_size(a:options.border)
-  let padding_height = 1 + border_top + border_bottom
-  let padding_width = 1 + border_left + border_right
-  let padding_left = border_left
-  if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)
-    let padding_width += 2
-    let padding_left += 1
-  endif
-
-  " Calculate height with constraints
-  let height = a:items->len()
-  if a:options.max_height > 0
-    let height = [height, a:options.max_height]->min()
-  endif
-  if a:options.min_height > 0
-    let height = [height, a:options.min_height]->max()
-  endif
+  " Apply height constraints
+  let height = s:apply_height_constraints(a:items->len(), a:options)
 
   return #{
         \   width: width,

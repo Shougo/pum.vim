@@ -543,17 +543,9 @@ function s:auto_confirm() abort
   let v:char = word[pum.orig_input->len() :] .. v:char
 endfunction
 
-function s:insert_line_feedkeys(text, after_func) abort
-  " feedkeys() implementation
-
-  " NOTE: ":undojoin" is needed to prevent undo breakage
-  const tree = undotree()
-  if tree.seq_cur == tree.seq_last
-    undojoin
-  endif
-
-  const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars = "\<BS>"->repeat(current_word->strchars()) .. a:text
+" Save and modify backspace/indentkeys options for text insertion
+" Sets up autocmd to restore options after text change
+function s:setup_backspace_options() abort
   if mode() ==# 'i' && !'s:save_backspace'->exists()
     " NOTE: Change backspace option to work <BS> correctly
     let s:save_backspace = &backspace
@@ -572,6 +564,22 @@ function s:insert_line_feedkeys(text, after_func) abort
           \ |   unlet! s:save_save_indentkeys
           \ | endif
   endif
+endfunction
+
+function s:insert_line_feedkeys(text, after_func) abort
+  " feedkeys() implementation
+
+  " NOTE: ":undojoin" is needed to prevent undo breakage
+  const tree = undotree()
+  if tree.seq_cur == tree.seq_last
+    undojoin
+  endif
+
+  const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
+  let chars = "\<BS>"->repeat(current_word->strchars()) .. a:text
+  
+  call s:setup_backspace_options()
+
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)
     let chars ..= "\<Cmd>call call(g:PumCallback, [])\<CR>"

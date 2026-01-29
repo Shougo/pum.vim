@@ -878,6 +878,80 @@ endfunction
 "
 " Returns:
 "   Updated pum object
+" Setup help preview buffer for Vim
+" Returns [help_bufnr, firstline] or [v:null, v:null] on error
+function s:setup_help_preview_buffer(tag) abort
+  const save_window = win_getid()
+  const help_save = range(1, winnr('$'))
+        \ ->filter({ _, val -> val->getwinvar('&buftype') ==# 'help'})
+        \ ->map({ _, val -> [val, val->winbufnr(), val->getcurpos()]})
+
+  try
+    " Create dummy help buffer
+    " NOTE: ":help" does not work in popup window.
+    execute 'help' a:tag
+    const help_bufnr = bufnr()
+    const firstline = '.'->line()
+  catch
+    return [v:null, v:null]
+  endtry
+
+  " Restore previous help windows
+  if help_save->empty()
+    helpclose
+  else
+    for save in help_save
+      execute save[0] 'wincmd w'
+      execute 'buffer' save[1][0]
+      call setpos('.', save[2])
+    endfor
+    call win_gotoid(save_window)
+  endif
+
+  return [help_bufnr, firstline]
+endfunction
+
+" Create help preview window in Vim
+function s:create_help_preview_vim(pum, previewer, winopts) abort
+  call pum#popup#_close_preview()
+
+  let [help_bufnr, firstline] = s:setup_help_preview_buffer(a:previewer.tag)
+  if help_bufnr == v:null
+    call pum#popup#_close_preview()
+    return a:pum
+  endif
+
+  " Set firstline to display tag
+  let winopts = deepcopy(a:winopts)
+  let winopts.firstline = firstline
+
+  let a:pum.preview_id = popup_create(help_bufnr, winopts)
+  let a:pum.preview_buf = help_bufnr
+
+  return a:pum
+endfunction
+
+" Create or update regular content preview window in Vim
+function s:create_content_preview_vim(pum, previewer, winopts) abort
+  if a:pum.preview_id > 0
+    " Update existing popup window
+    call popup_move(a:pum.preview_id, a:winopts)
+    if a:previewer->has_key('contents')
+      call popup_settext(a:pum.preview_id, a:previewer.contents)
+    endif
+  else
+    " Create new popup window
+    if a:previewer->has_key('contents')
+      let a:pum.preview_id = popup_create(a:previewer.contents, a:winopts)
+    else
+      let a:pum.preview_id = popup_create([], a:winopts)
+    endif
+    let a:pum.preview_buf = a:pum.preview_id->winbufnr()
+  endif
+
+  return a:pum
+endfunction
+
 function s:create_preview_window_vim(
       \ pum, previewer, options, row, col, dimensions) abort
   " Configure window options
@@ -893,59 +967,10 @@ function s:create_preview_window_vim(
 
   " Handle help previews (requires special buffer setup in Vim)
   if a:previewer.kind ==# 'help'
-    call pum#popup#_close_preview()
-
-    const save_window = win_getid()
-    const help_save = range(1, winnr('$'))
-          \ ->filter({ _, val -> val->getwinvar('&buftype') ==# 'help'})
-          \ ->map({ _, val -> [val, val->winbufnr(), val->getcurpos()]})
-
-    try
-      " Create dummy help buffer
-      " NOTE: ":help" does not work in popup window.
-      execute 'help' a:previewer.tag
-      const help_bufnr = bufnr()
-      const firstline = '.'->line()
-    catch
-      call pum#popup#_close_preview()
-      return a:pum
-    endtry
-
-    " Restore previous help windows
-    if help_save->empty()
-      helpclose
-    else
-      for save in help_save
-        execute save[0] 'wincmd w'
-        execute 'buffer' save[1][0]
-        call setpos('.', save[2])
-      endfor
-
-      call win_gotoid(save_window)
-    endif
-
-    " Set firstline to display tag
-    let winopts.firstline = firstline
-
-    let a:pum.preview_id = popup_create(help_bufnr, winopts)
-    let a:pum.preview_buf = help_bufnr
-  elseif a:pum.preview_id > 0
-    " Update existing popup window
-    call popup_move(a:pum.preview_id, winopts)
-    if a:previewer->has_key('contents')
-      call popup_settext(a:pum.preview_id, a:previewer.contents)
-    endif
+    return s:create_help_preview_vim(a:pum, a:previewer, winopts)
   else
-    " Create new popup window
-    if a:previewer->has_key('contents')
-      let a:pum.preview_id = popup_create(a:previewer.contents, winopts)
-    else
-      let a:pum.preview_id = popup_create([], winopts)
-    endif
-    let a:pum.preview_buf = a:pum.preview_id->winbufnr()
+    return s:create_content_preview_vim(a:pum, a:previewer, winopts)
   endif
-
-  return a:pum
 endfunction
 
 function s:open_preview() abort
@@ -1395,69 +1420,86 @@ endfunction
 "   - reversed: Whether items were reversed
 "   - items: Possibly reversed items list
 "   - lines: Possibly reversed display lines
-function s:calculate_position(
-      \ spos, dimensions, options, mode, items, startcol) abort
-  let height = a:dimensions.height
-  let direction = a:options.direction
-
-  " Create local copy of spos to avoid mutating the parameter
-  let spos_copy = deepcopy(a:spos)
-
-  " Adjust position and height based on available screen space
-  if a:mode !=# 'c'
-    let minheight_below = [
-          \   height,
-          \   &lines - spos_copy.row -
-          \   a:dimensions.padding_height - a:options.offset_row,
-          \ ]->min()
-    let minheight_above = [
-          \   height,
-          \   spos_copy.row -
-          \   a:dimensions.padding_height - a:options.offset_row,
-          \ ]->min()
-
-    " Choose direction based on available space
-    if (minheight_below < minheight_above && a:options.direction ==# 'auto')
-          \ || (minheight_above >= 1 && a:options.direction ==# 'above')
-      " Use above window
-      let spos_copy.row -= height + a:dimensions.padding_height
-      let height = minheight_above
-      let direction = 'above'
-    else
-      " Use below window
-      let height = minheight_below
-      let direction = 'below'
-    endif
-  else
-    " Command-line mode
-    let height = [height, &lines - [&cmdheight, 1]->max()]->min()
+" Determine menu direction based on available screen space
+" Returns [direction, height, adjusted_row]
+function s:determine_menu_direction(spos, dimensions, options, height, mode) abort
+  if a:mode ==# 'c'
+    " Command-line mode - always below
+    const cmd_height = [a:height, &lines - [&cmdheight, 1]->max()]->min()
+    return ['below', cmd_height, a:spos.row]
   endif
-  let height = [height, 1]->max()
 
-  " Reverse items if showing above and reversed option is enabled
-  const reversed = direction ==# 'above' && a:options.reversed
-  let items =
-        \   reversed
-        \ ? a:items->copy()->reverse()
-        \ : a:items
-  let lines =
-        \   reversed
-        \ ? a:dimensions.lines->copy()->reverse()
-        \ : a:dimensions.lines
+  let spos_row = a:spos.row
+  const minheight_below = [
+        \   a:height,
+        \   &lines - spos_row - a:dimensions.padding_height - a:options.offset_row,
+        \ ]->min()
+  const minheight_above = [
+        \   a:height,
+        \   spos_row - a:dimensions.padding_height - a:options.offset_row,
+        \ ]->min()
+
+  " Choose direction based on available space
+  if (minheight_below < minheight_above && a:options.direction ==# 'auto')
+        \ || (minheight_above >= 1 && a:options.direction ==# 'above')
+    " Use above window
+    let spos_row -= a:height + a:dimensions.padding_height
+    return ['above', minheight_above, spos_row]
+  else
+    " Use below window
+    return ['below', minheight_below, spos_row]
+  endif
+endfunction
+
+" Reverse items and lines if needed based on direction and options
+" Returns [reversed_flag, items, lines]
+function s:apply_item_reversal(direction, items, lines, options) abort
+  const reversed = a:direction ==# 'above' && a:options.reversed
+  const result_items = reversed ? a:items->copy()->reverse() : a:items
+  const result_lines = reversed ? a:lines->copy()->reverse() : a:lines
+  return [reversed, result_items, result_lines]
+endfunction
+
+" Adjust column position to fit within screen bounds
+" Returns adjusted column value
+function s:adjust_column_position(col, dimensions, padding_left) abort
+  let adjusted_col = a:col
 
   " Adjust column position to fit within screen
-  const rest_width = &columns - spos_copy.col - a:dimensions.padding_width
+  const rest_width = &columns - adjusted_col - a:dimensions.padding_width
   if rest_width < a:dimensions.width
-    let spos_copy.col -= a:dimensions.width - rest_width
+    let adjusted_col -= a:dimensions.width - rest_width
   endif
 
   " Apply padding adjustment
-  let spos_copy.col -= a:dimensions.padding_left
+  let adjusted_col -= a:padding_left
 
   " Ensure column is within bounds
-  if spos_copy.col <= 0
-    let spos_copy.col = 1
+  if adjusted_col <= 0
+    let adjusted_col = 1
   endif
+
+  return adjusted_col
+endfunction
+
+function s:calculate_position(
+      \ spos, dimensions, options, mode, items, startcol) abort
+  " Determine direction and calculate appropriate height
+  let [direction, height, adjusted_row] = s:determine_menu_direction(
+        \ a:spos, a:dimensions, a:options, a:dimensions.height, a:mode)
+  let height = [height, 1]->max()
+
+  " Apply item/line reversal if needed
+  let [reversed, items, lines] = s:apply_item_reversal(
+        \ direction, a:items, a:dimensions.lines, a:options)
+
+  " Create local copy of spos with adjusted row
+  let spos_copy = deepcopy(a:spos)
+  let spos_copy.row = adjusted_row
+
+  " Adjust column position
+  let spos_copy.col = s:adjust_column_position(
+        \ spos_copy.col, a:dimensions, a:dimensions.padding_left)
 
   " Calculate final position
   let pos =
@@ -1541,6 +1583,45 @@ function s:adjust_cmdline_position(
   return [pos, height, direction]
 endfunction
 
+" Calculate scrollbar configuration for Neovim
+" Returns [scroll_height, scroll_row, scroll_col, scroll_winopts]
+function s:calculate_nvim_scrollbar_config(
+      \ pos, dimensions, options, height, lines_count) abort
+  const scroll_height = [
+        \ (a:height * ((a:height + 0.0) / a:lines_count) + 0.5)
+        \ ->floor()->float2nr(), 1]->max()
+  const scroll_row = a:pos[0] + a:dimensions.border_top
+  const scroll_col = a:pos[1] + a:dimensions.width + a:dimensions.border_right
+  const scroll_winopts = #{
+        \   border: 'none',
+        \   relative: 'editor',
+        \   width: a:options.scrollbar_char->strwidth(),
+        \   height: scroll_height,
+        \   row: scroll_row,
+        \   col: scroll_col,
+        \   anchor: 'NW',
+        \   style: 'minimal',
+        \   zindex: a:options.zindex + 1,
+        \ }
+  return [scroll_height, scroll_row, scroll_col, scroll_winopts]
+endfunction
+
+" Setup or update Neovim scrollbar window
+function s:setup_nvim_scrollbar(pum, options, scroll_winopts) abort
+  if a:pum.scroll_id > 0
+    " Reuse scrollbar window
+    call nvim_win_set_config(a:pum.scroll_id, a:scroll_winopts)
+  else
+    " Create new scrollbar window
+    let scroll_winopts = deepcopy(a:scroll_winopts)
+    let scroll_winopts.noautocmd = v:true
+    let scroll_id = nvim_open_win(
+          \ a:pum.scroll_buf, v:false, scroll_winopts)
+    call s:set_float_window_options(scroll_id, a:options, 'scrollbar')
+    let a:pum.scroll_id = scroll_id
+  endif
+endfunction
+
 " Create or update Neovim floating window for popup menu
 "
 " Manages Neovim floating windows including the main popup and optional
@@ -1587,27 +1668,14 @@ function s:create_nvim_window(
         \   zindex: a:options.zindex,
         \ }
 
-  " Calculate scrollbar position
-  const scroll_height = [
-        \ (a:height * ((a:height + 0.0) / a:lines->len()) + 0.5)
-        \ ->floor()->float2nr(), 1]->max()
-  const scroll_row = a:pos[0] + a:dimensions.border_top
-  const scroll_col = a:pos[1] + a:dimensions.width + a:dimensions.border_right
-  let scroll_winopts = #{
-        \   border: 'none',
-        \   relative: 'editor',
-        \   width: a:options.scrollbar_char->strwidth(),
-        \   height: scroll_height,
-        \   row: scroll_row,
-        \   col: scroll_col,
-        \   anchor: 'NW',
-        \   style: 'minimal',
-        \   zindex: a:options.zindex + 1,
-        \ }
+  " Calculate scrollbar configuration
+  let [scroll_height, scroll_row, scroll_col, scroll_winopts] =
+        \ s:calculate_nvim_scrollbar_config(
+        \   a:pos, a:dimensions, a:options, a:height, a:lines->len())
 
-  let a:pum.scroll_row = scroll_winopts.row
-  let a:pum.scroll_col = scroll_winopts.col
-  let a:pum.scroll_height = scroll_winopts.height
+  let a:pum.scroll_row = scroll_row
+  let a:pum.scroll_col = scroll_col
+  let a:pum.scroll_height = scroll_height
 
   " Create or update main window
   if a:pum.id > 0
@@ -1633,17 +1701,7 @@ function s:create_nvim_window(
 
   " Create or update scrollbar window
   if a:options.scrollbar_char !=# '' && len(a:lines) > a:height
-    if a:pum.scroll_id > 0
-      " Reuse scrollbar window
-      call nvim_win_set_config(a:pum.scroll_id, scroll_winopts)
-    else
-      " Create new scrollbar window
-      let scroll_winopts.noautocmd = v:true
-      let scroll_id = nvim_open_win(
-            \ a:pum.scroll_buf, v:false, scroll_winopts)
-      call s:set_float_window_options(scroll_id, a:options, 'scrollbar')
-      let a:pum.scroll_id = scroll_id
-    endif
+    call s:setup_nvim_scrollbar(a:pum, a:options, scroll_winopts)
   elseif a:pum.scroll_id > 0
     call pum#popup#_close_id(a:pum.scroll_id)
     let a:pum.scroll_id = -1

@@ -1,95 +1,57 @@
-function pum#map#select_relative(
-      \ delta, overflow='empty', auto_confirm=v:false) abort
-  let pum = pum#_get()
-  if pum.id <= 0
-    return ''
-  endif
+" Handle overflow when cursor goes beyond menu bounds in 'empty' mode
+" Resets cursor to 0 and updates display
+function s:handle_overflow_empty(pum) abort
+  let a:pum.cursor = 0
+  call pum#popup#_close_preview()
 
-  let delta = a:delta
-  if pum.reversed
-    let delta *= -1
-  endif
-
-  let pum.cursor += delta
-
-  if pum.cursor > pum.len || pum.cursor <= 0
-    " Overflow
-
-    if a:overflow ==# 'empty' && (pum.cursor > pum.len || pum.cursor ==# 0)
-      " Select empty text
-
-      " Reset
-      let pum.cursor = 0
-
-      call pum#popup#_close_preview()
-
-      " Move real cursor
-      if pum.horizontal_menu
-        call pum#popup#_redraw_horizontal_menu()
-      else
-        call win_execute(pum.id, 'call cursor(1, 0)')
-        call pum#popup#_redraw_selected()
-      endif
-
-      " Reset scroll bar
-      if pum.scroll_id > 0 && has('nvim') && pum.scroll_id->winbufnr() > 0
-        call nvim_win_set_config(pum.scroll_id, #{
-              \   border: 'none',
-              \   relative: 'editor',
-              \   row: pum.scroll_row,
-              \   col: pum.scroll_col,
-              \ })
-        call win_execute(pum.scroll_id, 'call cursor(1, 0)')
-      endif
-
-      call pum#popup#_redraw_scroll()
-
-      call pum#popup#_reset_auto_confirm(mode())
-
-      return ''
-    endif
-
-    if a:overflow ==# 'ignore'
-      let pum.cursor = pum.cursor > pum.len ? pum.len : 1
-    else
-      " Loop
-      let pum.cursor = pum.cursor > pum.len ? 1 : pum.len
-    endif
-  endif
-
-  call pum#_complete_changed()
-
-  if pum.horizontal_menu
+  " Move real cursor
+  if a:pum.horizontal_menu
     call pum#popup#_redraw_horizontal_menu()
   else
-    " Move real cursor
-    " NOTE: If up scroll, cursor must adjust...
-    if delta < 0
-      call win_execute(pum.id, 'call cursor(pum#_get().cursor, 0)')
-    else
-      call win_execute(pum.id, 'call cursor(pum#_get().cursor + 1, 0)')
-    endif
+    call win_execute(a:pum.id, 'call cursor(1, 0)')
     call pum#popup#_redraw_selected()
-
-    call pum#popup#_redraw_scroll()
   endif
 
-  " Update scroll bar
-  if pum.scroll_id > 0 && has('nvim') && pum.scroll_id->winbufnr() > 0
-    const head = 'w0'->line(pum.id)
-    const bottom = 'w$'->line(pum.id)
+  " Reset scroll bar
+  call s:reset_nvim_scrollbar(a:pum)
+  call pum#popup#_redraw_scroll()
+  call pum#popup#_reset_auto_confirm(mode())
+endfunction
+
+" Reset Neovim scrollbar to initial position
+function s:reset_nvim_scrollbar(pum) abort
+  if a:pum.scroll_id > 0 && has('nvim') && a:pum.scroll_id->winbufnr() > 0
+    call nvim_win_set_config(a:pum.scroll_id, #{
+          \   border: 'none',
+          \   relative: 'editor',
+          \   row: a:pum.scroll_row,
+          \   col: a:pum.scroll_col,
+          \ })
+    call win_execute(a:pum.scroll_id, 'call cursor(1, 0)')
+  endif
+endfunction
+
+" Update Neovim scrollbar position based on current cursor
+function s:update_nvim_scrollbar(pum) abort
+  if a:pum.scroll_id > 0 && has('nvim') && a:pum.scroll_id->winbufnr() > 0
+    const head = 'w0'->line(a:pum.id)
+    const bottom = 'w$'->line(a:pum.id)
     const offset =
           \ head == 1 ? 0 :
-          \ bottom == pum.len ? pum.height - pum.scroll_height :
-          \ (pum.height * (head + 0.0) / pum.len + 0.5)->floor()->float2nr()
+          \ bottom == a:pum.len ? a:pum.height - a:pum.scroll_height :
+          \ (a:pum.height * (head + 0.0) / a:pum.len + 0.5)
+          \ ->floor()->float2nr()
 
-    call nvim_win_set_config(pum.scroll_id, #{
+    call nvim_win_set_config(a:pum.scroll_id, #{
           \   relative: 'editor',
-          \   row: pum.scroll_row + [offset, pum.height - 1]->min(),
-          \   col: pum.scroll_col,
+          \   row: a:pum.scroll_row + [offset, a:pum.height - 1]->min(),
+          \   col: a:pum.scroll_col,
           \ })
   endif
+endfunction
 
+" Setup auto-confirm autocmds in insert mode
+function s:setup_auto_confirm(auto_confirm) abort
   if mode() ==# 'i'
     augroup pum-confirm
       autocmd!
@@ -105,6 +67,58 @@ function pum#map#select_relative(
             \ | endif
     endif
   endif
+endfunction
+
+" Update menu cursor position and redraw
+function s:update_menu_cursor(pum, delta) abort
+  if a:pum.horizontal_menu
+    call pum#popup#_redraw_horizontal_menu()
+  else
+    " Move real cursor
+    " NOTE: If up scroll, cursor must adjust...
+    if a:delta < 0
+      call win_execute(a:pum.id, 'call cursor(pum#_get().cursor, 0)')
+    else
+      call win_execute(a:pum.id, 'call cursor(pum#_get().cursor + 1, 0)')
+    endif
+    call pum#popup#_redraw_selected()
+    call pum#popup#_redraw_scroll()
+  endif
+endfunction
+
+function pum#map#select_relative(
+      \ delta, overflow='empty', auto_confirm=v:false) abort
+  let pum = pum#_get()
+  if pum.id <= 0
+    return ''
+  endif
+
+  let delta = a:delta
+  if pum.reversed
+    let delta *= -1
+  endif
+
+  let pum.cursor += delta
+
+  if pum.cursor > pum.len || pum.cursor <= 0
+    " Overflow handling
+    if a:overflow ==# 'empty' && (pum.cursor > pum.len || pum.cursor ==# 0)
+      call s:handle_overflow_empty(pum)
+      return ''
+    endif
+
+    if a:overflow ==# 'ignore'
+      let pum.cursor = pum.cursor > pum.len ? pum.len : 1
+    else
+      " Loop mode
+      let pum.cursor = pum.cursor > pum.len ? 1 : pum.len
+    endif
+  endif
+
+  call pum#_complete_changed()
+  call s:update_menu_cursor(pum, delta)
+  call s:update_nvim_scrollbar(pum)
+  call s:setup_auto_confirm(a:auto_confirm)
 
   " Close popup menu and CompleteDone if user input
   call s:check_user_input({ -> pum#close() })
@@ -230,6 +244,21 @@ function pum#map#confirm_matched_pattern(pattern) abort
 
   return ''
 endfunction
+
+" Find matching suffix between word and next_input
+" Args:
+"   word: The completion word to match against
+"   next_input: The text following the cursor position
+" Returns: The suffix that matches, or empty string if no match
+function s:find_matching_suffix(word, next_input) abort
+  for i in range(a:word->len() - 1, -1, -1)
+    if a:next_input[:a:word->len() - i - 1] ==# a:word[i:]
+      return a:word[i:]
+    endif
+  endfor
+  return ''
+endfunction
+
 function pum#map#confirm_suffix() abort
   let pum = pum#_get()
 
@@ -240,13 +269,7 @@ function pum#map#confirm_suffix() abort
     const next_input = pum.orig_line[pum.col - 1 :]
 
     " Get suffix matched to next_input
-    let suffix = ''
-    for i in range(word->len() - 1, -1, -1)
-      if next_input[:word->len() - i - 1] ==# word[i:]
-        let suffix = word[i:]
-        break
-      endif
-    endfor
+    const suffix = s:find_matching_suffix(word, next_input)
 
     if suffix ==# ''
       " non suffix.  Normal confirm behavior.
@@ -450,6 +473,44 @@ function s:insert_current_word(prev_word, after_func) abort
   call s:insert(word, a:prev_word, a:after_func)
 endfunction
 
+" Setup autocmds for insert mode user input tracking
+function s:setup_insert_mode_tracking() abort
+  autocmd pum-temp InsertLeave * ++once ++nested
+        \ call pum#_reset_skip_complete()
+  autocmd pum-temp TextChangedI * ++nested
+        \ call pum#popup#_check_text_changed()
+  autocmd pum-temp InsertCharPre * ++nested
+        \ call pum#close()
+endfunction
+
+" Setup autocmds for command-line mode user input tracking
+function s:setup_cmdline_tracking() abort
+  autocmd pum-temp CmdlineLeave * ++once ++nested
+        \ call pum#_reset_skip_complete()
+  autocmd pum-temp CmdlineChanged * ++once ++nested
+        \ call pum#popup#_check_text_changed()
+endfunction
+
+" Setup autocmds for terminal mode user input tracking
+function s:setup_terminal_tracking() abort
+  if '##KeyInputPre'->exists()
+    autocmd pum-temp KeyInputPre * ++nested
+          \ call pum#popup#_check_text_changed()
+  elseif has('nvim')
+    if !'s:check_user_input_handler'->exists()
+      lua vim.on_key(function(key)
+            \   if string.match(key, '^%C$') then
+            \     vim.fn['pum#close']()
+            \   end
+            \ end)
+      const s:check_user_input_handler = v:true
+    endif
+  else
+    autocmd pum-temp TextChangedT * ++nested
+          \ call pum#popup#_check_text_changed()
+  endif
+endfunction
+
 function s:check_user_input(callback) abort
   augroup pum-temp
     autocmd!
@@ -460,35 +521,14 @@ function s:check_user_input(callback) abort
   let pum = pum#_get()
   let pum.current_line = pum#_getline()[: pum.startcol]
 
-  if mode() ==# 'c'
-    autocmd pum-temp CmdlineLeave * ++once ++nested
-          \ call pum#_reset_skip_complete()
-    autocmd pum-temp CmdlineChanged * ++once ++nested
-          \ call pum#popup#_check_text_changed()
-  elseif mode() ==# 't'
-    if '##KeyInputPre'->exists()
-      autocmd pum-temp KeyInputPre * ++nested
-            \ call pum#popup#_check_text_changed()
-    elseif has('nvim')
-      if !'s:check_user_input_handler'->exists()
-        lua vim.on_key(function(key)
-              \   if string.match(key, '^%C$') then
-              \     vim.fn['pum#close']()
-              \   end
-              \ end)
-        const s:check_user_input_handler = v:true
-      endif
-    else
-      autocmd pum-temp TextChangedT * ++nested
-            \ call pum#popup#_check_text_changed()
-    endif
+  " Setup mode-specific user input tracking
+  const current_mode = mode()
+  if current_mode ==# 'c'
+    call s:setup_cmdline_tracking()
+  elseif current_mode ==# 't'
+    call s:setup_terminal_tracking()
   else
-    autocmd pum-temp InsertLeave * ++once ++nested
-          \ call pum#_reset_skip_complete()
-    autocmd pum-temp TextChangedI * ++nested
-          \ call pum#popup#_check_text_changed()
-    autocmd pum-temp InsertCharPre * ++nested
-          \ call pum#close()
+    call s:setup_insert_mode_tracking()
   endif
 endfunction
 function s:auto_confirm() abort
@@ -497,9 +537,10 @@ function s:auto_confirm() abort
   endif
 
   let pum = pum#_get()
-  const word = pum.cursor > 0 ?
-        \ pum.items[pum.cursor - 1].word :
-        \ pum.orig_input
+  const word =
+        \   pum.cursor > 0
+        \ ? pum.items[pum.cursor - 1].word
+        \ : pum.orig_input
   if word ==# pum.current_word || word->stridx(pum.orig_input) < 0
     " It must be head match
     return
@@ -508,17 +549,9 @@ function s:auto_confirm() abort
   let v:char = word[pum.orig_input->len() :] .. v:char
 endfunction
 
-function s:insert_line_feedkeys(text, after_func) abort
-  " feedkeys() implementation
-
-  " NOTE: ":undojoin" is needed to prevent undo breakage
-  const tree = undotree()
-  if tree.seq_cur == tree.seq_last
-    undojoin
-  endif
-
-  const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
-  let chars = "\<BS>"->repeat(current_word->strchars()) .. a:text
+" Save and modify backspace/indentkeys options for text insertion
+" Sets up autocmd to restore options after text change
+function s:setup_backspace_options() abort
   if mode() ==# 'i' && !'s:save_backspace'->exists()
     " NOTE: Change backspace option to work <BS> correctly
     let s:save_backspace = &backspace
@@ -537,6 +570,23 @@ function s:insert_line_feedkeys(text, after_func) abort
           \ |   unlet! s:save_save_indentkeys
           \ | endif
   endif
+endfunction
+
+function s:insert_line_feedkeys(text, after_func) abort
+  " feedkeys() implementation
+
+  " NOTE: ":undojoin" is needed to prevent undo breakage
+  const tree = undotree()
+  if tree.seq_cur == tree.seq_last
+    undojoin
+  endif
+
+  const current_word =
+        \ pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
+  let chars = "\<BS>"->repeat(current_word->strchars()) .. a:text
+
+  call s:setup_backspace_options()
+
   if a:after_func != v:null
     let g:PumCallback = function(a:after_func)
     let chars ..= "\<Cmd>call call(g:PumCallback, [])\<CR>"
@@ -548,10 +598,6 @@ endfunction
 function s:insert_line_complete(text) abort
   " complete() implementation
 
-  let s:save_hl_insert =
-        \   has('nvim')
-        \ ? nvim_get_hl(0, #{ name: 'ComplMatchIns'})
-        \ : 'ComplMatchIns'->hlget()
   let s:save_completeopt = &completeopt
   let s:save_eventignore = &eventignore
 
@@ -564,21 +610,6 @@ function s:insert_line_complete(text) abort
   " Because native popup menu disables user insert mappings.
   call feedkeys("\<C-x>\<C-z>", 'in')
 
-  const hl_normal =
-        \   has('nvim')
-        \ ? nvim_get_hl(0, #{ name: 'Normal'})
-        \ : 'Normal'->hlget()
-
-  " Overwrite ComplMatchIns highlight
-  " NOTE: Because complete() uses "ComplMatchIns" highlight.
-  if has('nvim')
-    call nvim_set_hl(0, 'ComplMatchIns', hl_normal)
-  else
-    let hl_insert = hl_normal[0]->copy()
-    let hl_insert.name = 'ComplMatchIns'
-    call hlset([hl_insert])
-  endif
-
   " NOTE: Restore after complete()
   autocmd TextChangedI,TextChangedP * ++once ++nested
         \ : if 's:save_completeopt'->exists()
@@ -588,14 +619,6 @@ function s:insert_line_complete(text) abort
         \ | if 's:save_eventignore'->exists()
         \ |   let &eventignore = s:save_eventignore
         \ |   unlet! s:save_eventignore
-        \ | endif
-        \ | if 's:save_hl_insert'->exists()
-        \ |   if has('nvim')
-        \ |     call nvim_set_hl(0, 'ComplMatchIns', s:save_hl_insert)
-        \ |   else
-        \ |     call hlset(s:save_hl_insert)
-        \ |   endif
-        \ |   unlet! s:save_hl_insert
         \ | endif
 endfunction
 

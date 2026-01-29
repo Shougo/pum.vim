@@ -39,7 +39,8 @@ function s:update_nvim_scrollbar(pum) abort
     const offset =
           \ head == 1 ? 0 :
           \ bottom == a:pum.len ? a:pum.height - a:pum.scroll_height :
-          \ (a:pum.height * (head + 0.0) / a:pum.len + 0.5)->floor()->float2nr()
+          \ (a:pum.height * (head + 0.0) / a:pum.len + 0.5)
+          \ ->floor()->float2nr()
 
     call nvim_win_set_config(a:pum.scroll_id, #{
           \   relative: 'editor',
@@ -536,9 +537,10 @@ function s:auto_confirm() abort
   endif
 
   let pum = pum#_get()
-  const word = pum.cursor > 0 ?
-        \ pum.items[pum.cursor - 1].word :
-        \ pum.orig_input
+  const word =
+        \   pum.cursor > 0
+        \ ? pum.items[pum.cursor - 1].word
+        \ : pum.orig_input
   if word ==# pum.current_word || word->stridx(pum.orig_input) < 0
     " It must be head match
     return
@@ -579,7 +581,8 @@ function s:insert_line_feedkeys(text, after_func) abort
     undojoin
   endif
 
-  const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
+  const current_word =
+        \ pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
   let chars = "\<BS>"->repeat(current_word->strchars()) .. a:text
 
   call s:setup_backspace_options()

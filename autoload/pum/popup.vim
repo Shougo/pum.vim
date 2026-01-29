@@ -110,9 +110,10 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   endif
 
   " Setup autocmds and store state
-  call s:setup_autocmds_and_state(pum, items, direction, reversed, a:startcol,
-        \                         options, a:mode, a:insert, max_columns,
-        \                         height, dimensions)
+  call s:setup_autocmds_and_state(
+        \ pum, items, direction, reversed, a:startcol,
+        \ options, a:mode, a:insert, max_columns,
+        \ height, dimensions)
 
   return pum.id
 endfunction
@@ -266,8 +267,10 @@ endfunction
 " Returns:
 "   Dictionary with:
 "     - border_left, border_top, border_right, border_bottom: Individual sizes
-"     - padding_height: Total vertical padding (1 + borders)
-"     - padding_width: Total horizontal padding (1 + borders + optional padding)
+"     - padding_height: Total vertical padding
+"       (1 + borders)
+"     - padding_width: Total horizontal padding
+"       (1 + borders + optional padding)
 "     - padding_left: Left padding offset
 function s:calculate_border_padding(border, options, mode, startcol) abort
   const [border_left, border_top, border_right, border_bottom]
@@ -326,7 +329,8 @@ endfunction
 "
 " Returns:
 "   String: 'above' or 'below'
-function s:determine_direction(spos, height, padding_height, options, mode) abort
+function s:determine_direction(
+      \ spos, height, padding_height, options, mode) abort
   if a:mode ==# 'c'
     return 'above'
   endif
@@ -387,7 +391,8 @@ function s:highlight_items(items, max_columns) abort
   endfor
 endfunction
 
-function s:highlight(highlight, prop_type, priority, buf, row, col, length) abort
+function s:highlight(
+      \ highlight, prop_type, priority, buf, row, col, length) abort
   if a:highlight ==# ''
     return
   endif
@@ -1317,7 +1322,7 @@ function s:calculate_padding_dimensions(options, mode, startcol, border) abort
   let padding_height = 1 + border_top + border_bottom
   let padding_width = 1 + border_left + border_right
   let padding_left = border_left
-  
+
   if a:options.padding && (a:mode ==# 'c' || a:startcol != 1)
     let padding_width += 2
     let padding_left += 1
@@ -1434,7 +1439,8 @@ endfunction
 "   - lines: Possibly reversed display lines
 " Determine menu direction based on available screen space
 " Returns [direction, height, adjusted_row]
-function s:determine_menu_direction(spos, dimensions, options, height, mode) abort
+function s:determine_menu_direction(
+      \ spos, dimensions, options, height, mode) abort
   if a:mode ==# 'c'
     " Command-line mode - always below
     const cmd_height = [a:height, &lines - [&cmdheight, 1]->max()]->min()
@@ -1444,7 +1450,8 @@ function s:determine_menu_direction(spos, dimensions, options, height, mode) abo
   let spos_row = a:spos.row
   const minheight_below = [
         \   a:height,
-        \   &lines - spos_row - a:dimensions.padding_height - a:options.offset_row,
+        \   &lines - spos_row - a:dimensions.padding_height
+        \   - a:options.offset_row,
         \ ]->min()
   const minheight_above = [
         \   a:height,

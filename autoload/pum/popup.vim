@@ -864,20 +864,6 @@ function s:create_preview_window_nvim(
   return a:pum
 endfunction
 
-" Create or update preview window for Vim
-"
-" Handles Vim-specific popup window creation and configuration for preview.
-"
-" Args:
-"   pum: PUM state object
-"   previewer: Previewer dictionary
-"   options: PUM options
-"   row: Window row position
-"   col: Window column position
-"   dimensions: Dimensions dictionary from s:calculate_preview_dimensions()
-"
-" Returns:
-"   Updated pum object
 " Setup help preview buffer for Vim
 " Returns [help_bufnr, firstline] or [v:null, v:null] on error
 function s:setup_help_preview_buffer(tag) abort
@@ -1319,14 +1305,15 @@ function s:calculate_column_widths(items, options) abort
 endfunction
 
 " Calculate padding dimensions based on mode and options
-" Returns [padding, padding_height, padding_width, padding_left]
+" Returns [padding, padding_height, padding_width, padding_left,
+"          border_left, border_top, border_right, border_bottom]
 function s:calculate_padding_dimensions(options, mode, startcol, border) abort
   const padding = a:options.padding ?
         \ (a:mode ==# 'c' || a:startcol != 1) ? 2 : 1 : 0
 
   const [border_left, border_top, border_right, border_bottom] =
         \ s:get_border_size(a:border)
-  
+
   let padding_height = 1 + border_top + border_bottom
   let padding_width = 1 + border_left + border_right
   let padding_left = border_left

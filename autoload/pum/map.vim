@@ -243,8 +243,12 @@ function pum#map#confirm_matched_pattern(pattern) abort
 
   return ''
 endfunction
+
 " Find matching suffix between word and next_input
-" Returns the suffix that matches, or empty string if no match
+" Args:
+"   word: The completion word to match against
+"   next_input: The text following the cursor position
+" Returns: The suffix that matches, or empty string if no match
 function s:find_matching_suffix(word, next_input) abort
   for i in range(a:word->len() - 1, -1, -1)
     if a:next_input[:a:word->len() - i - 1] ==# a:word[i:]
@@ -577,7 +581,7 @@ function s:insert_line_feedkeys(text, after_func) abort
 
   const current_word = pum#_getline()[pum#_get().startcol - 1 : pum#_col() - 2]
   let chars = "\<BS>"->repeat(current_word->strchars()) .. a:text
-  
+
   call s:setup_backspace_options()
 
   if a:after_func != v:null

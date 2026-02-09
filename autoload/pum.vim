@@ -482,3 +482,12 @@ function pum#_stop_debounce_timer(timer_name) abort
     unlet {a:timer_name}
   endif
 endfunction
+
+function pum#_editable_dot_register() abort
+  try
+    call setreg('.', '.'->getreg())
+    return v:true
+  catch /E354:/
+    return v:false
+  endtry
+endfunction

@@ -485,9 +485,9 @@ endfunction
 
 function pum#_editable_dot_register() abort
   try
-    call setreg('.', '.'->getreg())
+    let @. = '.'->getreg()
     return v:true
-  catch /E354:/
+  catch
     return v:false
   endtry
 endfunction

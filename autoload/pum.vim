@@ -15,16 +15,18 @@ function pum#_init() abort
 
   let s:pum = #{
         \   auto_confirm_timer: -1,
+        \   border_height: 0,
+        \   border_width: 0,
         \   buf: -1,
         \   changedtick: b:changedtick,
-        \   items: [],
-        \   cursor: -1,
         \   current_word: '',
+        \   cursor: -1,
         \   height: -1,
         \   horizontal_menu: v:false,
         \   id: -1,
         \   inserted_buf: -1,
         \   inserted_id: -1,
+        \   items: [],
         \   len: 0,
         \   matched_id: 70,
         \   namespace: has('nvim') ? nvim_create_namespace('pum') : 0,
@@ -45,8 +47,6 @@ function pum#_init() abort
         \   startcol: -1,
         \   startrow: -1,
         \   width: -1,
-        \   border_width: 0,
-        \   border_height: 0,
         \ }
 endfunction
 function pum#_init_options() abort
@@ -483,11 +483,10 @@ function pum#_stop_debounce_timer(timer_name) abort
   endif
 endfunction
 
-function pum#_editable_dot_register() abort
-  try
-    let @. = '.'->getreg()
-    return v:true
-  catch
-    return v:false
-  endtry
+function pum#_append_to_repeat(word)
+  if !'*setrepeat'->exists()
+    return
+  endif
+
+  call setrepeat(#{ text: a:word, cmd: 'a' })
 endfunction

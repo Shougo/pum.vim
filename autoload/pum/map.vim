@@ -423,10 +423,7 @@ function s:insert(word, prev_word, after_func, next_input='') abort
     call setline('.', prev_input .. a:word .. next_input)
     call cursor(0, pum.startcol + len(a:word))
 
-    if pum#_editable_dot_register()
-      " NOTE: It is emulation
-      let @. = printf('a%s', a:word)
-    endif
+    call pum#_append_to_repeat(a:word)
   elseif a:word ==# '' || a:after_func != v:null
     " NOTE: complete() does not work for empty string
     call s:insert_line_feedkeys(a:word, a:after_func)

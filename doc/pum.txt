@@ -81,10 +81,13 @@ auto_select
 
                                                             *pum-option-blend*
 blend
-		Specify 'winblend' option value.
-		NOTE: neovim only feature.
+		Specify popup window transparency.
+		The valid values are in the range of 0 for fully opaque
+		popupmenu (disabled) to 100.
 
-		Default: 'pumblend' value
+		NOTE: Neovim or Vim 9.2.0017+ only feature.
+
+		Default: 'pumblend' value or 0
 
                                                            *pum-option-border*
 border

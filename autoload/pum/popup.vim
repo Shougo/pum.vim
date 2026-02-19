@@ -1761,7 +1761,7 @@ function s:create_vim_popup(
         \   wrap: 0,
         \   zindex: a:options.zindex,
         \ }
-  if has('patch-9.2.0017')
+  if has('patch-9.2.0017') && a:options.blend > 0
     " Vim support transparency in 9.2.0017.
     " But 0 is fully transparency.
     let winopts.opacity = 100 - a:options.blend

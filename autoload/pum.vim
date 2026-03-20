@@ -1,6 +1,10 @@
 let g:pum#completed_item = {}
 let g:pum#completed_event = ''
 
+" Cache for strdisplaywidth() results; keyed by string value.
+" Cleared whenever a new candidate list is opened.
+let s:width_cache = {}
+
 
 function pum#_get() abort
   if !'s:pum'->exists()
@@ -195,6 +199,10 @@ function pum#open(startcol, items, mode = mode(), insert = v:false) abort
     return
   endif
 
+  " Clear the display-width cache when opening a new candidate list so stale
+  " entries from a previous completion session do not accumulate.
+  let s:width_cache = {}
+
   try
     return pum#popup#_open(a:startcol, a:items, a:mode, a:insert)
   catch /E523:\|E565:\|E5555:/
@@ -388,14 +396,25 @@ function pum#_format_item(
       let column = a:item.word
     endif
 
-    if column->strdisplaywidth() > max_column
+    " Use cached display width to avoid repeated strdisplaywidth() calls on
+    " the same string within the inner formatting loop.
+    if !s:width_cache->has_key(column)
+      let s:width_cache[column] = column->strdisplaywidth()
+    endif
+    let col_width = s:width_cache[column]
+
+    if col_width > max_column
       " Truncate
       let column = column->pum#util#_truncate(
             \ max_column, max_column / 3, '...')
+      if !s:width_cache->has_key(column)
+        let s:width_cache[column] = column->strdisplaywidth()
+      endif
+      let col_width = s:width_cache[column]
     endif
-    if column->strdisplaywidth() < max_column
+    if col_width < max_column
       " Padding
-      let column ..= ' '->repeat(max_column - column->strdisplaywidth())
+      let column ..= ' '->repeat(max_column - col_width)
     endif
 
     let str ..= column
@@ -466,8 +485,8 @@ function pum#_complete_changed() abort
     if mode() ==# 't'
       call pum#popup#_preview()
     else
-      let s:debounce_preview_timer = timer_start(
-            \ options.preview_delay, { -> pum#popup#_preview() })
+      let s:debounce_preview_timer = options.preview_delay
+            \ ->timer_start({ -> pum#popup#_preview() })
     endif
   endif
 

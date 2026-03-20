@@ -4,6 +4,17 @@ const s:priority_highlight_selected = 0
 const s:priority_highlight_lead = 1
 const s:priority_highlight_horizontal_separator = 1
 
+" Debounce timer for pum#popup#_redraw() calls
+let s:debounce_redraw_timer = -1
+" Delay in ms to coalesce rapid redraw requests into a single screen refresh
+const s:debounce_redraw_delay = 30
+
+" Flag to avoid recreating pum-preview augroup on every preview open
+let s:preview_augroup_created = v:false
+
+" Cache for preview info string -> contents list transformation
+let s:preview_info_cache = {}
+
 " Opens a popup menu for completion/suggestions
 "
 " This function creates a floating/popup window displaying completion items.
@@ -31,6 +42,9 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   augroup pum-temp
     autocmd!
   augroup END
+
+  " Clear per-open caches so stale data is not used for new item sets
+  let s:preview_info_cache = {}
 
   let options = pum#_options()
   let items = s:uniq_by_word_or_dup(a:items)
@@ -174,6 +188,25 @@ endfunction
 
 function pum#popup#_redraw() abort
   redraw
+endfunction
+
+" Debounced variant: coalesces rapid calls into a single redraw after ~30ms.
+" NOTE: In terminal mode timers do not work well, so we redraw immediately.
+function s:debounced_redraw() abort
+  if mode() ==# 't'
+    call pum#popup#_redraw()
+    return
+  endif
+
+  if s:debounce_redraw_timer >= 0
+    call timer_stop(s:debounce_redraw_timer)
+  endif
+  let s:debounce_redraw_timer = s:debounce_redraw_delay
+        \ ->timer_start({ -> s:do_debounced_redraw() })
+endfunction
+function s:do_debounced_redraw() abort
+  let s:debounce_redraw_timer = -1
+  call pum#popup#_redraw()
 endfunction
 
 function pum#popup#_redraw_scroll() abort
@@ -645,7 +678,7 @@ function pum#popup#_redraw_horizontal_menu() abort
           \ pum.buf, 1, items[0]->get('abbr', items[0].word)->strlen() + 2, 1)
   endif
 
-  call pum#popup#_redraw()
+  call s:debounced_redraw()
 endfunction
 
 function pum#popup#_redraw_inserted() abort
@@ -719,7 +752,7 @@ function pum#popup#_redraw_inserted() abort
           \ pum.inserted_buf, 1, 1, pum.orig_input->strlen())
   endif
 
-  call pum#popup#_redraw()
+  call s:debounced_redraw()
 endfunction
 function pum#popup#_close_inserted() abort
   let pum = pum#_get()
@@ -1036,10 +1069,16 @@ function s:open_preview() abort
     doautocmd <nomodeline> User PumPreview
   endif
 
-  " Setup autocmds to close preview when cursor moves
-  augroup pum-preview
-    autocmd!
-  augroup END
+  " Setup autocmds to close preview when cursor moves.
+  " Create the augroup only once; subsequent calls simply clear its contents.
+  if !s:preview_augroup_created
+    augroup pum-preview
+      autocmd!
+    augroup END
+    let s:preview_augroup_created = v:true
+  else
+    autocmd! pum-preview
+  endif
 
   autocmd pum-preview ModeChanged *:n ++nested
           \ call pum#popup#_close_preview()
@@ -1056,7 +1095,7 @@ function s:open_preview() abort
   let pum.preview_col = col
   let pum.preview_kind = previewer.kind
 
-  call pum#popup#_redraw()
+  call s:debounced_redraw()
 endfunction
 function pum#popup#_close_preview() abort
   let pum = pum#_get()
@@ -1065,9 +1104,10 @@ function pum#popup#_close_preview() abort
     return
   endif
 
-  augroup pum-preview
-    autocmd!
-  augroup END
+  " Clear preview autocmds without destroying the augroup itself.
+  if s:preview_augroup_created
+    autocmd! pum-preview
+  endif
 
   call pum#popup#_close_id(pum.preview_id)
 
@@ -1087,9 +1127,16 @@ function s:get_previewer(item) abort
   " Fallback to item info
   const info = a:item->get('info', '')
 
+  " Cache the substitute+split result so rapid preview updates for the same
+  " item do not repeat the heavy string operations.
+  if !s:preview_info_cache->has_key(info)
+    let s:preview_info_cache[info] =
+          \ info->substitute('\r\n\?', '\n', 'g')->split('\n')
+  endif
+
   return #{
         \   kind: 'text',
-        \   contents: info->substitute('\r\n\?', '\n', 'g')->split('\n'),
+        \   contents: s:preview_info_cache[info],
         \ }
 endfunction
 function s:check_preview() abort
@@ -1116,8 +1163,8 @@ function pum#popup#_reset_auto_confirm(mode) abort
 
   let pum = pum#_get()
 
-  let pum.auto_confirm_timer = timer_start(
-        \ options.auto_confirm_time, { -> s:auto_confirm() })
+  let pum.auto_confirm_timer = options.auto_confirm_time
+        \ ->timer_start({ -> s:auto_confirm() })
 
   " Reset the timer when user input texts
   if a:mode ==# 'i'

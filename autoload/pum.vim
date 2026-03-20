@@ -485,8 +485,8 @@ function pum#_complete_changed() abort
     if mode() ==# 't'
       call pum#popup#_preview()
     else
-      let s:debounce_preview_timer = timer_start(
-            \ options.preview_delay, { -> pum#popup#_preview() })
+      let s:debounce_preview_timer = options.preview_delay
+            \ ->timer_start({ -> pum#popup#_preview() })
     endif
   endif
 

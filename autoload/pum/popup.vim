@@ -201,7 +201,8 @@ function s:debounced_redraw() abort
   if s:debounce_redraw_timer >= 0
     call timer_stop(s:debounce_redraw_timer)
   endif
-  let s:debounce_redraw_timer = timer_start(s:debounce_redraw_delay, { -> s:do_debounced_redraw() })
+  let s:debounce_redraw_timer = s:debounce_redraw_delay
+        \ ->timer_start({ -> s:do_debounced_redraw() })
 endfunction
 function s:do_debounced_redraw() abort
   let s:debounce_redraw_timer = -1
@@ -1162,8 +1163,8 @@ function pum#popup#_reset_auto_confirm(mode) abort
 
   let pum = pum#_get()
 
-  let pum.auto_confirm_timer = timer_start(
-        \ options.auto_confirm_time, { -> s:auto_confirm() })
+  let pum.auto_confirm_timer = options.auto_confirm_time
+        \ ->timer_start({ -> s:auto_confirm() })
 
   " Reset the timer when user input texts
   if a:mode ==# 'i'

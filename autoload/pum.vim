@@ -5,6 +5,10 @@ let g:pum#completed_event = ''
 " Cleared whenever a new candidate list is opened.
 let s:width_cache = {}
 
+" Set to v:true once we have confirmed that the Lua fast path is available
+" (Neovim + lua/pum/format.lua loadable).  v:null means unchecked.
+let s:lua_format_available = v:null
+
 
 function pum#_get() abort
   if !'s:pum'->exists()
@@ -202,6 +206,9 @@ function pum#open(startcol, items, mode = mode(), insert = v:false) abort
   " Clear the display-width cache when opening a new candidate list so stale
   " entries from a previous completion session do not accumulate.
   let s:width_cache = {}
+  if s:lua_format_available
+    call luaeval("require('pum.format').clear_width_cache()")
+  endif
 
   try
     return pum#popup#_open(a:startcol, a:items, a:mode, a:insert)
@@ -372,6 +379,19 @@ endfunction
 
 function pum#_format_item(
       \ item, options, mode, startcol, max_columns, abbr_width) abort
+  " Neovim-only Lua fast path: use the LuaJIT-compiled implementation for
+  " better performance.  Falls back to the Vimscript path below on Vim or
+  " when the module cannot be loaded.
+  if s:lua_format_available is v:null
+    let s:lua_format_available = pum#util#_luacheck('pum.format')
+  endif
+  if s:lua_format_available
+    return luaeval(
+          \ "local A=_A; return require('pum.format').format_item("
+          \ .. "A[1],A[2],A[3],A[4],A[5],A[6])",
+          \ [a:item, a:options, a:mode, a:startcol, a:max_columns, a:abbr_width])
+  endif
+
   const columns = a:item->get('columns', {})->copy()
         \ ->extend(#{
         \   abbr: a:item->get('abbr', a:item.word),

@@ -387,8 +387,8 @@ function pum#_format_item(
   endif
   if s:lua_format_available
     return luaeval(
-          \ "local A=_A; return require('pum.format').format_item("
-          \ .. "A[1],A[2],A[3],A[4],A[5],A[6])",
+          \ "require('pum.format').format_item("
+          \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6])",
           \ [a:item, a:options, a:mode, a:startcol, a:max_columns, a:abbr_width])
   endif
 

@@ -176,7 +176,7 @@ function M.calculate_column_widths_fast(items, options)
     end
   end
 
-  return max_columns, width, non_abbr_length
+  return { max_columns, width, non_abbr_length }
 end
 
 -- ---------------------------------------------------------------------------

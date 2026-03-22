@@ -15,6 +15,9 @@ let s:preview_augroup_created = v:false
 " Cache for preview info string -> contents list transformation
 let s:preview_info_cache = {}
 
+" v:null = not yet checked; v:true/v:false = result of pum#util#_luacheck
+let s:lua_widths_available = v:null
+
 " Opens a popup menu for completion/suggestions
 "
 " This function creates a floating/popup window displaying completion items.
@@ -50,13 +53,31 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let items = s:uniq_by_word_or_dup(a:items)
 
   " Calculate column widths and dimensions
-  let [max_columns, total_width, non_abbr_length] =
-        \ s:calculate_column_widths(items, options)
+  " Use the Neovim-only Lua fast path when available; fall back to Vimscript.
+  if s:lua_widths_available is v:null
+    let s:lua_widths_available = pum#util#_luacheck('pum.widths')
+  endif
+  if s:lua_widths_available
+    let [max_columns, total_width, non_abbr_length] =
+          \ luaeval("require('pum.widths').calculate_column_widths_fast"
+          \         .. "(_A[1],_A[2])", [items, options])
+  else
+    let [max_columns, total_width, non_abbr_length] =
+          \ s:calculate_column_widths(items, options)
+  endif
 
   let pum = pum#_get()
-  let dimensions = s:calculate_dimensions(
-        \ items, max_columns, total_width, non_abbr_length,
-        \ options, a:mode, a:startcol, pum)
+  if s:lua_widths_available
+    let dimensions =
+          \ luaeval("require('pum.widths').calculate_dimensions_fast"
+          \         .. "(_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8])",
+          \         [items, max_columns, total_width, non_abbr_length,
+          \          options, a:mode, a:startcol, pum])
+  else
+    let dimensions = s:calculate_dimensions(
+          \ items, max_columns, total_width, non_abbr_length,
+          \ options, a:mode, a:startcol, pum)
+  endif
 
   " Get cursor/screen position
   if !has('nvim') && a:mode ==# 't'

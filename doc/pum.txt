@@ -758,6 +758,9 @@ A: You can use |pum#get_preview_buf()| for it.
 COMPATIBILITY                                              *pum-compatibility*
 
 2026.03.21
+* perf: Neovim-only Lua fast path for calculate_column_widths and
+  calculate_dimensions (lua/pum/widths.lua).  On Vim the original Vimscript
+  implementation is used unchanged.
 * perf: Add Neovim-only Lua fast path for pum#_format_item (lua/pum/format.lua).
   On Vim the original Vimscript implementation is used unchanged.
 

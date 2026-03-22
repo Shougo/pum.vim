@@ -9,6 +9,10 @@ let s:width_cache = {}
 " (Neovim + lua/pum/format.lua loadable).  v:null means unchecked.
 let s:lua_format_available = v:null
 
+" Set to v:true once we have confirmed that the Lua widths fast path is
+" available (Neovim + lua/pum/widths.lua loadable).  v:null means unchecked.
+let s:lua_widths_available = v:null
+
 
 function pum#_get() abort
   if !'s:pum'->exists()
@@ -208,6 +212,12 @@ function pum#open(startcol, items, mode = mode(), insert = v:false) abort
   let s:width_cache = {}
   if s:lua_format_available
     call luaeval("require('pum.format').clear_width_cache()")
+  endif
+  if s:lua_widths_available is v:null
+    let s:lua_widths_available = pum#util#_luacheck('pum.widths')
+  endif
+  if s:lua_widths_available
+    call luaeval("require('pum.widths').clear_widths_cache()")
   endif
 
   try

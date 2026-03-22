@@ -1,29 +1,21 @@
 " test/pum_widths.vim
-" Tests for the Lua fast path in lua/pum/widths.lua.
+" Tests for the width/dimension fast paths in pum.vim.
 "
-" This test file is designed to run on Neovim only.  It verifies that
-" calculate_column_widths_fast and calculate_dimensions_fast produce output
-" that matches the existing Vimscript implementations.
-"
-" NOTE: These tests require Neovim with lua/pum/widths.lua loadable.
-"       On Vim the tests are skipped with a warning.
+" On Neovim: exercises the Lua fast path (lua/pum/widths.lua).
+" On Vim:    exercises the Vim9 fast path (autoload/pum/widths.vim).
+" Both sections verify that the respective implementations produce
+" semantically correct output.
 "
 " Usage:
-"   nvim --headless -u NONE -c "set runtimepath+=." \
-"        -c "source test/pum_widths.vim" -c "qa!"
+"   Neovim:
+"     nvim --headless -u NONE -c "set runtimepath+=." \
+"          -c "source test/pum_widths.vim" -c "qa!"
+"   Vim:
+"     vim -Nu NONE -c "set runtimepath+=." \
+"         -c "source test/pum_widths.vim" -c "q"
 "   Or via the test runner:
-"   nvim --headless -u NONE -c "set runtimepath+=." \
-"        -c "source test/run_tests.vim"
-
-if !has('nvim')
-  echomsg 'test/pum_widths.vim: Neovim required – skipping all tests'
-  finish
-endif
-
-if !pum#util#_luacheck('pum.widths')
-  echomsg 'test/pum_widths.vim: pum.widths Lua module not loadable – skipping'
-  finish
-endif
+"     nvim --headless -u NONE -c "set runtimepath+=." \
+"          -c "source test/run_tests.vim"
 
 " ── helpers ────────────────────────────────────────────────────────────────
 
@@ -31,19 +23,61 @@ endif
 " state object; it is kept for API symmetry with s:calculate_dimensions)
 let s:empty_pum = {}
 
-function s:call_lua_widths(items, options) abort
-  return luaeval(
-        \ "require('pum.widths').calculate_column_widths_fast(_A[1],_A[2])",
-        \ [a:items, a:options])
+" Dispatch helpers: call the appropriate fast-path implementation.
+
+function s:call_widths(items, options) abort
+  if has('nvim')
+    return luaeval(
+          \ "require('pum.widths').calculate_column_widths_fast(_A[1],_A[2])",
+          \ [a:items, a:options])
+  else
+    return pum#widths#calculate_column_widths_v9(a:items, a:options)
+  endif
 endfunction
 
-function s:call_lua_dims(items, mc, tw, nal, options, mode, startcol) abort
-  return luaeval(
-        \ "require('pum.widths').calculate_dimensions_fast("
-        \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8])",
-        \ [a:items, a:mc, a:tw, a:nal, a:options, a:mode, a:startcol,
-        \  s:empty_pum])
+function s:call_dims(items, mc, tw, nal, options, mode, startcol, ...) abort
+  let pum_state = a:0 > 0 ? a:1 : s:empty_pum
+  if has('nvim')
+    return luaeval(
+          \ "require('pum.widths').calculate_dimensions_fast("
+          \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8])",
+          \ [a:items, a:mc, a:tw, a:nal, a:options, a:mode, a:startcol,
+          \  pum_state])
+  else
+    return pum#widths#calculate_dimensions_v9(
+          \ a:items, a:mc, a:tw, a:nal, a:options, a:mode, a:startcol,
+          \ pum_state)
+  endif
 endfunction
+
+" Legacy helpers kept for backward compatibility with existing callers.
+function s:call_lua_widths(items, options) abort
+  return s:call_widths(a:items, a:options)
+endfunction
+
+function s:call_lua_dims(items, mc, tw, nal, options, mode, startcol, ...) abort
+  let pum_state = a:0 > 0 ? a:1 : s:empty_pum
+  return s:call_dims(a:items, a:mc, a:tw, a:nal, a:options, a:mode, a:startcol,
+        \ pum_state)
+endfunction
+
+" ── guard: check that the active fast path is available ─────────────────────
+
+if has('nvim')
+  if !pum#util#_luacheck('pum.widths')
+    echomsg 'test/pum_widths.vim: pum.widths Lua module not loadable – skipping'
+    finish
+  endif
+else
+  if !exists('*pum#widths#calculate_column_widths_v9')
+    " Trigger autoload
+    call pum#widths#clear_widths_cache_v9()
+  endif
+  if !exists('*pum#widths#calculate_column_widths_v9')
+    echomsg 'test/pum_widths.vim: Vim9 widths implementation not available – skipping'
+    finish
+  endif
+endif
 
 " ── test cases ─────────────────────────────────────────────────────────────
 
@@ -56,12 +90,10 @@ func Test_widths_basic()
         \ #{ word: 'longword', kind: 'var',  menu: '[other]' },
         \ ]
 
-  " Vimscript result
-  " We cannot call s:calculate_column_widths directly (script-local), so we
-  " use pum#popup#_open indirectly.  Instead, we directly compare the lua
-  " output against hardcoded expected values derived from the inputs.
+  " We directly compare the fast-path output against hardcoded expected values
+  " derived from the inputs.
 
-  let [mc, tw, nal] = s:call_lua_widths(items, options)
+  let [mc, tw, nal] = s:call_widths(items, options)
 
   " max_columns must be a list of [name, width] pairs
   call assert_equal(v:t_list, type(mc))
@@ -84,7 +116,7 @@ func Test_widths_no_items()
   call pum#_init_options()
   let options = pum#_options()
 
-  let [mc, tw, nal] = s:call_lua_widths([], options)
+  let [mc, tw, nal] = s:call_widths([], options)
 
   call assert_equal([], mc)
   call assert_equal(0, tw)
@@ -106,7 +138,7 @@ func Test_widths_space_skipped_after_empty()
         \ #{ word: 'world', kind: '', menu: '' },
         \ ]
 
-  let [mc, tw, nal] = s:call_lua_widths(items, options)
+  let [mc, tw, nal] = s:call_widths(items, options)
 
   " kind is empty → zero width → skipped; space after it should also be skipped
   " Only 'abbr' should remain
@@ -129,7 +161,7 @@ func Test_widths_max_columns_constraint()
         \ #{ word: 'beta',       kind: 'method',        menu: 'another' },
         \ ]
 
-  let [mc, tw, nal] = s:call_lua_widths(items, options)
+  let [mc, tw, nal] = s:call_widths(items, options)
 
   for entry in mc
     if entry[0] ==# 'kind'
@@ -151,8 +183,8 @@ func Test_dimensions_basic()
         \ #{ word: 'cherry', kind: 'k', menu: '[c]' },
         \ ]
 
-  let [mc, tw, nal] = s:call_lua_widths(items, options)
-  let dims = s:call_lua_dims(items, mc, tw, nal, options, 'i', 2, {})
+  let [mc, tw, nal] = s:call_widths(items, options)
+  let dims = s:call_dims(items, mc, tw, nal, options, 'i', 2, {})
 
   " Result must be a dict with expected keys
   call assert_equal(v:t_dict, type(dims))
@@ -175,23 +207,20 @@ func Test_dimensions_basic()
   endfor
 endfunc
 
-func Test_dimensions_matches_vimscript()
-  " End-to-end comparison: Lua dimensions vs pum#open-driven Vimscript path.
-  " We compare the widths that pum#open stores in the pum state, which are
-  " computed by s:calculate_dimensions (or the Lua fast path if active).
-  " Since we cannot toggle s:lua_widths_available from outside, we instead
-  " compare the Lua output directly against a hardcoded reference derived
-  " from the same logic.
+func Test_dimensions_matches_fastpath()
+  " End-to-end: verify the active fast path (Lua on Neovim, Vim9 on Vim)
+  " produces output that matches hardcoded expected values derived from the
+  " same calculation logic.
   call pum#_init_options()
   call pum#_init()
   let options = pum#_options()
 
   let items = [
-        \ #{ word: 'alpha', kind: 'function', menu = '[mymod]' },
-        \ #{ word: 'beta',  kind: 'variable', menu = '[mymod]' },
+        \ #{ word: 'alpha', kind: 'function', menu: '[mymod]' },
+        \ #{ word: 'beta',  kind: 'variable', menu: '[mymod]' },
         \ ]
 
-  let [mc, tw, nal] = s:call_lua_widths(items, options)
+  let [mc, tw, nal] = s:call_widths(items, options)
 
   " Hardcoded expected values based on options defaults + item data:
   "   abbr: max('alpha'=5, 'beta'=4) = 5
@@ -204,7 +233,7 @@ func Test_dimensions_matches_vimscript()
   call assert_equal(22, tw)
   call assert_equal(17, nal)
 
-  let dims = s:call_lua_dims(items, mc, tw, nal, options, 'i', 2, {})
+  let dims = s:call_dims(items, mc, tw, nal, options, 'i', 2, {})
 
   " With no min_width/max_width and no padding:
   "   width = total_width + padding = 22 + 0 = 22
@@ -221,11 +250,11 @@ func Test_dimensions_padding()
 
   let items = [#{ word: 'hi', kind: 'f', menu: '[m]' }]
 
-  let [mc, tw, nal] = s:call_lua_widths(items, options)
+  let [mc, tw, nal] = s:call_widths(items, options)
   " startcol=2 → padding=2 (left+right)
-  let dims_col2 = s:call_lua_dims(items, mc, tw, nal, options, 'i', 2, {})
+  let dims_col2 = s:call_dims(items, mc, tw, nal, options, 'i', 2, {})
   " startcol=1 → padding=1 (right only)
-  let dims_col1 = s:call_lua_dims(items, mc, tw, nal, options, 'i', 1, {})
+  let dims_col1 = s:call_dims(items, mc, tw, nal, options, 'i', 1, {})
 
   call assert_equal(2, dims_col2.padding)
   call assert_equal(1, dims_col1.padding)

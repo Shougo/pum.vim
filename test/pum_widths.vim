@@ -31,7 +31,7 @@ function s:call_widths(items, options) abort
           \ "require('pum.widths').calculate_column_widths_fast(_A[1],_A[2])",
           \ [a:items, a:options])
   else
-    return pum#widths#calculate_column_widths_v9(a:items, a:options)
+    return pum#widths#CalculateColumnWidthsV9(a:items, a:options)
   endif
 endfunction
 
@@ -44,7 +44,7 @@ function s:call_dims(items, mc, tw, nal, options, mode, startcol, ...) abort
           \ [a:items, a:mc, a:tw, a:nal, a:options, a:mode, a:startcol,
           \  pum_state])
   else
-    return pum#widths#calculate_dimensions_v9(
+    return pum#widths#CalculateDimensionsV9(
           \ a:items, a:mc, a:tw, a:nal, a:options, a:mode, a:startcol,
           \ pum_state)
   endif
@@ -69,11 +69,11 @@ if has('nvim')
     finish
   endif
 else
-  if !exists('*pum#widths#calculate_column_widths_v9')
+  if !exists('*pum#widths#CalculateColumnWidthsV9')
     " Trigger autoload
-    call pum#widths#clear_widths_cache_v9()
+    call pum#widths#ClearWidthsCacheV9()
   endif
-  if !exists('*pum#widths#calculate_column_widths_v9')
+  if !exists('*pum#widths#CalculateColumnWidthsV9')
     echomsg 'test/pum_widths.vim: Vim9 widths implementation not available – skipping'
     finish
   endif

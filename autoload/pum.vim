@@ -221,7 +221,7 @@ function pum#open(startcol, items, mode = mode(), insert = v:false) abort
       call luaeval("require('pum.widths').clear_widths_cache()")
     endif
   else
-    call pum#widths#clear_widths_cache_v9()
+    call pum#widths#ClearWidthsCacheV9()
   endif
 
   try

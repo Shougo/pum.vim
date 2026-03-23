@@ -46,17 +46,17 @@ let s:options = #{
 " ── helpers ─────────────────────────────────────────────────────────────────
 
 function s:bench_vim9_widths() abort
-  call pum#widths#clear_widths_cache_v9()
+  call pum#widths#ClearWidthsCacheV9()
   for _ in range(s:ITERATIONS)
-    call pum#widths#calculate_column_widths_v9(s:items, s:options)
+    call pum#widths#CalculateColumnWidthsV9(s:items, s:options)
   endfor
 endfunction
 
 function s:bench_vim9_dimensions() abort
-  call pum#widths#clear_widths_cache_v9()
-  let [mc, tw, nal] = pum#widths#calculate_column_widths_v9(s:items, s:options)
+  call pum#widths#ClearWidthsCacheV9()
+  let [mc, tw, nal] = pum#widths#CalculateColumnWidthsV9(s:items, s:options)
   for _ in range(s:ITERATIONS)
-    call pum#widths#calculate_dimensions_v9(
+    call pum#widths#CalculateDimensionsV9(
           \ s:items, mc, tw, nal, s:options, 'i', 2, {})
   endfor
 endfunction
@@ -72,9 +72,9 @@ endfunction
 call pum#_init_options()
 let s:opts = pum#_options()
 
-call pum#widths#clear_widths_cache_v9()
+call pum#widths#ClearWidthsCacheV9()
 let [s:mc, s:tw, s:nal] =
-      \ pum#widths#calculate_column_widths_v9(s:items, s:opts)
+      \ pum#widths#CalculateColumnWidthsV9(s:items, s:opts)
 
 echomsg printf('Correctness: max_columns entries=%d  total_width=%d  non_abbr=%d',
       \ len(s:mc), s:tw, s:nal)

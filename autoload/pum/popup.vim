@@ -63,7 +63,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \         .. "(_A[1],_A[2])", [items, options])
   else
     let [max_columns, total_width, non_abbr_length] =
-          \ pum#widths#calculate_column_widths_v9(items, options)
+          \ pum#widths#CalculateColumnWidthsV9(items, options)
   endif
 
   let pum = pum#_get()
@@ -74,7 +74,7 @@ function pum#popup#_open(startcol, items, mode, insert) abort
           \         [items, max_columns, total_width, non_abbr_length,
           \          options, a:mode, a:startcol, pum])
   else
-    let dimensions = pum#widths#calculate_dimensions_v9(
+    let dimensions = pum#widths#CalculateDimensionsV9(
           \ items, max_columns, total_width, non_abbr_length,
           \ options, a:mode, a:startcol, pum)
   endif

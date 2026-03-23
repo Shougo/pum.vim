@@ -213,11 +213,15 @@ function pum#open(startcol, items, mode = mode(), insert = v:false) abort
   if s:lua_format_available
     call luaeval("require('pum.format').clear_width_cache()")
   endif
-  if s:lua_widths_available is v:null
-    let s:lua_widths_available = pum#util#_luacheck('pum.widths')
-  endif
-  if s:lua_widths_available
-    call luaeval("require('pum.widths').clear_widths_cache()")
+  if has('nvim')
+    if s:lua_widths_available is v:null
+      let s:lua_widths_available = pum#util#_luacheck('pum.widths')
+    endif
+    if s:lua_widths_available
+      call luaeval("require('pum.widths').clear_widths_cache()")
+    endif
+  else
+    call pum#widths#ClearWidthsCacheV9()
   endif
 
   try

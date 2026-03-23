@@ -757,12 +757,21 @@ A: You can use |pum#get_preview_buf()| for it.
 ==============================================================================
 COMPATIBILITY                                              *pum-compatibility*
 
+2026.03.22
+* perf: Add Vim9 fast path for calculate_column_widths and
+  calculate_dimensions (autoload/pum/widths.vim).
+  On Neovim the existing Lua implementation (lua/pum/widths.lua) is used.
+  On Vim the new Vim9 implementation is used.
+  Legacy Vimscript (s:calculate_column_widths / s:calculate_dimensions) is
+  no longer called at runtime; Vim 9.1+ is required for the Vim path.
+
 2026.03.21
 * perf: Neovim-only Lua fast path for calculate_column_widths and
   calculate_dimensions (lua/pum/widths.lua).  On Vim the original Vimscript
   implementation is used unchanged.
-* perf: Add Neovim-only Lua fast path for pum#_format_item (lua/pum/format.lua).
-  On Vim the original Vimscript implementation is used unchanged.
+* perf: Add Neovim-only Lua fast path for pum#_format_item
+  (lua/pum/format.lua). On Vim the original Vimscript implementation is used
+  unchanged.
 
 2025.03.27
 * Rename "pum#map#confirm_word()" to "pum#map#confirm_matched_pattern()".

@@ -52,29 +52,29 @@ function pum#popup#_open(startcol, items, mode, insert) abort
   let options = pum#_options()
   let items = s:uniq_by_word_or_dup(a:items)
 
-  " Calculate column widths and dimensions
-  " Use the Neovim-only Lua fast path when available; fall back to Vimscript.
-  if s:lua_widths_available is v:null
-    let s:lua_widths_available = pum#util#_luacheck('pum.widths')
-  endif
-  if s:lua_widths_available
+  " Calculate column widths and dimensions.
+  " Neovim uses the Lua fast path; Vim uses the Vim9 fast path.
+  if has('nvim')
+    if s:lua_widths_available is v:null
+      let s:lua_widths_available = pum#util#_luacheck('pum.widths')
+    endif
     let [max_columns, total_width, non_abbr_length] =
           \ luaeval("require('pum.widths').calculate_column_widths_fast"
           \         .. "(_A[1],_A[2])", [items, options])
   else
     let [max_columns, total_width, non_abbr_length] =
-          \ s:calculate_column_widths(items, options)
+          \ pum#widths#CalculateColumnWidthsV9(items, options)
   endif
 
   let pum = pum#_get()
-  if s:lua_widths_available
+  if has('nvim')
     let dimensions =
           \ luaeval("require('pum.widths').calculate_dimensions_fast"
           \         .. "(_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8])",
           \         [items, max_columns, total_width, non_abbr_length,
           \          options, a:mode, a:startcol, pum])
   else
-    let dimensions = s:calculate_dimensions(
+    let dimensions = pum#widths#CalculateDimensionsV9(
           \ items, max_columns, total_width, non_abbr_length,
           \ options, a:mode, a:startcol, pum)
   endif

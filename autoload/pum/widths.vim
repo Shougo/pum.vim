@@ -16,30 +16,30 @@ let s:widths_cache = {}
 " ── helpers ─────────────────────────────────────────────────────────────────
 
 function s:get_borderchar_height(ch) abort
-  if type(a:ch) == v:t_string
+  if a:ch->type() == v:t_string
     return a:ch->empty() ? 0 : 1
-  elseif type(a:ch) == v:t_list && !a:ch->empty()
-        \ && type(a:ch[0]) == v:t_string
+  elseif a:ch->type() == v:t_list && !a:ch->empty()
+        \ && a:ch[0]->type() == v:t_string
     return a:ch[0]->empty() ? 0 : 1
   endif
   return 0
 endfunction
 
 function s:get_borderchar_width(ch) abort
-  if type(a:ch) == v:t_string
-    return strdisplaywidth(a:ch)
-  elseif type(a:ch) == v:t_list && !a:ch->empty()
-        \ && type(a:ch[0]) == v:t_string
-    return strdisplaywidth(a:ch[0])
+  if a:ch->type() == v:t_string
+    return a:ch->strdisplaywidth()
+  elseif a:ch->type() == v:t_list && !a:ch->empty()
+        \ && a:ch[0]->type() == v:t_string
+    return a:ch[0]->strdisplaywidth()
   endif
   return 0
 endfunction
 
 function s:get_border_size(border) abort
-  if type(a:border) == v:t_string
+  if a:border->type() == v:t_string
     return a:border ==# 'none' ? [0, 0, 0, 0] : [1, 1, 1, 1]
-  elseif type(a:border) == v:t_list && !a:border->empty()
-    const n = len(a:border)
+  elseif a:border->type() == v:t_list && !a:border->empty()
+    const n = a:border->len()
     return [
           \   s:get_borderchar_width(a:border[3 % n]),
           \   s:get_borderchar_height(a:border[1 % n]),

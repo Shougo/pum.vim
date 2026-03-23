@@ -769,8 +769,9 @@ COMPATIBILITY                                              *pum-compatibility*
 * perf: Neovim-only Lua fast path for calculate_column_widths and
   calculate_dimensions (lua/pum/widths.lua).  On Vim the original Vimscript
   implementation is used unchanged.
-* perf: Add Neovim-only Lua fast path for pum#_format_item (lua/pum/format.lua).
-  On Vim the original Vimscript implementation is used unchanged.
+* perf: Add Neovim-only Lua fast path for pum#_format_item
+  (lua/pum/format.lua). On Vim the original Vimscript implementation is used
+  unchanged.
 
 2025.03.27
 * Rename "pum#map#confirm_word()" to "pum#map#confirm_matched_pattern()".

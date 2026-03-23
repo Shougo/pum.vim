@@ -15,7 +15,52 @@ vim9script
 # Cleared by ClearWidthsCacheV9() on each pum#open().
 var widths_cache: dict<number> = {}
 
-# ── helpers ─────────────────────────────────────────────────────────────────
+# ── string helpers (ported from autoload/pum/util.vim) ──────────────────────
+
+# Returns the leading part of str that fits within `width` display cells.
+def StrwidthPart(str: string, width: number): string
+  var s: string = tr(str, "\t", ' ')
+  var vcol: number = width + 2
+  return matchstr(s, '.*\%<' .. (vcol < 0 ? 0 : vcol) .. 'v')
+enddef
+
+# Returns the trailing part of str that occupies exactly `width` display cells.
+def StrwidthPartReverse(str: string, width: number): string
+  var s: string = tr(str, "\t", ' ')
+  var vcol: number = strwidth(s) - width
+  return matchstr(s, '\%>' .. (vcol < 0 ? 0 : vcol) .. 'v.*')
+enddef
+
+# Pads or clips str to exactly `width` display cells.
+# For ASCII-only strings a fast byte-level path is used.
+def TruncateStr(str: string, width: number): string
+  if str =~# '^[\x00-\x7f]*$'
+    return len(str) < width
+        ? printf('%-' .. width .. 's', str)
+        : strpart(str, 0, width)
+  endif
+  var ret: string = str
+  if strwidth(ret) > width
+    ret = StrwidthPart(ret, width)
+  endif
+  return ret
+enddef
+
+# Port of pum#util#_truncate(str, max, footer_width, separator)
+def Truncate(str: string, max: number, footer_width: number, separator: string): string
+  var w: number = strwidth(str)
+  var ret: string
+  if w <= max
+    ret = str
+  else
+    var header_width: number = max - strwidth(separator) - footer_width
+    ret = StrwidthPart(str, header_width) .. separator
+        .. StrwidthPartReverse(str, footer_width)
+  endif
+  return TruncateStr(ret, max)
+enddef
+
+# ── border/padding helpers ───────────────────────────────────────────────────
 
 def GetBordercharHeight(ch: any): number
   if type(ch) == v:t_string
@@ -77,6 +122,8 @@ def CalcPaddingDimensions(
           border_left, border_top, border_right, border_bottom]
 enddef
 
+# ── width cache ──────────────────────────────────────────────────────────────
+
 # Cached display-width lookup for a single string.
 def CachedWidth(text: string): number
   if has_key(widths_cache, text)
@@ -85,6 +132,80 @@ def CachedWidth(text: string): number
   var w: number = strdisplaywidth(text)
   widths_cache[text] = w
   return w
+enddef
+
+# ── item formatter (inlined Vim9 port of pum#_format_item) ──────────────────
+#
+# FormatItem builds the display string for a single completion item.
+# It is a Vim9 def port of pum#_format_item() (autoload/pum.vim), inlined here
+# to avoid the per-item legacy function-call boundary, the
+# s:lua_format_available check, and the pum#util#_truncate() call chain.
+# All helpers above are also def so the entire hot path is bytecode-compiled.
+#
+# Parameters match those of pum#_format_item():
+#   item        – completion-item dict (word/abbr/kind/menu/columns)
+#   options     – pum options dict (padding, …)
+#   mode        – current mode string ('i', 'c', …)
+#   startcol    – popup start column
+#   max_columns – list of [col_name, max_width] pairs from CalculateColumnWidthsV9
+#   abbr_width  – allocated display width for the 'abbr' column
+def FormatItem(
+    item: dict<any>,
+    options: dict<any>,
+    mode: string,
+    startcol: number,
+    max_columns: list<any>,
+    abbr_width: number
+): string
+  # Build a flat column dict from item fields
+  var columns: dict<string> = extend(
+      copy(get(item, 'columns', {})),
+      {
+        abbr: get(item, 'abbr', item.word),
+        kind: get(item, 'kind', ''),
+        menu: get(item, 'menu', ''),
+      })
+
+  var str: string = ''
+  for col_entry in max_columns
+    var name: string       = col_entry[0]
+    var max_column: number = col_entry[1]
+
+    if name ==# 'space'
+      str ..= ' '
+      continue
+    endif
+
+    if name ==# 'abbr'
+      max_column = abbr_width
+    endif
+
+    var column: string = substitute(get(columns, name, ''), '[[:cntrl:]]', '?', 'g')
+    if name ==# 'abbr' && column ==# ''
+      column = item.word
+    endif
+
+    var col_width: number = CachedWidth(column)
+
+    if col_width > max_column
+      column = Truncate(column, max_column, max_column / 3, '...')
+      col_width = CachedWidth(column)
+    endif
+    if col_width < max_column
+      column ..= repeat(' ', max_column - col_width)
+    endif
+
+    str ..= column
+  endfor
+
+  if options.padding
+    str ..= ' '
+    if mode ==# 'c' || startcol != 1
+      str = ' ' .. str
+    endif
+  endif
+
+  return str
 enddef
 
 # ── public API ───────────────────────────────────────────────────────────────
@@ -171,8 +292,8 @@ enddef
 # Calculate final popup dimensions and format display lines.
 #
 # Mirrors s:calculate_dimensions() in autoload/pum/popup.vim.
-# Calls pum#_format_item() for each item (which itself branches between the
-# Lua fast path on Neovim and the Vimscript path on Vim).
+# Uses the inlined Vim9 FormatItem() def instead of calling pum#_format_item()
+# to avoid the per-item legacy function-call boundary.
 #
 # Returns a dict with keys:
 #   width, height, padding, padding_height, padding_width, padding_left,
@@ -211,10 +332,9 @@ export def CalculateDimensionsV9(
   # 'abbr' column takes the remaining space
   var abbr_width: number = width - non_abbr_length - padding
 
-  # Format each item into a display string
-  var lines: list<any> = mapnew(items,
-      (_, val) => pum#_format_item(
-          val, options, mode, startcol, max_columns, abbr_width))
+  # Format each item using the inlined Vim9 def (avoids legacy call per item)
+  var lines: list<string> = mapnew(items,
+      (_, val) => FormatItem(val, options, mode, startcol, max_columns, abbr_width))
 
   # Apply height constraints
   var height: number = len(items)

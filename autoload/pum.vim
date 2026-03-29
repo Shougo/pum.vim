@@ -288,6 +288,10 @@ function pum#open_preview() abort
   return pum#popup#_preview()
 endfunction
 
+function pum#close_preview() abort
+  return pum#popup#_close_preview()
+endfunction
+
 function pum#entered() abort
   const info = pum#complete_info()
   const selected = (!pum#_options().auto_select && info.selected == 0)

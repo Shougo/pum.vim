@@ -377,6 +377,10 @@ FUNCTIONS                                                      *pum-functions*
 pum#close()
 		Close current popup menu and preview window.
 
+                                                         *pum#close_preview()*
+pum#close_preview()
+		Close preview window for current item.
+
                                                          *pum#complete_info()*
 pum#complete_info([{what}])
 		Returns |Dictionary| like |complete_info()|.

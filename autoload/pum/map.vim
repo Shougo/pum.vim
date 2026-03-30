@@ -315,6 +315,36 @@ function pum#map#confirm_mouse() abort
   return ''
 endfunction
 
+function pum#map#select_mouse() abort
+  const mousepos = getmousepos()
+  let pum = pum#_get()
+
+  if mousepos.winid ==# 0
+    return ''
+  endif
+
+  if mousepos.winid !=# pum.id || pum.items->len() < mousepos.line
+    return ''
+  endif
+
+  if pum.horizontal_menu
+    " Not implemented
+    return ''
+  endif
+
+  let pum.cursor = mousepos.line
+  try
+    call win_execute(pum.id, printf('call cursor(%d, 0)', pum.cursor))
+  catch /.*/
+  endtry
+
+  call pum#popup#_redraw_selected()
+  call pum#popup#_redraw_scroll()
+  call pum#popup#_reset_auto_confirm(mode())
+
+  return ''
+endfunction
+
 function pum#map#cancel() abort
   let pum = pum#_get()
 

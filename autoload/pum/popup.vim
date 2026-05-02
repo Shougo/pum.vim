@@ -1009,6 +1009,11 @@ function s:create_preview_window_vim(
         \   highlight: a:options.highlight_preview,
         \   scrollbarhighlight: a:options.highlight_scrollbar,
         \ }
+  if has('patch-9.2.0017') && a:options.blend > 0
+    " Vim support transparency in 9.2.0017.
+    " But 0 is fully transparency.
+    let winopts.opacity = 100 - a:options.blend
+  endif
 
   " Handle help previews (requires special buffer setup in Vim)
   if a:previewer.kind ==# 'help'

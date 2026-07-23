@@ -1634,7 +1634,7 @@ function s:adjust_cmdline_position(
         \ && 'require("noice").api.get_cmdline_position()'
         \    ->luaeval()->type() != v:null->type()
 
-  const adjustment = [getcmdprompt()->len(), 1]->max()
+  const adjustment = [getcmdprompt()->strwidth(), 1]->max()
   const cmdline_pos = s:get_cmdline_pos(a:options, a:direction, a:pos[0])
 
   let direction = a:direction

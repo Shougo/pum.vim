@@ -560,12 +560,19 @@ function s:setup_terminal_tracking() abort
   endif
 endfunction
 
+function pum#map#_run_callback() abort
+  if s:pum_callback != v:null
+    call call(s:pum_callback, [])
+    let s:pum_callback = v:null
+  endif
+endfunction
+
 function s:check_user_input(callback) abort
   augroup pum-temp
     autocmd!
   augroup END
 
-  let g:PumCallback = function(a:callback)
+  let s:pum_callback = function(a:callback)
 
   let pum = pum#_get()
   let pum.current_line = pum#_getline()[: pum.startcol]
@@ -637,8 +644,8 @@ function s:insert_line_feedkeys(text, after_func) abort
   call s:setup_backspace_options()
 
   if a:after_func != v:null
-    let g:PumCallback = function(a:after_func)
-    let chars ..= "\<Cmd>call call(g:PumCallback, [])\<CR>"
+    let s:pum_callback = function(a:after_func)
+    let chars ..= "\<Cmd>call pum#map#_run_callback()\<CR>"
   endif
 
   call feedkeys(chars, 'in')

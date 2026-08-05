@@ -1,3 +1,59 @@
+function pum#map#select_relative(
+      \ delta, overflow='empty', auto_confirm=v:false) abort
+  let pum = pum#_get()
+  if pum.id <= 0
+    return ''
+  endif
+
+  let delta = a:delta
+  if pum.reversed
+    let delta *= -1
+  endif
+
+  let pum.cursor += delta
+
+  if pum.cursor > pum.len || pum.cursor <= 0
+    " Overflow handling
+    if s:normalize_cursor(pum, a:overflow) ==# 'empty'
+      call s:handle_overflow_empty(pum)
+      return ''
+    endif
+  endif
+
+  call pum#_complete_changed()
+  call s:update_menu_cursor(pum, delta)
+  call s:update_nvim_scrollbar(pum)
+  call s:setup_auto_confirm(a:auto_confirm)
+
+  " Close popup menu and CompleteDone if user input
+  call s:check_user_input({ -> pum#close() })
+
+  call pum#popup#_reset_auto_confirm(mode())
+
+  return ''
+endfunction
+
+function s:normalize_cursor(pum, overflow) abort
+  if a:pum.cursor > a:pum.len
+    if a:overflow ==# 'empty'
+      return 'empty'
+    elseif a:overflow ==# 'ignore'
+      let a:pum.cursor = a:pum.len
+    else
+      let a:pum.cursor = 1
+    endif
+  elseif a:pum.cursor <= 0
+    if a:overflow ==# 'empty'
+      return 'empty'
+    elseif a:overflow ==# 'ignore'
+      let a:pum.cursor = 1
+    else
+      let a:pum.cursor = a:pum.len
+    endif
+  endif
+  return 'ok'
+endfunction
+
 " Handle overflow when cursor goes beyond menu bounds in 'empty' mode
 " Resets cursor to 0 and updates display
 function s:handle_overflow_empty(pum) abort
@@ -86,47 +142,6 @@ function s:update_menu_cursor(pum, delta) abort
   endif
 endfunction
 
-function pum#map#select_relative(
-      \ delta, overflow='empty', auto_confirm=v:false) abort
-  let pum = pum#_get()
-  if pum.id <= 0
-    return ''
-  endif
-
-  let delta = a:delta
-  if pum.reversed
-    let delta *= -1
-  endif
-
-  let pum.cursor += delta
-
-  if pum.cursor > pum.len || pum.cursor <= 0
-    " Overflow handling
-    if a:overflow ==# 'empty' && (pum.cursor > pum.len || pum.cursor ==# 0)
-      call s:handle_overflow_empty(pum)
-      return ''
-    endif
-
-    if a:overflow ==# 'ignore'
-      let pum.cursor = pum.cursor > pum.len ? pum.len : 1
-    else
-      " Loop mode
-      let pum.cursor = pum.cursor > pum.len ? 1 : pum.len
-    endif
-  endif
-
-  call pum#_complete_changed()
-  call s:update_menu_cursor(pum, delta)
-  call s:update_nvim_scrollbar(pum)
-  call s:setup_auto_confirm(a:auto_confirm)
-
-  " Close popup menu and CompleteDone if user input
-  call s:check_user_input({ -> pum#close() })
-
-  call pum#popup#_reset_auto_confirm(mode())
-
-  return ''
-endfunction
 
 function pum#map#insert_relative(delta, overflow='empty') abort
   if mode() ==# 't'

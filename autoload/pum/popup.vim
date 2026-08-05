@@ -427,10 +427,12 @@ function s:highlight_items(items, max_columns) abort
 
       " NOTE: The byte length of multibyte characters may be larger than
       " max_column calculated by strdisplaywidth().
-      let elem = ['abbr', 'kind', 'menu']->index(order) >= 0
+      let elem_text = ['abbr', 'kind', 'menu']->index(order) >= 0
             \ ? item->get(order, '')
             \ : item->get('columns', {})->get(order, '')
-      let width = max_column - elem->strdisplaywidth() + elem->strlen()
+      let elem_width = elem_text->strdisplaywidth()
+      let elem_len = elem_text->strlen()
+      let width = max_column - elem_width + elem_len
 
       let highlight_column = options.highlight_columns->get(order, '')
       if highlight_column !=# ''

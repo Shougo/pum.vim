@@ -570,7 +570,8 @@ function pum#popup#_redraw_horizontal_menu() abort
     endif
   endfor
   if word != ''
-    if index < items->len() - 1
+    if item_count == 0
+          \ && items->len() > lines->len() * options.max_horizontal_items
       let word ..= ' ...'
     endif
 
@@ -817,7 +818,7 @@ function s:calculate_preview_dimensions(previewer, options) abort
   " Calculate initial dimensions from content or use defaults
   if a:previewer->has_key('contents')
     let width = a:previewer.contents
-          \ ->mapnew({ _, val -> val->strwidth() })->max()
+          \ ->mapnew({ _, val -> val->strdisplaywidth() })->max()
     let width = [width, a:options.preview_width]->min()
 
     " Calculate height with word wrapping algorithm

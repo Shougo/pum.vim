@@ -263,39 +263,53 @@ function pum#map#confirm_suffix() abort
   let pum = pum#_get()
 
   if pum.cursor > 0
-    const word = pum.cursor > 0 ?
-          \ pum.items[pum.cursor - 1].word :
-          \ pum.orig_input
+    const word = pum.items[pum.cursor - 1].word
     const next_input = pum.orig_line[pum.col - 1 :]
 
-    " Get suffix matched to next_input
     const suffix = s:find_matching_suffix(word, next_input)
 
     if suffix ==# ''
-      " non suffix.  Normal confirm behavior.
       return pum#map#confirm()
     endif
 
-    " Create new undo point
     if &l:undolevels > 0
       let &l:undolevels = &l:undolevels
     endif
 
+    const word_chars = word->strchars()
+    const suffix_chars = suffix->strchars()
+    const head = word->strcharpart(0, word_chars - suffix_chars)
+    const tail = next_input->strcharpart(suffix_chars)
+
     call s:insert_next_input(
-          \ word[: -1 - suffix->len()] .. suffix,
+          \ head .. suffix,
           \ pum.orig_input,
           \ { -> s:skip_next_complete('confirm') },
-          \ next_input[suffix->len():])
+          \ tail)
   else
     call s:skip_next_complete('confirm')
   endif
 
-  " Reset v:completed_item to prevent CompleteDone is twice
   autocmd TextChangedI,TextChangedP * ++once ++nested
         \ let v:completed_item = {}
 
   return ''
 endfunction
+
+function s:find_matching_suffix(word, next_input) abort
+  const word_chars = a:word->strchars()
+  const next_chars = a:next_input->strchars()
+  const max = [word_chars, next_chars]->min()
+
+  for i in max->range(1, -1)
+    if a:word->strcharpart(word_chars - i, i) ==#
+          \ a:next_input->strcharpart(0, i)
+      return a:word->strcharpart(word_chars - i, i)
+    endif
+  endfor
+  return ''
+endfunction
+
 function pum#map#confirm_mouse() abort
   const mousepos = getmousepos()
   let pum = pum#_get()

@@ -18,7 +18,7 @@ end
 -- Return the display width of a string, using the local cache.
 local function display_width(str)
   local w = _width_cache[str]
-  if w then
+  if w ~= nil then
     return w
   end
   w = vim.fn.strdisplaywidth(str)
@@ -112,7 +112,8 @@ function M.format_item(item, options, mode, startcol, max_columns, abbr_width)
 
       if col_width < max_col then
         -- Right-pad with spaces
-        col = col .. string.rep(' ', max_col - col_width)
+        local padding = math.max(0, math.floor(max_col - col_width))
+        col = col .. string.rep(' ', padding)
       end
 
       parts[#parts + 1] = col

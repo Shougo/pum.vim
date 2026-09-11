@@ -686,6 +686,9 @@ FAQ 8:                                                             |pum-faq-8|
 FAQ 9:                                                             |pum-faq-9|
 	I want to enter the documentation window.
 
+FAQ 10:                                                           |pum-faq-10|
+	I want to use pum.vim as skkeleton backend.
+
 ------------------------------------------------------------------------------
                                                                    *pum-faq-1*
 Q: How to donate money to you?
@@ -765,6 +768,21 @@ Q: I want to enter the documentation window.
 A: You can use |pum#get_preview_buf()| for it.
 >vim
 	execute pum#get_preview_buf() .. 'buffer'
+<
+
+                                                                  *pum-faq-10*
+Q: I want to use pum.vim as skkeleton backend.
+
+A: >vim
+	call skkeleton#register_completion_backend('pum.vim', #{
+	      \   complete_info:
+	      \     { -> pum#complete_info(['pum_visible', 'selected']) },
+	      \   confirm_key: '<Cmd>call pum#map#confirm()',
+	      \ })
+	
+	call skkeleton#config(#{
+	      \   completionBackend: 'pum.vim',
+	      \ })
 <
 
 ==============================================================================

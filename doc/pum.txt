@@ -108,7 +108,8 @@ border
 		NOTE: If you use "single" or "double" in Vim, 'ambiwidth' must
 		be "single" and 'encoding' must be "utf-8".
 
-		Default: 'pumborder' value
+		Default: 'pumborder' value if available and non-empty,
+		otherwise "none"
 
                                                 *pum-option-commit_characters*
 commit_characters
@@ -189,7 +190,7 @@ highlight_normal_menu
 highlight_preview
 		The highlight of the preview window.
 
-		Default: "Pmenu"
+		Default: ""
 
                                               *pum-option-highlight_scrollbar*
 highlight_scrollbar

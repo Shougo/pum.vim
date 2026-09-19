@@ -68,8 +68,8 @@ NOTE: The options must be set before call of |pum#open()|.
 
                                                 *pum-option-auto_confirm_time*
 auto_confirm_time
-		If it is positive value, the inserted item is auto confirmed
-		after you don't input.
+		If it is positive, the inserted item is automatically
+		confirmed after this many milliseconds without further input.
 
 		Default: 0
 
@@ -103,7 +103,7 @@ border
 		"rounded": neovim only.
 		"solid": neovim only.
 		"shadow": neovim only.
-		array: Specifify the eight chars building up the border.
+		array: Specify the eight chars building up the border.
 
 		NOTE: If you use "single" or "double" in Vim, 'ambiwidth' must
 		be "single" and 'encoding' must be "utf-8".
@@ -114,9 +114,9 @@ border
                                                 *pum-option-commit_characters*
 commit_characters
 		When the characters are input, execute |pum#map#confirm()|
-		automatically.
+		automatically. The current candidate must start with the
+		current input text.
 		NOTE: It does work only insert mode.
-		NOTE: The input text must be head match.
 
 		Default: []
 
@@ -126,8 +126,8 @@ direction
 		NOTE: It does not work for command line mode.
 
 		"above":  Above menu direction.
-		"below":  Below menu dicrection.
-		"auto":   Wider menu dicrection is used.
+		"below":  Below menu direction.
+		"auto":   Wider menu direction is used.
 
 		Default: "auto"
 
@@ -327,9 +327,8 @@ preview_height
 
                                                   *pum-option-preview_remains*
 preview_remains
-		pum.vim does not close preview window when the popup is
-		closed. It is useful if you want to read the documentation as
-		possible.
+		Keep the preview window open when the popup menu is closed.
+		This is useful for reading documentation after completion.
 
 		Default: v:false
 
@@ -397,8 +396,10 @@ pum#current_item()
 
                                                                *pum#entered()*
 pum#entered()
-		Returns |v:true| if you have selected or inserted popup menu.
-		NOTE: It does not work for auto selection feature.
+		Returns |v:true| if the popup menu is visible and an item is
+		selected or inserted.
+		NOTE: Automatic selection alone is not treated as an entered
+		state.
 
                                                                *pum#get_buf()*
 pum#get_buf()
@@ -537,7 +538,7 @@ pum#map#confirm_mouse()
 
                                                     *pum#map#confirm_suffix()*
 pum#map#confirm_suffix()
-		Insert the select suffix matched word and close the popup.
+		Insert the selected word while preserving its matching suffix.
 		It is useful if you want to edit suffix.
 		NOTE: It must not be called in |:map-<expr>|.
 		NOTE: It does not work in |:terminal|.
@@ -594,8 +595,7 @@ pum#map#select_relative({delta}[, {overflow}[, {auto_confirm}]])
 		Move forward or backward {delta} number and select the
 		candidate.
 		{overflow} is same with |pum#map#insert_relative()|.
-		{auto_confirm} is enable auto confirm feature when user input
-		text.
+		{auto_confirm} enables auto-confirm when user input text.
 		NOTE: It must not be called in |:map-<expr>|.
 
                                               *pum#map#select_relative_page()*
@@ -739,7 +739,7 @@ NOTE: It is for ale plugin. >vim
 <
 
 NOTE: If you use "ddc-source-lsp" source, you don't need to add the event
-manually. Because, it register the event automatically.
+manually. Because it registers the event automatically.
 
                                                                    *pum-faq-5*
 Q: I want to use j/k keys to navigate popup menu when only entered popup menu.
@@ -754,8 +754,8 @@ A: >vim
 Q: The popup window does not close when enter |command-line-window|.
 
 A: In |command-line-window|, the popup window cannot be closed.  It is
-Vim/neovim's feature.  The window is closed after you have leaved
-|command-line-window|.  You can use the mapping like this.
+Vim/neovim's feature.  The window is closed  after you leave
+|command-line-window|. You can use the mapping like this.
 >vim
 	cnoremap <C-f> <Cmd>call pum#close()<CR><C-f>
 <
@@ -775,7 +775,7 @@ Q: 'incsearch' text is cleared when |pum-option-reversed| is set or move
 cursor in neovim.
 
 A: It is feature.  Because 'incsearch' is broken when |:redraw| in floating
-window.  I have gave up to fix it in plugin side.
+window.  I have given up trying to fix it on the plugin side.
 https://github.com/neovim/neovim/issues/17810
 
                                                                    *pum-faq-9*

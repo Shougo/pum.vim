@@ -50,7 +50,7 @@ g:pum#completed_event
 		It is event name.
 
 		"confirm": |pum#map#confirm()|.
-		"confirm_word": |pum#map#confirm_word()|.
+		"confirm_word": |pum#map#confirm_mouse()|.
 		"complete_done": Others.
 
 		It is used in |PumCompleteDone| event.
@@ -375,7 +375,10 @@ zindex
 FUNCTIONS                                                      *pum-functions*
 
                                                                  *pum#close()*
-pum#close()
+pum#close([{event} [, {close_window}]])
+		Close current popup menu and preview window.
+		{event} specifies the completion event name.
+		{close_window} specifies whether to close the popup window.
 		Close current popup menu and preview window.
 
                                                          *pum#close_preview()*
@@ -420,13 +423,17 @@ pum#get_preview_buf()
 		Returns the preview buffer number.
 		NOTE: You must enable |pum-option-preview|.
                                                                   *pum#open()*
-pum#open({startcol}, {items})
+pum#open({startcol}, {items}[, {mode}[, {insert}]])
 		Open popup menu like |complete()|.
 		{startcol} is the byte offset in the line where the completed
 		text start.
 		NOTE: {startcol} is 1 origin like |col()|.
 		{items} must be a |List|.  See |complete-items| for the kind
 		of items.  You can use following special key.
+		{mode} specifies the editing mode.  By default, |mode()| is
+		used.
+		{insert} specifies whether the item is inserted immediately.
+		Default: v:false
 
 			highlights:  Custom highlights.
 				type	 "abbr" or "kind" or "menu"

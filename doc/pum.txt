@@ -615,15 +615,17 @@ AUTOCMDS                                                        *pum-autocmds*
 
                                                                     *PumClose*
 PumClose
-		It is called before completion menu is closed.
+		User autocmd fired before completion menu is closed.
 
                                                           *PumCompleteChanged*
 PumCompleteChanged
-		After each time completion menu changed like
-		|CompleteChanged|. |complete_info()| gives the information.
+		User autocmd fired after each time completion menu changed
+		like |CompleteChanged|. |complete_info()| gives the
+		information.
 
                                                              *PumCompleteDone*
 PumCompleteDone
+		User autocmd fired after completion is done.
 		It is called after completion is done like |CompleteDone|.
 		|g:pum#completed_item| gives the completed item.
 		|g:pum#completed_event| gives the event name.
@@ -633,22 +635,24 @@ PumCompleteDone
 
                                                           *PumCompleteDonePre*
 PumCompleteDonePre
-		It is called before |PumCompleteDone| like |CompleteDonePre|.
-		|g:pum#completed_item| gives the completed item.
+		User autocmd fired before |PumCompleteDone| like
+		|CompleteDonePre|. |g:pum#completed_item| gives the completed
+		item.
 
 		NOTE: You must not use |v:completed_item| in the event.
 		Please use |g:pum#completed_item| instead.
 
                                                                      *PumOpen*
 PumOpen
-		It is called before completion menu is opened.
+		User autocmd fired before completion menu is opened.
 		You can get buffer number by |pum#get_buf()|.
 
                                                                   *PumPreview*
 PumPreview
-		It is called after the preview window is created.
-		You can get preview buffer number by |pum#get_preview_buf()|.
-		NOTE: You must enable |pum-option-preview|.
+		User autocmd fired after the preview window is created.
+		Automatic preview requires |pum-option-preview|, but the
+		preview can also be opened explicitly with
+		|pum#open_preview()|.
 
 ==============================================================================
 EXAMPLES                                                        *pum-examples*
@@ -722,8 +726,12 @@ completion.
                                                                    *pum-faq-4*
 Q: Auto import or auto snippet expansion does not work in pum.vim.
 
-A: pum.vim does not support |CompleteDone| autocmd.  You need to emulate the
-event like this.
+A: pum.vim provides |PumCompleteDone| and
+|PumCompleteDonePre| events.  In insert mode, it also triggers
+|CompleteDonePre| and |CompleteDone|.
+
+Use |g:pum#completed_item| in Pum events instead of relying
+directly on |v:completed_item|.
 
 NOTE: It is for ale plugin. >vim
 	 autocmd User PumCompleteDone

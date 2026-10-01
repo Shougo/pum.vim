@@ -407,7 +407,14 @@ function pum#_format_item(
     return luaeval(
           \ "require('pum.format').format_item("
           \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6])",
-          \ [a:item, a:options, a:mode, a:startcol, a:max_columns, a:abbr_width])
+          \ [
+          \   a:item,
+          \   a:options,
+          \   a:mode,
+          \   a:startcol,
+          \   a:max_columns,
+          \   a:abbr_width,
+          \ ])
   endif
 
   const columns = a:item->get('columns', {})->copy()

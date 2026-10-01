@@ -1615,8 +1615,9 @@ function s:calculate_position(
         \  - a:dimensions.padding_left + a:options.offset_cmdcol,
         \ ]
         \ : [
-        \  spos_copy.row + (direction ==# 'above' ?
-        \              -a:options.offset_row : a:options.offset_row),
+        \  spos_copy.row + (  direction ==# 'above'
+        \                   ? -a:options.offset_row
+        \                   : a:options.offset_row),
         \  spos_copy.col - 1,
         \ ]
 

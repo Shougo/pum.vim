@@ -390,11 +390,12 @@ function s:determine_direction(
   endif
 
   let minheight_below = [
-        \   a:height, &lines - a:spos.row -
-        \   a:padding_height - a:options.offset_row
+        \   a:height,
+        \   &lines - a:spos.row - a:padding_height - a:options.offset_row,
         \ ]->min()
   let minheight_above = [
-        \   a:height, a:spos.row - a:padding_height - a:options.offset_row
+        \   a:height,
+        \   a:spos.row - a:padding_height - a:options.offset_row,
         \ ]->min()
 
   if (minheight_below < minheight_above && a:options.direction ==# 'auto')
@@ -607,14 +608,21 @@ function pum#popup#_redraw_horizontal_menu() abort
   endif
 
   " Calculate popup position
-  let pos = current_mode ==# 'c' ?
-        \ [&lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
-        \  options.follow_cursor ? getcmdpos() + options.offset_cmdcol :
-        \  options.offset_cmdcol] :
-        \ [spos.row + (direction ==# 'above' ?
-        \              -options.offset_row - height - 1 : options.offset_row),
-        \  options.follow_cursor ? spos.col - 1 + options.offset_col :
-        \  options.offset_col]
+  let pos = current_mode ==# 'c'
+        \ ? [
+        \   &lines - height - [1, &cmdheight]->max() - options.offset_cmdrow,
+        \     options.follow_cursor
+        \   ? getcmdpos() + options.offset_cmdcol
+        \   : options.offset_cmdcol,
+        \ ]
+        \ : [
+        \   spos.row + (  direction ==# 'above'
+        \               ? -options.offset_row - height - 1
+        \               : options.offset_row),
+        \     options.follow_cursor
+        \   ? spos.col - 1 + options.offset_col
+        \   : options.offset_col,
+        \ ]
 
   " Apply command-line specific position adjustments
   if current_mode ==# 'c'

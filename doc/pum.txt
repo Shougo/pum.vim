@@ -299,10 +299,23 @@ padding
                                                           *pum-option-preview*
 preview
 		Enable pum.vim builtin preview window.
-		It prints "info" attribute in current item or prints previewer
-		information from |ddc#get_previewer()|.
+		It prints previewer information from |pum-option-previewer|
+		(|ddc#get_previewer()| when it is not set), or "info" attribute
+		in current item when there is none.
 
 		Default: v:false
+
+                                                        *pum-option-previewer*
+previewer
+		A function name or |Funcref| that returns the previewer of the
+		current item for the preview window.  It is called with the
+		item and returns a previewer dictionary in the format of
+		|ddc#get_previewer()|.  When it returns "empty" kind, the
+		"info" attribute is printed instead.  It is useful for
+		completion plugins other than ddc.vim.
+		If it is empty, |ddc#get_previewer()| is used when it exists.
+
+		Default: ""
 
                                                    *pum-option-preview-border*
 preview_border

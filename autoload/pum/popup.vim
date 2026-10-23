@@ -1154,9 +1154,15 @@ function pum#popup#_close_preview() abort
 endfunction
 function s:get_previewer(item) abort
   " In terminal mode, it does not work well.
-  if mode() !=# 't' && '*ddc#get_previewer'->exists()
-    const previewer = ddc#get_previewer(a:item)
-    if previewer.kind !=# 'empty'
+  if mode() !=# 't'
+    const Previewer = pum#_options().previewer
+    let previewer = #{ kind: 'empty' }
+    if Previewer isnot# ''
+      let previewer = Previewer->call([a:item])
+    elseif '*ddc#get_previewer'->exists()
+      let previewer = ddc#get_previewer(a:item)
+    endif
+    if previewer->get('kind', 'empty') !=# 'empty'
       return previewer
     endif
   endif

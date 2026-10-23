@@ -337,3 +337,40 @@ func Test_get_direction()
     call assert_true(v:true)
   endtry
 endfunc
+
+" Test previewer option
+func PreviewerForTest(item) abort
+  return a:item.word ==# 'foo'
+        \ ? #{ kind: 'text', contents: ['preview of ' .. a:item.word] }
+        \ : #{ kind: 'empty' }
+endfunc
+
+func Test_previewer()
+  call Setup()
+  call assert_equal('', pum#_options().previewer)
+
+  for Previewer in ['PreviewerForTest', function('PreviewerForTest')]
+    call pum#set_option('previewer', Previewer)
+    call pum#open(1, [
+          \ #{ word: 'foo' },
+          \ #{ word: 'bar', info: "info of bar" },
+          \ ], 'i')
+
+    " The previewer's contents.
+    call pum#map#select_relative(1)
+    call pum#open_preview()
+    call assert_true(pum#preview_visible())
+    call assert_equal(['preview of foo'],
+          \ pum#get_preview_buf()->getbufline(1, '$'))
+
+    " "empty" kind: the info.
+    call pum#map#select_relative(1)
+    call pum#open_preview()
+    call assert_equal(['info of bar'],
+          \ pum#get_preview_buf()->getbufline(1, '$'))
+
+    call pum#close()
+  endfor
+
+  call pum#set_option('previewer', '')
+endfunc

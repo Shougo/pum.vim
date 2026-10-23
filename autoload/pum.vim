@@ -115,6 +115,7 @@ function pum#_init_options() abort
         \   preview_height: &previewheight,
         \   preview_remains: v:false,
         \   preview_width: &pumwidth / 2,
+        \   previewer: '',
         \   reversed: v:false,
         \   scrollbar_char: '|',
         \   use_setline: v:false,

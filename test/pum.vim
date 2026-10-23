@@ -374,3 +374,26 @@ func Test_previewer()
 
   call pum#set_option('previewer', '')
 endfunc
+
+" Without previewer option, no completion plugin's previewer is used.
+func Test_previewer_default()
+  call Setup()
+  const dir = tempname()
+  call mkdir(dir .. '/autoload', 'p')
+  call writefile([
+        \ 'function ddc#get_previewer(item) abort',
+        \ "  return #{ kind: 'text', contents: ['from ddc'] }",
+        \ 'endfunction',
+        \ ], dir .. '/autoload/ddc.vim')
+  let &runtimepath ..= ',' .. dir
+  call assert_equal(['from ddc'], ddc#get_previewer({}).contents)
+
+  call pum#open(1, [#{ word: 'foo', info: "info of foo" }], 'i')
+  call pum#map#select_relative(1)
+  call pum#open_preview()
+  call assert_equal(['info of foo'],
+        \ pum#get_preview_buf()->getbufline(1, '$'))
+  call pum#close()
+
+  let &runtimepath = &runtimepath->substitute(',' .. dir, '', '')
+endfunc

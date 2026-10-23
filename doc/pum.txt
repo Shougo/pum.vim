@@ -299,9 +299,8 @@ padding
                                                           *pum-option-preview*
 preview
 		Enable pum.vim builtin preview window.
-		It prints previewer information from |pum-option-previewer|
-		(|ddc#get_previewer()| when it is not set), or "info" attribute
-		in current item when there is none.
+		It prints previewer information from |pum-option-previewer|,
+		or "info" attribute in current item when there is none.
 
 		Default: v:false
 
@@ -309,11 +308,17 @@ preview
 previewer
 		A function name or |Funcref| that returns the previewer of the
 		current item for the preview window.  It is called with the
-		item and returns a previewer dictionary in the format of
-		|ddc#get_previewer()|.  When it returns "empty" kind, the
-		"info" attribute is printed instead.  It is useful for
-		completion plugins other than ddc.vim.
-		If it is empty, |ddc#get_previewer()| is used when it exists.
+		item and returns a previewer dictionary.  "kind" key is one of:
+
+		"empty"		No preview.  "info" attribute is printed
+				instead.
+		"help"		The help of "tag" key.
+		"text"		The lines of "contents" key.
+		"markdown"	The lines of "contents" key, as markdown.
+		"command"	Execute "command" key in the preview window.
+
+		The completion plugin provides the function.  If it is empty,
+		"info" attribute is printed.
 
 		Default: ""
 
@@ -734,8 +739,9 @@ Q: The popup menu does not work in |command-line-window|.
 A: It is the limitation of |command-line-window|.
 
 NOTE: The problem is fixed in neovim 0.10+.  But |command-line-window| is
-special buffer.  If you use "ddc.vim", you need to enable special buffer
+special buffer.  The completion plugin may need to enable special buffer
 completion.
+
                                                                    *pum-faq-4*
 Q: Auto import or auto snippet expansion does not work in pum.vim.
 
@@ -750,9 +756,6 @@ NOTE: It is for ale plugin. >vim
 	 autocmd User PumCompleteDone
 	 \ call ale#completion#HandleUserData(g:pum#completed_item)
 <
-
-NOTE: If you use "ddc-source-lsp" source, you don't need to add the event
-manually. Because it registers the event automatically.
 
                                                                    *pum-faq-5*
 Q: I want to use j/k keys to navigate popup menu when only entered popup menu.

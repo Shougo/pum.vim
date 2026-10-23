@@ -1159,8 +1159,6 @@ function s:get_previewer(item) abort
     let previewer = #{ kind: 'empty' }
     if Previewer isnot# ''
       let previewer = Previewer->call([a:item])
-    elseif '*ddc#get_previewer'->exists()
-      let previewer = ddc#get_previewer(a:item)
     endif
     if previewer->get('kind', 'empty') !=# 'empty'
       return previewer

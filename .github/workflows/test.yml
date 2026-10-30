@@ -24,17 +24,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.1.0
 
       - name: Setup Vim
         if: matrix.editor == 'vim'
-        uses: rhysd/action-setup-vim@v1
+        uses: rhysd/action-setup-vim@v1.6.1
         with:
           version: v9.1.0900
 
       - name: Setup Neovim
         if: matrix.editor == 'neovim'
-        uses: rhysd/action-setup-vim@v1
+        uses: rhysd/action-setup-vim@v1.6.1
         with:
           neovim: true
           version: v0.11.0

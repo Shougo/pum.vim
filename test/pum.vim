@@ -208,6 +208,20 @@ func Test_dimensions_lines()
   endfor
 endfunc
 
+" abbr, kind and menu of the item, not of its columns (as extend() of Vim
+" script puts them)
+func Test_columns_standard_fields()
+  call Setup()
+  call pum#set_option(#{ min_width: 0 })
+  call pum#open(1, [
+        \ #{ word: 'foo', abbr: 'abc', kind: 'k',
+        \    columns: #{ abbr: 'XXX', kind: 'Y', menu: 'Z' } },
+        \ ], 'i')
+  let pum = pum#_get()
+  const buf = has('nvim') ? pum.buf : winbufnr(pum.id)
+  call assert_equal(['abc k '], getbufline(buf, 1, '$'))
+endfunc
+
 " Test select_relative functionality
 func Test_select_relative()
   call Setup()

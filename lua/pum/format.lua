@@ -68,33 +68,22 @@ end
 function M.format_parts(item, max_columns, abbr_width)
   -- Build the columns table.
   -- Vimscript: item.get('columns',{})->copy()->extend({abbr:..., kind:..., menu:...})
-  -- extend() does NOT overwrite existing keys when called on the copy, but
-  -- pum.vim passes the standard fields with get() fallbacks, so the extend
-  -- puts abbr/kind/menu in only if they are not already in columns.
-  -- Here we replicate the same by building columns first from item.columns
-  -- and then filling standard fields that are absent.
+  -- extend() overwrites the keys there (its default is "force"): abbr, kind
+  -- and menu are those of the item, never those of item.columns.
   local columns = {}
   local item_columns = item.columns
-  if item_columns then
+  if type(item_columns) == 'table' then
     for k, v in pairs(item_columns) do
       columns[k] = v
     end
   end
   local word = item.word or ''
-  -- extend() in Vimscript by default does NOT overwrite existing keys:
-  -- abbr/kind/menu are set only if not already present in columns.
-  if columns.abbr == nil then
-    local a = item.abbr
-    columns.abbr = (a ~= nil and a ~= vim.NIL) and a or word
-  end
-  if columns.kind == nil then
-    local k = item.kind
-    columns.kind = (k ~= nil and k ~= vim.NIL) and k or ''
-  end
-  if columns.menu == nil then
-    local m = item.menu
-    columns.menu = (m ~= nil and m ~= vim.NIL) and m or ''
-  end
+  local a = item.abbr
+  columns.abbr = (a ~= nil and a ~= vim.NIL) and a or word
+  local k = item.kind
+  columns.kind = (k ~= nil and k ~= vim.NIL) and k or ''
+  local m = item.menu
+  columns.menu = (m ~= nil and m ~= vim.NIL) and m or ''
 
   local parts = {}
   for _, entry in ipairs(max_columns) do

@@ -406,7 +406,7 @@ function s:determine_direction(
   endif
 endfunction
 
-function s:highlight_items(items, max_columns) abort
+function s:highlight_items(items, max_columns, abbr_width) abort
   let pum = pum#_get()
   let options = pum#_options()
   let highlight_columns = options.highlight_columns
@@ -424,9 +424,9 @@ function s:highlight_items(items, max_columns) abort
           \ { _, v -> !v->get('highlights', [])->empty() }) >= 0
       for group in luaeval(
             \ "require('pum.widths').highlight_items("
-            \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8])",
+            \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8],_A[9])",
             \ [pum.buf, pum.namespace, a:items, a:max_columns,
-            \  highlight_columns, offset,
+            \  a:abbr_width, highlight_columns, offset,
             \  s:priority_highlight_item, s:priority_highlight_column])
         call pum#util#_print_error(
               \ printf('highlight "%s" does not exist', group))
@@ -445,8 +445,12 @@ function s:highlight_items(items, max_columns) abort
       continue
     endif
 
+    " The columns as in the line (word for no abbr, abbr_width, truncated):
+    " their byte lengths place the highlights.
+    let parts = pum#widths#FormatPartsV9(item, a:max_columns, a:abbr_width)
     let start = 1
-    for [order, max_column] in a:max_columns
+    for i in range(a:max_columns->len())
+      let order = a:max_columns[i][0]
       for hl in item_highlights
         if hl.type ==# order
               \ && s:valid_highlight(valid, hl.hl_group)
@@ -458,14 +462,7 @@ function s:highlight_items(items, max_columns) abort
         endif
       endfor
 
-      " NOTE: The byte length of multibyte characters may be larger than
-      " max_column calculated by strdisplaywidth().
-      let elem_text = ['abbr', 'kind', 'menu']->index(order) >= 0
-            \ ? item->get(order, '')
-            \ : item->get('columns', {})->get(order, '')
-      let elem_width = elem_text->strdisplaywidth()
-      let elem_len = elem_text->strlen()
-      let width = max_column - elem_width + elem_len
+      let width = parts[i]->strlen()
 
       let highlight_column = highlight_columns->get(order, '')
       if highlight_column !=# ''
@@ -1995,7 +1992,7 @@ function s:setup_autocmds_and_state(
 
   if !a:pum.horizontal_menu
     " Apply highlighting to items
-    call s:highlight_items(a:items, a:max_columns)
+    call s:highlight_items(a:items, a:max_columns, a:dimensions.abbr_width)
 
     " Highlight matching text
     silent! call matchdelete(a:pum.matched_id, a:pum.id)

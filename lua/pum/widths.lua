@@ -188,20 +188,6 @@ end
 -- highlight_items
 -- ---------------------------------------------------------------------------
 
--- The text of the column name of item, as a string.
-local function column_text(item, name)
-  local text
-  if name == 'abbr' or name == 'kind' or name == 'menu' then
-    text = item[name]
-  elseif type(item.columns) == 'table' then
-    text = item.columns[name]
-  end
-  if text == nil or text == vim.NIL then
-    return ''
-  end
-  return type(text) == 'string' and text or tostring(text)
-end
-
 --- Place the highlights of the items and of the columns in the popup.
 -- Mirrors s:highlight_items() of autoload/pum/popup.vim (Vim uses it): the
 -- items are not converted for each highlight there.
@@ -210,13 +196,14 @@ end
 -- @param ns                namespace of pum.vim
 -- @param items             list of completion items (in the popup's order)
 -- @param max_columns       list of {name, max_width} pairs
+-- @param abbr_width        width of the 'abbr' column (dimensions)
 -- @param highlight_columns dict: column name -> highlight group
 -- @param offset            columns added by the padding (0 or 1)
 -- @param priority_item     priority of the highlights of the items
 -- @param priority_column   priority of the highlights of the columns
 -- @return list of the groups that do not exist (in the order found)
-function M.highlight_items(buf, ns, items, max_columns, highlight_columns,
-    offset, priority_item, priority_column)
+function M.highlight_items(buf, ns, items, max_columns, abbr_width,
+    highlight_columns, offset, priority_item, priority_column)
   local valid = {}
   local missing = {}
   local function is_valid(group)
@@ -251,9 +238,12 @@ function M.highlight_items(buf, ns, items, max_columns, highlight_columns,
     end
     -- Nothing to highlight in the row: no need of the widths.
     if has_column_highlight or #item_highlights > 0 then
+      -- The columns as in the line (word for no abbr, abbr_width,
+      -- truncated): their byte lengths place the highlights.
+      local parts = format.format_parts(item, max_columns, abbr_width)
       local start = 1
-      for _, c in ipairs(max_columns) do
-        local name, max_column = c[1], c[2]
+      for i, c in ipairs(max_columns) do
+        local name = c[1]
         for _, hl in ipairs(item_highlights) do
           if hl.type == name and is_valid(hl.hl_group) then
             local col = start + hl.col - 1 + offset
@@ -265,10 +255,7 @@ function M.highlight_items(buf, ns, items, max_columns, highlight_columns,
           end
         end
 
-        -- NOTE: The byte length of multibyte characters may be larger than
-        -- max_column calculated by the display width.
-        local text = column_text(item, name)
-        local width = max_column - display_width(text) + #text
+        local width = #parts[i]
 
         local group = highlight_columns[name]
         if group ~= nil and group ~= '' and is_valid(group) then

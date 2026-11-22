@@ -54,8 +54,18 @@ func s:placed()
   return placed->sort(function('s:compare'))
 endfunc
 
+" The highlights placed in the popup, by the text they cover:
+" [[row, text, group], ...].
+func s:highlighted()
+  let pum = pum#_get()
+  const buf = has('nvim') ? pum.buf : winbufnr(pum.id)
+  return s:placed()->map({ _, p -> [p[0],
+        \ getbufline(buf, p[0])[0]->strpart(p[1] - 1, p[2]), p[3]] })
+        \ ->sort(function('s:compare'))
+endfunc
+
 func s:compare(a, b)
-  for i in range(4)
+  for i in range(len(a:a))
     if a:a[i] != a:b[i]
       return a:a[i] < a:b[i] ? -1 : 1
     endif
@@ -84,24 +94,24 @@ func Test_highlight_items()
   call Setup()
   call pum#open(1, s:highlighted_items, 'i')
   call assert_equal([
-        \ [2, 4, 3, 'PumTestA'],
-        \ [2, 11, 1, 'PumTestB'],
-        \ ], s:placed())
+        \ [2, 'B', 'PumTestB'],
+        \ [2, 'baz', 'PumTestA'],
+        \ ], s:highlighted())
 
   call Setup()
   call pum#set_option(#{
         \ highlight_columns: #{ kind: 'PumTestC', menu: 'PumTestD' } })
   call pum#open(1, s:highlighted_items, 'i')
   call assert_equal([
-        \ [1, 8, 2, 'PumTestC'],
-        \ [1, 11, 1, 'PumTestD'],
-        \ [2, 4, 3, 'PumTestA'],
-        \ [2, 8, 2, 'PumTestC'],
-        \ [2, 11, 1, 'PumTestB'],
-        \ [2, 11, 1, 'PumTestD'],
-        \ [3, 8, 2, 'PumTestC'],
-        \ [3, 11, 1, 'PumTestD'],
-        \ ], s:placed())
+        \ [1, 'A', 'PumTestD'],
+        \ [1, 'f ', 'PumTestC'],
+        \ [2, 'B', 'PumTestB'],
+        \ [2, 'B', 'PumTestD'],
+        \ [2, 'baz', 'PumTestA'],
+        \ [2, 'fn', 'PumTestC'],
+        \ [3, 'C', 'PumTestD'],
+        \ [3, 'v ', 'PumTestC'],
+        \ ], s:highlighted())
 
   " padding: one column right when not at the start of the line
   call Setup()
@@ -109,9 +119,9 @@ func Test_highlight_items()
   call setline(1, 'x')
   call pum#open(2, s:highlighted_items, 'i')
   call assert_equal([
-        \ [2, 5, 3, 'PumTestA'],
-        \ [2, 12, 1, 'PumTestB'],
-        \ ], s:placed())
+        \ [2, 'B', 'PumTestB'],
+        \ [2, 'baz', 'PumTestA'],
+        \ ], s:highlighted())
 
   " Wide characters, a column of the items' own, and a missing group
   call Setup()
@@ -130,12 +140,30 @@ func Test_highlight_items()
         \ #{ word: 'ab', abbr: 'ab', kind: 'c', columns: #{ mark: '+' } },
         \ ], 'i')
   call assert_equal([
-        \ [1, 4, 3, 'PumTestA'],
-        \ [1, 11, 3, 'PumTestC'],
-        \ [1, 15, 1, 'PumTestD'],
-        \ [2, 8, 2, 'PumTestC'],
-        \ [2, 11, 1, 'PumTestD'],
-        \ ], s:placed())
+        \ [1, '*', 'PumTestD'],
+        \ [1, 'い', 'PumTestA'],
+        \ [1, 'か', 'PumTestC'],
+        \ [2, '+', 'PumTestD'],
+        \ [2, 'c ', 'PumTestC'],
+        \ ], s:highlighted())
+
+  " The columns as in the line: the word for no abbr, a truncated abbr
+  for opts in [{}, #{ max_width: 12 }]
+    call Setup()
+    call pum#set_option(extend(#{
+          \ highlight_columns: #{ kind: 'PumTestC', menu: 'PumTestD' } },
+          \ opts))
+    call pum#open(1, [
+          \ #{ word: 'あいう', kind: 'か', menu: 'M' },
+          \ #{ word: 'abcdefghijklmnop', kind: 'c', menu: 'N' },
+          \ ], 'i')
+    call assert_equal([
+          \ [1, 'M', 'PumTestD'],
+          \ [1, 'か', 'PumTestC'],
+          \ [2, 'N', 'PumTestD'],
+          \ [2, 'c ', 'PumTestC'],
+          \ ], s:highlighted(), string(opts))
+  endfor
 
   " Nothing to highlight
   call Setup()

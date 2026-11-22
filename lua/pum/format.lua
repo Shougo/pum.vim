@@ -45,6 +45,27 @@ end
 -- @param abbr_width  number  max width for the 'abbr' column
 -- @return string  formatted display string
 function M.format_item(item, options, mode, startcol, max_columns, abbr_width)
+  local str = table.concat(M.format_parts(item, max_columns, abbr_width))
+
+  if options.padding then
+    str = str .. ' '
+    if mode == 'c' or startcol ~= 1 then
+      str = ' ' .. str
+    end
+  end
+
+  return str
+end
+
+--- The columns of the line of format_item(), one string for each entry of
+-- max_columns ('space' is ' '), without the padding: the highlights of
+-- the columns are placed by their byte lengths.
+--
+-- @param item        table   completion item dict
+-- @param max_columns table   list of {name, max_width} pairs (1-indexed)
+-- @param abbr_width  number  max width for the 'abbr' column
+-- @return table  list of strings
+function M.format_parts(item, max_columns, abbr_width)
   -- Build the columns table.
   -- Vimscript: item.get('columns',{})->copy()->extend({abbr:..., kind:..., menu:...})
   -- extend() does NOT overwrite existing keys when called on the copy, but
@@ -120,16 +141,7 @@ function M.format_item(item, options, mode, startcol, max_columns, abbr_width)
     end
   end
 
-  local str = table.concat(parts)
-
-  if options.padding then
-    str = str .. ' '
-    if mode == 'c' or startcol ~= 1 then
-      str = ' ' .. str
-    end
-  end
-
-  return str
+  return parts
 end
 
 return M

@@ -10,6 +10,7 @@ vim9script
 #   pum#widths#CalculateDimensionsV9(items, max_columns, total_width,
 #                                     non_abbr_length, options, mode,
 #                                     startcol, pum_state)
+#   pum#widths#FormatPartsV9(item, max_columns, abbr_width)
 
 # Script-level display-width cache (string -> cell-width).
 # Cleared by ClearWidthsCacheV9() on each pum#open().
@@ -157,6 +158,26 @@ def FormatItem(
     max_columns: list<any>,
     abbr_width: number
 ): string
+  var str: string = join(FormatPartsV9(item, max_columns, abbr_width), '')
+
+  if options.padding
+    str ..= ' '
+    if mode ==# 'c' || startcol != 1
+      str = ' ' .. str
+    endif
+  endif
+
+  return str
+enddef
+
+# The columns of the line of FormatItem(), one string for each entry of
+# max_columns ('space' is ' '), without the padding: the highlights of the
+# columns are placed by their byte lengths.
+export def FormatPartsV9(
+    item: dict<any>,
+    max_columns: list<any>,
+    abbr_width: number
+): list<string>
   # Build a flat column dict from item fields
   var columns: dict<string> = extend(
       copy(get(item, 'columns', {})),
@@ -166,13 +187,13 @@ def FormatItem(
         menu: get(item, 'menu', ''),
       })
 
-  var str: string = ''
+  var parts: list<string> = []
   for col_entry in max_columns
     var name: string       = col_entry[0]
     var max_column: number = col_entry[1]
 
     if name ==# 'space'
-      str ..= ' '
+      add(parts, ' ')
       continue
     endif
 
@@ -195,17 +216,10 @@ def FormatItem(
       column ..= repeat(' ', max_column - col_width)
     endif
 
-    str ..= column
+    add(parts, column)
   endfor
 
-  if options.padding
-    str ..= ' '
-    if mode ==# 'c' || startcol != 1
-      str = ' ' .. str
-    endif
-  endif
-
-  return str
+  return parts
 enddef
 
 # ── public API ───────────────────────────────────────────────────────────────

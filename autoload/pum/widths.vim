@@ -11,6 +11,9 @@ vim9script
 #                                     non_abbr_length, options, mode,
 #                                     startcol, pum_state)
 #   pum#widths#FormatPartsV9(item, max_columns, abbr_width)
+#   pum#widths#HighlightItemsV9(buf, items, max_columns, abbr_width,
+#                               highlight_columns, offset,
+#                               priority_item, priority_column)
 
 # Script-level display-width cache (string -> cell-width).
 # Cleared by ClearWidthsCacheV9() on each pum#open().
@@ -373,4 +376,104 @@ export def CalculateDimensionsV9(
     abbr_width: abbr_width,
     lines: lines,
   }
+enddef
+
+# ── highlights ───────────────────────────────────────────────────────────────
+
+# Place the highlights of the items and of the columns in the popup buffer
+# buf, as text properties: those of a type together (prop_add_list()).
+# Mirrors highlight_items() of lua/pum/widths.lua (Neovim uses it). The
+# columns are placed by the byte lengths of FormatPartsV9(), as in the line;
+# offset is the columns added by the padding.
+# Returns the groups that do not exist (in the order found).
+export def HighlightItemsV9(
+    buf: number,
+    items: list<any>,
+    max_columns: list<any>,
+    abbr_width: number,
+    highlight_columns: dict<any>,
+    offset: number,
+    priority_item: number,
+    priority_column: number
+): list<string>
+  var valid: dict<bool> = {}
+  var missing: list<string> = []
+  # prop type -> [highlight, priority] and the ranges of the type
+  var types: dict<list<any>> = {}
+  var ranges: dict<list<any>> = {}
+
+  var has_column_highlight = false
+  for col_entry in max_columns
+    if get(highlight_columns, col_entry[0], '') !=# ''
+      has_column_highlight = true
+      break
+    endif
+  endfor
+
+  def IsValid(group: string): bool
+    if group ==# ''
+      return false
+    endif
+    if !has_key(valid, group)
+      valid[group] = hlexists(group) != 0
+      if !valid[group]
+        add(missing, group)
+      endif
+    endif
+    return valid[group]
+  enddef
+
+  def Add(type: string, group: string, priority: number,
+          row: number, col: number, length: number)
+    if !has_key(types, type)
+      types[type] = [group, priority]
+      ranges[type] = []
+    endif
+    add(ranges[type], [row, col, row, col + length])
+  enddef
+
+  var row = 0
+  for item in items
+    row += 1
+    var item_highlights: list<any> = get(item, 'highlights', [])
+    if !has_column_highlight && empty(item_highlights)
+      # Nothing to highlight in the row: no need of the widths.
+      continue
+    endif
+
+    var parts = FormatPartsV9(item, max_columns, abbr_width)
+    var start = 1
+    var i = 0
+    for col_entry in max_columns
+      var name: string = col_entry[0]
+      for hl in item_highlights
+        if hl.type ==# name && IsValid(hl.hl_group)
+          Add(hl.name, hl.hl_group, priority_item,
+              row, start + hl.col - 1 + offset, hl.width)
+        endif
+      endfor
+
+      var width = strlen(parts[i])
+      var group: string = get(highlight_columns, name, '')
+      if IsValid(group)
+        Add('pum_' .. name, group, priority_column,
+            row, start + offset, width)
+      endif
+
+      start += width
+      i += 1
+    endfor
+  endfor
+
+  for [type, l] in items(ranges)
+    if empty(prop_type_get(type))
+      prop_type_add(type, {
+        highlight: types[type][0],
+        priority: types[type][1],
+      })
+    endif
+    prop_add_list({bufnr: buf, type: type}, l)
+  endfor
+
+  return missing
 enddef

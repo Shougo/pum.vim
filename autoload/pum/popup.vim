@@ -413,68 +413,26 @@ function s:highlight_items(items, max_columns, abbr_width) abort
   const has_column_highlight = a:max_columns->copy()
         \ ->filter({ _, v -> highlight_columns->get(v[0], '') !=# '' })
         \ ->len() > 0
-
-  " The same for all the items: found once, not for each highlight.
-  const offset = s:highlight_offset(pum, options)
-
-  if has('nvim')
-    " The loop below in Lua (the items are converted once), when there is
-    " something to highlight.
-    if has_column_highlight || a:items->indexof(
-          \ { _, v -> !v->get('highlights', [])->empty() }) >= 0
-      for group in luaeval(
-            \ "require('pum.widths').highlight_items("
-            \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8],_A[9])",
-            \ [pum.buf, pum.namespace, a:items, a:max_columns,
-            \  a:abbr_width, highlight_columns, offset,
-            \  s:priority_highlight_item, s:priority_highlight_column])
-        call pum#util#_print_error(
-              \ printf('highlight "%s" does not exist', group))
-      endfor
-    endif
+  if !has_column_highlight && a:items->indexof(
+        \ { _, v -> !v->get('highlights', [])->empty() }) < 0
+    " Nothing to highlight
     return
   endif
 
-  let valid = {}
-
-  for row in range(1, a:items->len())
-    let item = a:items[row - 1]
-    let item_highlights = item->get('highlights', [])
-    if !has_column_highlight && item_highlights->empty()
-      " Nothing to highlight in the row: no need of the widths.
-      continue
-    endif
-
-    " The columns as in the line (word for no abbr, abbr_width, truncated):
-    " their byte lengths place the highlights.
-    let parts = pum#widths#FormatPartsV9(item, a:max_columns, a:abbr_width)
-    let start = 1
-    for i in range(a:max_columns->len())
-      let order = a:max_columns[i][0]
-      for hl in item_highlights
-        if hl.type ==# order
-              \ && s:valid_highlight(valid, hl.hl_group)
-          call s:place_highlight(
-                \ hl.hl_group, hl.name,
-                \ s:priority_highlight_item,
-                \ pum.buf, pum.namespace,
-                \ row, start + hl.col - 1 + offset, hl.width)
-        endif
-      endfor
-
-      let width = parts[i]->strlen()
-
-      let highlight_column = highlight_columns->get(order, '')
-      if highlight_column !=# ''
-            \ && s:valid_highlight(valid, highlight_column)
-        call s:place_highlight(
-              \ highlight_column, 'pum_' .. order,
-              \ s:priority_highlight_column,
-              \ pum.buf, pum.namespace, row, start + offset, width)
-      endif
-
-      let start += width
-    endfor
+  " The loop over the items in Lua on Neovim (the items are converted
+  " once) and in Vim9 script on Vim (the highlights added by prop type).
+  const args = [
+        \ a:items, a:max_columns, a:abbr_width, highlight_columns,
+        \ s:highlight_offset(pum, options),
+        \ s:priority_highlight_item, s:priority_highlight_column,
+        \ ]
+  const missing = has('nvim')
+        \ ? luaeval("require('pum.widths').highlight_items("
+        \          .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8],_A[9])",
+        \          [pum.buf, pum.namespace] + args)
+        \ : call('pum#widths#HighlightItemsV9', [pum.buf] + args)
+  for group in missing
+    call pum#util#_print_error(printf('highlight "%s" does not exist', group))
   endfor
 endfunction
 

@@ -185,6 +185,109 @@ function M.calculate_column_widths_fast(items, options)
 end
 
 -- ---------------------------------------------------------------------------
+-- highlight_items
+-- ---------------------------------------------------------------------------
+
+-- The text of the column name of item, as a string.
+local function column_text(item, name)
+  local text
+  if name == 'abbr' or name == 'kind' or name == 'menu' then
+    text = item[name]
+  elseif type(item.columns) == 'table' then
+    text = item.columns[name]
+  end
+  if text == nil or text == vim.NIL then
+    return ''
+  end
+  return type(text) == 'string' and text or tostring(text)
+end
+
+--- Place the highlights of the items and of the columns in the popup.
+-- Mirrors s:highlight_items() of autoload/pum/popup.vim (Vim uses it): the
+-- items are not converted for each highlight there.
+--
+-- @param buf               buffer of the popup
+-- @param ns                namespace of pum.vim
+-- @param items             list of completion items (in the popup's order)
+-- @param max_columns       list of {name, max_width} pairs
+-- @param highlight_columns dict: column name -> highlight group
+-- @param offset            columns added by the padding (0 or 1)
+-- @param priority_item     priority of the highlights of the items
+-- @param priority_column   priority of the highlights of the columns
+-- @return list of the groups that do not exist (in the order found)
+function M.highlight_items(buf, ns, items, max_columns, highlight_columns,
+    offset, priority_item, priority_column)
+  local valid = {}
+  local missing = {}
+  local function is_valid(group)
+    if group == nil or group == '' then
+      return false
+    end
+    local v = valid[group]
+    if v == nil then
+      v = vim.fn.hlexists(group) == 1
+      valid[group] = v
+      if not v then
+        missing[#missing + 1] = group
+      end
+    end
+    return v
+  end
+
+  local has_column_highlight = false
+  for _, c in ipairs(max_columns) do
+    local group = highlight_columns[c[1]]
+    if group ~= nil and group ~= '' then
+      has_column_highlight = true
+      break
+    end
+  end
+
+  local set_extmark = vim.api.nvim_buf_set_extmark
+  for row, item in ipairs(items) do
+    local item_highlights = item.highlights
+    if type(item_highlights) ~= 'table' then
+      item_highlights = {}
+    end
+    -- Nothing to highlight in the row: no need of the widths.
+    if has_column_highlight or #item_highlights > 0 then
+      local start = 1
+      for _, c in ipairs(max_columns) do
+        local name, max_column = c[1], c[2]
+        for _, hl in ipairs(item_highlights) do
+          if hl.type == name and is_valid(hl.hl_group) then
+            local col = start + hl.col - 1 + offset
+            set_extmark(buf, ns, row - 1, col - 1, {
+              end_col  = col - 1 + hl.width,
+              hl_group = hl.hl_group,
+              priority = priority_item,
+            })
+          end
+        end
+
+        -- NOTE: The byte length of multibyte characters may be larger than
+        -- max_column calculated by the display width.
+        local text = column_text(item, name)
+        local width = max_column - display_width(text) + #text
+
+        local group = highlight_columns[name]
+        if group ~= nil and group ~= '' and is_valid(group) then
+          local col = start + offset
+          set_extmark(buf, ns, row - 1, col - 1, {
+            end_col  = col - 1 + width,
+            hl_group = group,
+            priority = priority_column,
+          })
+        end
+
+        start = start + width
+      end
+    end
+  end
+  return missing
+end
+
+-- ---------------------------------------------------------------------------
 -- calculate_dimensions_fast
 -- ---------------------------------------------------------------------------
 

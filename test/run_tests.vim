@@ -1,6 +1,10 @@
 " Test runner script for pum.vim
 " This script runs all Test_* functions and reports results
 
+" The tests have multibyte text: not the encoding of the locale (latin1
+" without one).
+set encoding=utf-8
+
 " Load the plugin
 set runtimepath+=.
 

@@ -113,6 +113,30 @@ func Test_highlight_items()
         \ [2, 12, 1, 'PumTestB'],
         \ ], s:placed())
 
+  " Wide characters, a column of the items' own, and a missing group
+  call Setup()
+  call pum#set_option(#{
+        \ item_orders: ['abbr', 'space', 'kind', 'space', 'mark'],
+        \ highlight_columns: #{ kind: 'PumTestC', mark: 'PumTestD' } })
+  call pum#open(1, [
+        \ #{ word: 'あいう', abbr: 'あいう', kind: 'か',
+        \    columns: #{ mark: '*' },
+        \    highlights: [
+        \      #{ type: 'abbr', name: 'abbr_i', hl_group: 'PumTestA',
+        \         col: 4, width: 3 },
+        \      #{ type: 'kind', name: 'kind_x', hl_group: 'PumTestMissing',
+        \         col: 1, width: 1 },
+        \    ]},
+        \ #{ word: 'ab', abbr: 'ab', kind: 'c', columns: #{ mark: '+' } },
+        \ ], 'i')
+  call assert_equal([
+        \ [1, 4, 3, 'PumTestA'],
+        \ [1, 11, 3, 'PumTestC'],
+        \ [1, 15, 1, 'PumTestD'],
+        \ [2, 8, 2, 'PumTestC'],
+        \ [2, 11, 1, 'PumTestD'],
+        \ ], s:placed())
+
   " Nothing to highlight
   call Setup()
   call pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i')

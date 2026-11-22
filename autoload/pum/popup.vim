@@ -416,6 +416,25 @@ function s:highlight_items(items, max_columns) abort
 
   " The same for all the items: found once, not for each highlight.
   const offset = s:highlight_offset(pum, options)
+
+  if has('nvim')
+    " The loop below in Lua (the items are converted once), when there is
+    " something to highlight.
+    if has_column_highlight || a:items->indexof(
+          \ { _, v -> !v->get('highlights', [])->empty() }) >= 0
+      for group in luaeval(
+            \ "require('pum.widths').highlight_items("
+            \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8])",
+            \ [pum.buf, pum.namespace, a:items, a:max_columns,
+            \  highlight_columns, offset,
+            \  s:priority_highlight_item, s:priority_highlight_column])
+        call pum#util#_print_error(
+              \ printf('highlight "%s" does not exist', group))
+      endfor
+    endif
+    return
+  endif
+
   let valid = {}
 
   for row in range(1, a:items->len())

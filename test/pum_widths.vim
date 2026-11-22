@@ -6,16 +6,8 @@
 " Both sections verify that the respective implementations produce
 " semantically correct output.
 "
-" Usage:
-"   Neovim:
-"     nvim --headless -u NONE -c "set runtimepath+=." \
-"          -c "source test/pum_widths.vim" -c "qa!"
-"   Vim:
-"     vim -Nu NONE -c "set runtimepath+=." \
-"         -c "source test/pum_widths.vim" -c "q"
-"   Or via the test runner:
-"     nvim --headless -u NONE -c "set runtimepath+=." \
-"          -c "source test/run_tests.vim"
+" Usage: "make test" (test/run_tests.vim sources this file and runs the
+" Test_* functions; sourcing it alone only defines them).
 
 " ── helpers ────────────────────────────────────────────────────────────────
 
@@ -143,7 +135,7 @@ func Test_widths_space_skipped_after_empty()
   " kind is empty → zero width → skipped; space after it should also be skipped
   " Only 'abbr' should remain
   let names = mc->mapnew({ _, v -> v[0] })
-  call assert_equal(v:false, names->index('space') >= 0 && names->index('kind') < 0,
+  call assert_false(names->index('space') >= 0 && names->index('kind') < 0,
         \ 'space should be dropped when kind is absent')
   call assert_notequal([], mc->filter({ _, v -> v[0] ==# 'abbr' }))
 endfunc

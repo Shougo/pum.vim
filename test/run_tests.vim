@@ -4,8 +4,9 @@
 " Load the plugin
 set runtimepath+=.
 
-" Source the test file
+" Source the test files
 source test/pum.vim
+source test/pum_widths.vim
 
 " Get list of all test functions
 let s:test_functions = []

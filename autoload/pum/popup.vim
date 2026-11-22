@@ -409,21 +409,34 @@ endfunction
 function s:highlight_items(items, max_columns) abort
   let pum = pum#_get()
   let options = pum#_options()
+  let highlight_columns = options.highlight_columns
+  const has_column_highlight = a:max_columns->copy()
+        \ ->filter({ _, v -> highlight_columns->get(v[0], '') !=# '' })
+        \ ->len() > 0
+
+  " The same for all the items: found once, not for each highlight.
+  const offset = s:highlight_offset(pum, options)
+  let valid = {}
 
   for row in range(1, a:items->len())
-    " Default highlights
-
     let item = a:items[row - 1]
     let item_highlights = item->get('highlights', [])
+    if !has_column_highlight && item_highlights->empty()
+      " Nothing to highlight in the row: no need of the widths.
+      continue
+    endif
 
     let start = 1
     for [order, max_column] in a:max_columns
-      for hl in item_highlights->copy()->filter(
-            \ {_, val -> val.type ==# order})
-        call s:highlight(
-              \ hl.hl_group, hl.name,
-              \ s:priority_highlight_item,
-              \ pum.buf, row, start + hl.col - 1, hl.width)
+      for hl in item_highlights
+        if hl.type ==# order
+              \ && s:valid_highlight(valid, hl.hl_group)
+          call s:place_highlight(
+                \ hl.hl_group, hl.name,
+                \ s:priority_highlight_item,
+                \ pum.buf, pum.namespace,
+                \ row, start + hl.col - 1 + offset, hl.width)
+        endif
       endfor
 
       " NOTE: The byte length of multibyte characters may be larger than
@@ -435,12 +448,13 @@ function s:highlight_items(items, max_columns) abort
       let elem_len = elem_text->strlen()
       let width = max_column - elem_width + elem_len
 
-      let highlight_column = options.highlight_columns->get(order, '')
+      let highlight_column = highlight_columns->get(order, '')
       if highlight_column !=# ''
-        call s:highlight(
+            \ && s:valid_highlight(valid, highlight_column)
+        call s:place_highlight(
               \ highlight_column, 'pum_' .. order,
               \ s:priority_highlight_column,
-              \ pum.buf, row, start, width)
+              \ pum.buf, pum.namespace, row, start + offset, width)
       endif
 
       let start += width
@@ -450,27 +464,47 @@ endfunction
 
 function s:highlight(
       \ highlight, prop_type, priority, buf, row, col, length) abort
-  if a:highlight ==# ''
+  if !s:valid_highlight({}, a:highlight)
     return
   endif
 
   let pum = pum#_get()
+  return s:place_highlight(
+        \ a:highlight, a:prop_type, a:priority, a:buf, pum.namespace,
+        \ a:row, a:col + s:highlight_offset(pum, pum#_options()), a:length)
+endfunction
 
-  let col = a:col
-  if pum#_options().padding && (mode() ==# 'c' || pum.startcol != 1)
-    let col += 1
+" The column of a highlight is one more with the padding (not at the start
+" of the line).
+function s:highlight_offset(pum, options) abort
+  return a:options.padding && (mode() ==# 'c' || a:pum.startcol != 1)
+        \ ? 1 : 0
+endfunction
+
+" Whether the group can be used: an error for a missing one. The answers
+" are kept in the dict valid, so that the error is given once.
+function s:valid_highlight(valid, highlight) abort
+  if a:highlight ==# ''
+    return v:false
   endif
-
-  if !a:highlight->hlexists()
-    call pum#util#_print_error(
-          \ printf('highlight "%s" does not exist', a:highlight))
-    return
+  if !a:valid->has_key(a:highlight)
+    let a:valid[a:highlight] = a:highlight->hlexists()
+    if !a:valid[a:highlight]
+      call pum#util#_print_error(
+            \ printf('highlight "%s" does not exist', a:highlight))
+    endif
   endif
+  return a:valid[a:highlight]
+endfunction
 
+" Place the highlight in the buffer buf, at the column col (with the
+" padding already).
+function s:place_highlight(
+      \ highlight, prop_type, priority, buf, namespace, row, col, length) abort
   if has('nvim')
     return nvim_buf_set_extmark(
-          \ a:buf, pum.namespace, a:row - 1, col - 1, #{
-          \   end_col: col - 1 + a:length,
+          \ a:buf, a:namespace, a:row - 1, a:col - 1, #{
+          \   end_col: a:col - 1 + a:length,
           \   hl_group: a:highlight,
           \   priority: a:priority,
           \ })
@@ -482,7 +516,7 @@ function s:highlight(
             \   priority: a:priority,
             \ })
     endif
-    call prop_add(a:row, col, #{
+    call prop_add(a:row, a:col, #{
           \   length: a:length,
           \   type: a:prop_type,
           \   bufnr: a:buf,

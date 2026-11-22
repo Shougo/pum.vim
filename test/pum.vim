@@ -33,6 +33,92 @@ func Test_highlight()
         \ ], 'i')
 endfunc
 
+" The highlights placed in the popup: [[row, col, length, group], ...].
+func s:placed()
+  let pum = pum#_get()
+  if has('nvim')
+    return nvim_buf_get_extmarks(pum.buf, pum.namespace, 0, -1,
+          \ #{ details: v:true })
+          \ ->map({ _, m -> [m[1] + 1, m[2] + 1,
+          \                  m[3].end_col - m[2], m[3].hl_group] })
+          \ ->sort(function('s:compare'))
+  endif
+  const buf = winbufnr(pum.id)
+  let placed = []
+  for row in range(1, getbufinfo(buf)[0].linecount)
+    for p in prop_list(row, #{ bufnr: buf })
+      call add(placed,
+            \ [row, p.col, p.length, prop_type_get(p.type).highlight])
+    endfor
+  endfor
+  return placed->sort(function('s:compare'))
+endfunc
+
+func s:compare(a, b)
+  for i in range(4)
+    if a:a[i] != a:b[i]
+      return a:a[i] < a:b[i] ? -1 : 1
+    endif
+  endfor
+  return 0
+endfunc
+
+" (No syntax with -u NONE: the groups must be defined.)
+for s:group in ['PumTestA', 'PumTestB', 'PumTestC', 'PumTestD']
+  execute 'highlight' s:group 'ctermfg=1'
+endfor
+
+let s:highlighted_items = [
+      \ #{ word: 'foo', kind: 'f', menu: 'A' },
+      \ #{ word: 'barbaz', kind: 'fn', menu: 'B', highlights: [
+      \   #{ type: 'abbr', name: 'abbr_baz', hl_group: 'PumTestA',
+      \      col: 4, width: 3 },
+      \   #{ type: 'menu', name: 'menu_b', hl_group: 'PumTestB',
+      \      col: 1, width: 1 },
+      \ ]},
+      \ #{ word: 'qux', kind: 'v', menu: 'C' },
+      \ ]
+
+" The highlights of the items and of the columns
+func Test_highlight_items()
+  call Setup()
+  call pum#open(1, s:highlighted_items, 'i')
+  call assert_equal([
+        \ [2, 4, 3, 'PumTestA'],
+        \ [2, 11, 1, 'PumTestB'],
+        \ ], s:placed())
+
+  call Setup()
+  call pum#set_option(#{
+        \ highlight_columns: #{ kind: 'PumTestC', menu: 'PumTestD' } })
+  call pum#open(1, s:highlighted_items, 'i')
+  call assert_equal([
+        \ [1, 8, 2, 'PumTestC'],
+        \ [1, 11, 1, 'PumTestD'],
+        \ [2, 4, 3, 'PumTestA'],
+        \ [2, 8, 2, 'PumTestC'],
+        \ [2, 11, 1, 'PumTestB'],
+        \ [2, 11, 1, 'PumTestD'],
+        \ [3, 8, 2, 'PumTestC'],
+        \ [3, 11, 1, 'PumTestD'],
+        \ ], s:placed())
+
+  " padding: one column right when not at the start of the line
+  call Setup()
+  call pum#set_option(#{ padding: v:true })
+  call setline(1, 'x')
+  call pum#open(2, s:highlighted_items, 'i')
+  call assert_equal([
+        \ [2, 5, 3, 'PumTestA'],
+        \ [2, 12, 1, 'PumTestB'],
+        \ ], s:placed())
+
+  " Nothing to highlight
+  call Setup()
+  call pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i')
+  call assert_equal([], s:placed())
+endfunc
+
 " Test select_relative functionality
 func Test_select_relative()
   call Setup()

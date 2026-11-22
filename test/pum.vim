@@ -119,6 +119,43 @@ func Test_highlight_items()
   call assert_equal([], s:placed())
 endfunc
 
+" The lines of calculate_dimensions_fast() are those of pum#_format_item()
+" (Neovim only)
+func Test_dimensions_lines()
+  if !has('nvim')
+    return
+  endif
+  let items = [
+        \ #{ word: 'foo', kind: 'f', menu: 'A' },
+        \ #{ word: 'barbaz', abbr: 'barbaz(x int, y string)', menu: 'B' },
+        \ #{ word: 'あいう', kind: 'v' },
+        \ #{ word: 'qux', abbr: '', menu: 'メニュー' },
+        \ ]
+  for opts in [
+        \ {},
+        \ #{ padding: v:true },
+        \ #{ item_orders: ['kind', 'space', 'abbr', 'space', 'menu'] },
+        \ #{ max_width: 12 },
+        \ ]
+    call Setup()
+    call pum#set_option(opts)
+    let options = pum#_options()
+    for startcol in [1, 3]
+      let columns = luaeval(
+            \ "require('pum.widths').calculate_column_widths_fast(_A[1],_A[2])",
+            \ [items, options])
+      let dimensions = luaeval(
+            \ "require('pum.widths').calculate_dimensions_fast("
+            \ .. "_A[1],_A[2],_A[3],_A[4],_A[5],_A[6],_A[7],_A[8])",
+            \ [items] + columns + [options, 'i', startcol, {}])
+      call assert_equal(items->copy()->map({ _, item -> pum#_format_item(
+            \   item, options, 'i', startcol, columns[0],
+            \   dimensions.abbr_width) }),
+            \ dimensions.lines, string([opts, startcol]))
+    endfor
+  endfor
+endfunc
+
 " Test select_relative functionality
 func Test_select_relative()
   call Setup()

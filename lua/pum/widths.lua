@@ -8,6 +8,11 @@
 
 local M = {}
 
+-- pum.format, called directly to format the lines: pum#_format_item() calls
+-- it back with luaeval(), so through it each item would go to Vim script
+-- and back. (pum#_format_item() is used when the module cannot be loaded.)
+local format_ok, format = pcall(require, 'pum.format')
+
 -- Internal width cache: keyed by string value.
 -- Cleared via M.clear_widths_cache() at the start of each pum#open call.
 local _widths_cache = {}
@@ -241,10 +246,12 @@ function M.calculate_dimensions_fast(
   local abbr_width = width - non_abbr_length - padding
 
   -- ── Format items into display lines ──────────────────────────────────────
-  -- Delegate to pum#_format_item (which itself may use the Lua fast path)
+  -- With pum.format directly (see format_ok above)
+  local format_item = format_ok and format.format_item
+    or vim.fn['pum#_format_item']
   local lines = {}
   for _, val in ipairs(items) do
-    lines[#lines + 1] = vim.fn['pum#_format_item'](
+    lines[#lines + 1] = format_item(
       val, options, mode, startcol, max_columns, abbr_width)
   end
 

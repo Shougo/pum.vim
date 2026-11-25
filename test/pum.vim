@@ -2,22 +2,22 @@
 " All test function names must start with Test_
 
 " Setup function called before each test
-func Setup()
+function! Setup() abort
   call pum#_init()
   call pum#_init_options()
   normal! ggVGd
-endfunc
+endfunction
 
 " Test pum#open() function
-func Test_open()
+function! Test_open() abort
   call Setup()
   call assert_notequal(-1, pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }]))
   call assert_notequal(-1, pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i'))
   call assert_notequal(-1, pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'c'))
-endfunc
+endfunction
 
 " Test highlight functionality
-func Test_highlight()
+function! Test_highlight() abort
   call Setup()
   call pum#open(1, [
         \ #{ word: 'foo bar', highlights: [
@@ -31,10 +31,10 @@ func Test_highlight()
         \   #{ type: 'menu', name: 'menu_baz', hl_group: 'WarningMsg', col: 1, width: 3 },
         \ ]},
         \ ], 'i')
-endfunc
+endfunction
 
 " The highlights placed in the popup: [[row, col, length, group], ...].
-func s:placed()
+function! s:placed() abort
   let pum = pum#_get()
   if has('nvim')
     return nvim_buf_get_extmarks(pum.buf, pum.namespace, 0, -1,
@@ -52,26 +52,26 @@ func s:placed()
     endfor
   endfor
   return placed->sort(function('s:compare'))
-endfunc
+endfunction
 
 " The highlights placed in the popup, by the text they cover:
 " [[row, text, group], ...].
-func s:highlighted()
+function! s:highlighted() abort
   let pum = pum#_get()
   const buf = has('nvim') ? pum.buf : winbufnr(pum.id)
   return s:placed()->map({ _, p -> [p[0],
         \ getbufline(buf, p[0])[0]->strpart(p[1] - 1, p[2]), p[3]] })
         \ ->sort(function('s:compare'))
-endfunc
+endfunction
 
-func s:compare(a, b)
+function! s:compare(a, b) abort
   for i in range(len(a:a))
     if a:a[i] != a:b[i]
       return a:a[i] < a:b[i] ? -1 : 1
     endif
   endfor
   return 0
-endfunc
+endfunction
 
 " (No syntax with -u NONE: the groups must be defined.)
 for s:group in ['PumTestA', 'PumTestB', 'PumTestC', 'PumTestD']
@@ -90,7 +90,7 @@ let s:highlighted_items = [
       \ ]
 
 " The highlights of the items and of the columns
-func Test_highlight_items()
+function! Test_highlight_items() abort
   call Setup()
   call pum#open(1, s:highlighted_items, 'i')
   call assert_equal([
@@ -169,11 +169,11 @@ func Test_highlight_items()
   call Setup()
   call pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i')
   call assert_equal([], s:placed())
-endfunc
+endfunction
 
 " The lines of calculate_dimensions_fast() are those of pum#_format_item()
 " (Neovim only)
-func Test_dimensions_lines()
+function! Test_dimensions_lines() abort
   if !has('nvim')
     return
   endif
@@ -206,11 +206,11 @@ func Test_dimensions_lines()
             \ dimensions.lines, string([opts, startcol]))
     endfor
   endfor
-endfunc
+endfunction
 
 " abbr, kind and menu of the item, not of its columns (as extend() of Vim
 " script puts them)
-func Test_columns_standard_fields()
+function! Test_columns_standard_fields() abort
   call Setup()
   call pum#set_option(#{ min_width: 0 })
   call pum#open(1, [
@@ -220,10 +220,10 @@ func Test_columns_standard_fields()
   let pum = pum#_get()
   const buf = has('nvim') ? pum.buf : winbufnr(pum.id)
   call assert_equal(['abc k '], getbufline(buf, 1, '$'))
-endfunc
+endfunction
 
 " Test select_relative functionality
-func Test_select_relative()
+function! Test_select_relative() abort
   call Setup()
   call pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }])
 
@@ -242,10 +242,10 @@ func Test_select_relative()
   call pum#map#select_relative(-1)
 
   call assert_equal(1, pum#_get().cursor)
-endfunc
+endfunction
 
 " Test insert_relative functionality
-func Test_insert_relative()
+function! Test_insert_relative() abort
   call Setup()
   call pum#open(1, [#{ word: 'foo' }, #{ word: 'bar' }], 'i')
 
@@ -258,10 +258,10 @@ func Test_insert_relative()
   call pum#map#insert_relative(-1)
 
   call assert_equal(0, pum#_get().cursor)
-endfunc
+endfunction
 
 " Test format_item functionality
-func Test_format_item()
+function! Test_format_item() abort
   call Setup()
   const item = #{ word: 'foo', kind: 'bar', menu: 'baz' }
 
@@ -311,10 +311,10 @@ func Test_format_item()
         \   ['space', 1],
         \   ['kind', 3],
         \ ], 10))
-endfunc
+endfunction
 
 " Test core plugin initialization
-func Test_core_init()
+function! Test_core_init() abort
   " Test pum#_init() creates proper state structure
   call pum#_init()
   let pum = pum#_get()
@@ -334,10 +334,10 @@ func Test_core_init()
   call assert_equal(v:false, pum.reversed)
   call assert_equal(v:false, pum.skip_complete)
   call assert_equal(0, pum.skip_count)
-endfunc
+endfunction
 
 " Test options initialization
-func Test_options_init()
+function! Test_options_init() abort
   " Test pum#_init_options() sets default options correctly
   call pum#_init_options()
   let options = pum#_options()
@@ -357,10 +357,10 @@ func Test_options_init()
   call assert_equal(1000, options.zindex)
   call assert_equal(v:t_list, type(options.item_orders))
   call assert_equal(v:t_dict, type(options.max_columns))
-endfunc
+endfunction
 
 " Test popup visibility detection
-func Test_visibility()
+function! Test_visibility() abort
   call Setup()
   " Initially not visible
   call assert_equal(v:false, pum#visible())
@@ -372,10 +372,10 @@ func Test_visibility()
   " After initialization, should still not be visible
   call pum#_init()
   call assert_equal(v:false, pum#visible())
-endfunc
+endfunction
 
 " Test auto-confirm timer functionality
-func Test_auto_confirm_timer()
+function! Test_auto_confirm_timer() abort
   call Setup()
   " Set auto-confirm time option
   call pum#set_option('auto_confirm_time', 100)
@@ -392,10 +392,10 @@ func Test_auto_confirm_timer()
 
   " Reset option
   call pum#set_option('auto_confirm_time', 0)
-endfunc
+endfunction
 
 " Test complete info
-func Test_complete_info()
+function! Test_complete_info() abort
   call Setup()
   " Initially no completion
   let info = pum#complete_info()
@@ -409,10 +409,10 @@ func Test_complete_info()
   call assert_true(info2->has_key('pum_visible'))
   call assert_true(info2->has_key('selected'))
   call assert_false(info2->has_key('items'))
-endfunc
+endfunction
 
 " Test PUM menu open and close operations
-func Test_pum_menu_operations()
+function! Test_pum_menu_operations() abort
   call Setup()
 
   let result = pum#open(1, [#{ word: 'test' }])
@@ -430,10 +430,10 @@ func Test_pum_menu_operations()
   " Test current_item when not visible
   let item = pum#current_item()
   call assert_equal({}, item)
-endfunc
+endfunction
 
 " Test buffer and preview functions
-func Test_buffer_functions()
+function! Test_buffer_functions() abort
   call Setup()
   " Test get_buf returns buffer id
   let buf = pum#get_buf()
@@ -447,10 +447,10 @@ func Test_buffer_functions()
 
   " Test preview_visible
   call assert_equal(v:false, pum#preview_visible())
-endfunc
+endfunction
 
 " Test option setting functions
-func Test_set_options()
+function! Test_set_options() abort
   call Setup()
   " Test set_option with single key
   call pum#set_option('padding', v:true)
@@ -469,10 +469,10 @@ func Test_set_options()
 
   " Reset to defaults
   call pum#_init_options()
-endfunc
+endfunction
 
 " Test skip_complete functionality
-func Test_skip_complete()
+function! Test_skip_complete() abort
   call Setup()
   let pum = pum#_get()
 
@@ -503,38 +503,38 @@ func Test_skip_complete()
   " After reset, should be false
   let skip = pum#skip_complete()
   call assert_equal(v:false, skip)
-endfunc
+endfunction
 
 " Test entered state
-func Test_entered()
+function! Test_entered() abort
   call Setup()
   " Should not be entered when not visible
   call assert_equal(v:false, pum#entered())
-endfunc
+endfunction
 
 " Test get_direction function
-func Test_get_direction()
+function! Test_get_direction() abort
   call Setup()
   " direction is not set in initial state, it's set during popup open
   " We just test that the function exists and returns a value
   try
-    let direction = pum#get_direction()
+    let _ = pum#get_direction()
     " If it succeeds, direction could be any value
     call assert_true(v:true)
   catch
     " If it fails, that's expected for uninitialized state
     call assert_true(v:true)
   endtry
-endfunc
+endfunction
 
 " Test previewer option
-func PreviewerForTest(item) abort
+function! PreviewerForTest(item) abort
   return a:item.word ==# 'foo'
         \ ? #{ kind: 'text', contents: ['preview of ' .. a:item.word] }
         \ : #{ kind: 'empty' }
-endfunc
+endfunction
 
-func Test_previewer()
+function! Test_previewer() abort
   call Setup()
   call assert_equal('', pum#_options().previewer)
 
@@ -562,10 +562,10 @@ func Test_previewer()
   endfor
 
   call pum#set_option('previewer', '')
-endfunc
+endfunction
 
 " Without previewer option, no completion plugin's previewer is used.
-func Test_previewer_default()
+function! Test_previewer_default() abort
   call Setup()
   const dir = tempname()
   call mkdir(dir .. '/autoload', 'p')
@@ -585,4 +585,4 @@ func Test_previewer_default()
   call pum#close()
 
   let &runtimepath = &runtimepath->substitute(',' .. dir, '', '')
-endfunc
+endfunction
